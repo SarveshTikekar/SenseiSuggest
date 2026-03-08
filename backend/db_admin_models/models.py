@@ -28,9 +28,6 @@ class Users(models.Model):
     email = models.CharField(unique=True, max_length=255) # Added max_length
     hashedpassword = models.CharField(db_column='hashedPassword', max_length=255) # Added max_length
     profilepicture = models.CharField(db_column='profilePicture', blank=True, null=True, max_length=255) # Added max_length
-    # Changed from TextField to ArrayField
-    watchedanime = ArrayField(models.IntegerField(), db_column='watchedAnime', blank=True, null=True)
-    watchinganime = ArrayField(models.IntegerField(), db_column='watchingAnime', blank=True, null=True)
     anime_watched_count = models.IntegerField(blank=True, null=True)
     anime_watching_count = models.IntegerField(blank=True, null=True)
     locationid = models.ForeignKey(Locations, models.DO_NOTHING, db_column='locationId')
@@ -45,13 +42,9 @@ class Users(models.Model):
 class Anime(models.Model):
     animeid = models.AutoField(db_column='animeId', primary_key=True)
     animename = models.CharField(db_column='animeName', unique=True, max_length=255) # Added max_length
-    # Changed from TextField to ArrayField
-    genres = ArrayField(models.IntegerField(), blank=True, null=True)
     is_adult_rated = models.BooleanField(blank=True, null=True)
     is_running = models.BooleanField(blank=True, null=True)
     releasedate = models.DateTimeField(db_column='releaseDate')
-    # Changed from TextField to ArrayField
-    seasons = ArrayField(models.IntegerField(), blank=True, null=True) # This is the ArrayField
     description = models.CharField(max_length=500, blank=True, null=True)
     image_url_base_anime = models.CharField(blank=True, null=True, max_length=500) # Added max_length
     trailer_url_base_anime = models.CharField(blank=True, null=True, max_length=500) # Added max_length
@@ -111,6 +104,31 @@ class Seasons(models.Model):
         if self.animeid and hasattr(self.animeid, 'animename') and self.animeid.animename:
             return f"{self.animeid.animename} - Season {self.seasonnumber}"
         return f"Season {self.seasonnumber} (Anime ID: {self.animeid_id if self.animeid else 'N/A'})"
+
+# --- Join Tables ---
+class AnimeGenres(models.Model):
+    pk = models.CompositePrimaryKey('animeid', 'genreid')
+    animeid = models.ForeignKey(Anime, models.DO_NOTHING, db_column='animeId')
+    genreid = models.ForeignKey('Genres', models.DO_NOTHING, db_column='genreId')
+    class Meta:
+        managed = False
+        db_table = 'anime_genres'
+
+class UserWatchedAnime(models.Model):
+    pk = models.CompositePrimaryKey('userid', 'animeid')
+    userid = models.ForeignKey('Users', models.DO_NOTHING, db_column='userId')
+    animeid = models.ForeignKey(Anime, models.DO_NOTHING, db_column='animeId')
+    class Meta:
+        managed = False
+        db_table = 'user_watched_anime'
+
+class UserWatchingAnime(models.Model):
+    pk = models.CompositePrimaryKey('userid', 'animeid')
+    userid = models.ForeignKey('Users', models.DO_NOTHING, db_column='userId')
+    animeid = models.ForeignKey(Anime, models.DO_NOTHING, db_column='animeId')
+    class Meta:
+        managed = False
+        db_table = 'user_watching_anime'
 
 # --- Django's Internal Models (leave as is, typically not registered in your admin.py) ---
 # These are generated because they exist in your database from Django's own setup.

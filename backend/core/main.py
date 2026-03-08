@@ -1,9 +1,7 @@
 from fastapi import FastAPI, Query, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
-from .database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import *
-from .models import *
+from .database import get_supabase
+from supabase import AsyncClient
 from .schemas import *
 from .utils import password_verifier, argon2_pwd_hasher, generate_uuid
 from dotenv import load_dotenv
@@ -49,27 +47,23 @@ def root():
 
 #Return user info
 @app.get("/user/{user_id}", response_model=UserInfo, status_code=status.HTTP_200_OK)
-async def get_user_info(user_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).filter(User.userId == user_id))
-    user = result.scalars().first()
+async def get_user_info(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
+    response = await supabase.table("users").select("*, user_watched_anime(animeId, anime(*)), user_watching_anime(animeId, anime(*))").eq("userId", user_id).execute()
+    data = response.data
 
-    if user is None:
+    if not data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {user_id} does not exist")
     
-    watched_ids = user.watchedAnime
-    watching_ids = user.watchingAnime
-
-    watched_anime_list = await db.execute(select(Anime).where(Anime.animeId.in_(watched_ids))).scalars().all()
-    watching_anime_list = await db.execute(select(Anime).where(Anime.animeId.in_(watching_ids))).scalars().all()
-    
+    user_data = data[0]
+    watched_anime_list = [item["anime"] for item in user_data.get("user_watched_anime", []) if item.get("anime")]
+    watching_anime_list = [item["anime"] for item in user_data.get("user_watching_anime", []) if item.get("anime")]
 
     userInfobj = UserInfo(
-
-        userName = user.userName ,
-        watchedAnime = watched_anime_list,  
-        watchingAnime = watching_anime_list , 
-        anime_watched_count = len(watched_anime_list), 
-        anime_watching_count = len(watching_anime_list),
+        userName=user_data.get("userName"),
+        watchedAnime=watched_anime_list,  
+        watchingAnime=watching_anime_list, 
+        anime_watched_count=len(watched_anime_list), 
+        anime_watching_count=len(watching_anime_list),
     )
 
     return userInfobj
@@ -78,144 +72,141 @@ async def get_user_info(user_id: int, db: AsyncSession = Depends(get_db)):
 
 #Return the newest 5 animes as default
 @app.get("/newest-5-anime")
-async def get_top_5(db: AsyncSession = Depends(get_db)):
-    
-    query = "SELECT * FROM anime ORDER BY releaseDate DESC LIMIT 5"
-    result = await db.execute(text(query))
-
-    return result.scalars().all()
+async def get_top_5(supabase: AsyncClient = Depends(get_supabase)):
+    response = await supabase.table("anime").select("*").order("releaseDate", desc=True).limit(5).execute()
+    return response.data
 
 #Return the newest n animes as default
 @app.get("/anime/newest/{count}")
-async def get_topn(count: int, db: AsyncSession = Depends(get_db)):
-    
-    query = await db.execute(select(Anime).order_by(Anime.releaseDate.desc()).limit(count))
-    result = query.scalars().all()
-
-    return result
+async def get_topn(count: int, supabase: AsyncClient = Depends(get_supabase)):
+    response = await supabase.table("anime").select("*").order("releaseDate", desc=True).limit(count).execute()
+    return response.data
 
 #Returns the top rated anime
 @app.get("/anime/top-rated", status_code=status.HTTP_200_OK)
-async def get_top_rated(db: AsyncSession = Depends(get_db)) -> dict:
+async def get_top_rated(supabase: AsyncClient = Depends(get_supabase)) -> dict:
     
-    """ The top rated anime would be decided by a custom rating system
-    built on the ratings flagged as positive and not positive
+    # Since PostgREST doesn't support complex aggregations natively, we fetch aggregated data or calculate it.
+    # For production, an RPC or View in Supabase is recommended. Here we compute it in Python.
+    response = await supabase.table("ratings").select("score, anime(animeId, animeName, releaseDate, image_url_base_anime)").execute()
+    ratings_data = response.data
+    
+    if not ratings_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No ratings found")
+    
+    anime_stats = {}
+    for r in ratings_data:
+        anime = r.get("anime")
+        if not anime: continue
+        a_id = anime["animeId"]
+        if a_id not in anime_stats:
+            anime_stats[a_id] = {"anime": anime, "total": 0, "positive": 0}
+        
+        anime_stats[a_id]["total"] += 1
+        if r["score"] > 5:
+            anime_stats[a_id]["positive"] += 1
+            
+    best_ratio = -1
+    best_anime = None
+    
+    for a_id, stats in anime_stats.items():
+        ratio = (stats["positive"] * 100.0) / stats["total"]
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_anime = stats["anime"]
 
-    The Rating system would work on the ratio of positive to the total scores
-    where positive score > 5
-
-    Hencee the anime having this ratio as highest, would be flagged as top rated
-    """
-
-    sql_query_text = "SELECT animeId, animeName, COUNT(CASE WHEN score > 5 THEN 1 ELSE NULL END) * 100.0 / COUNT(score) AS ratio from anime join ratings using(animeId) group by animeId having count(score) > 0 order by ratio desc limit 1;"
-
-    proc = await db.execute(text(sql_query_text))
-    result = proc.scalars().first()
-
-    if result is None:
+    if not best_anime:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Anime not found")
     
 
     dict = {
-
-        "animeName" : result.animeName,
-        "releaseDate": result.releaseDate,
-        "image_url_base_anime": result.image_url_base_anime,
-        "Positivity Percentage": result.ratio
+        "animeName" : best_anime["animeName"],
+        "releaseDate": best_anime["releaseDate"],
+        "image_url_base_anime": best_anime["image_url_base_anime"],
+        "Positivity Percentage": best_ratio
     }
 
     return dict
 
 #Get all anime
 @app.get("/anime/all", status_code=status.HTTP_200_OK)
-async def get_all_anime(db: AsyncSession = Depends(get_db)):
+async def get_all_anime(supabase: AsyncClient = Depends(get_supabase)):
 
-    query = await db.execute(select(Anime))
-    results = query.scalars().all()
+    response = await supabase.table("anime").select("*").execute()
+    results = response.data
 
-    print(results)
-    if results is None:
+    if not results:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No Anime found")
     list_of_animes = []
     
     for result in results:
         list_of_animes.append(
-
             browseAnime(
-                animeName=result.animeName,
-                image_url_base_anime=result.image_url_base_anime,
-                animeId=result.animeId,
+                animeName=result["animeName"],
+                image_url_base_anime=result.get("image_url_base_anime"),
+                animeId=result["animeId"],
             )
         )
     return list_of_animes
 
 #Get specific anime Info
 @app.get("/anime/{anime_name}", response_model=AnimeGet, status_code=status.HTTP_200_OK)
-async def get_anime_info(anime_name: str, db: AsyncSession = Depends(get_db)):
+async def get_anime_info(anime_name: str, supabase: AsyncClient = Depends(get_supabase)):
     
-    proc = await db.execute(select(Anime).where(Anime.animeName == anime_name))
-    query_result = proc.scalars().first()
+    response = await supabase.table("anime").select("*, anime_genres(genreId, genres(name)), seasons(*)").eq("animeName", anime_name).execute()
+    data = response.data
     
-    if query_result is None: 
+    if not data: 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Anime {anime_name} not found")
 
-    genre_ids = query_result.genres
-    genre_list = await db.execute(select(Genre.name).where(Genre.genreId.in_(genre_ids)))
-    genre_list = genre_list.scalars().all()
-
-    season_nos = query_result.seasons
-    season_list = await db.execute(select(Season).where(Season.seasonNumber.in_(season_nos)))
-    season_list = season_list.scalars().all()
+    query_result = data[0]
+    genre_list = [g["genres"]["name"] for g in query_result.get("anime_genres", []) if g.get("genres")]
 
     animeGetObj = AnimeGet(
-
-        animeId = query_result.animeId,
-        animeName = query_result.animeName,
+        animeId = query_result["animeId"],
+        animeName = query_result["animeName"],
         genres = genre_list,
-        is_adult_rated = query_result.is_adult_rated,
-        is_running = query_result.is_running,
-        releaseDate = query_result.releaseDate,
-        #seasons = season_list,
-        description = query_result.description,
-        image_url_base_anime = query_result.image_url_base_anime,
-        trailer_url_base_anime = query_result.trailer_url_base_anime,
-        studio = query_result.studio,
+        is_adult_rated = query_result.get("is_adult_rated"),
+        is_running = query_result.get("is_running"),
+        releaseDate = query_result.get("releaseDate"),
+        description = query_result.get("description"),
+        image_url_base_anime = query_result.get("image_url_base_anime"),
+        trailer_url_base_anime = query_result.get("trailer_url_base_anime"),
+        studio = query_result.get("studio"),
     )
 
     return animeGetObj
 
 #Adding a new user on the site
 @app.post("/signup", status_code=status.HTTP_200_OK)
-async def get_user_info(user: UserBasicCreate, db: AsyncSession = Depends(get_db)):
+async def get_user_info(user: UserBasicCreate, supabase: AsyncClient = Depends(get_supabase)):
     
     hashed_password = argon2_pwd_hasher(user.password)
     
-    query = await db.execute(select(Location).where(Location.city == user.city).where(Location.state == user.state).where(Location.country == user.country))
-    result = query.scalars().first()
+    loc_resp = await supabase.table("locations").select("locationId").eq("city", user.city).eq("state", user.state).eq("country", user.country).execute()
+    
+    if not loc_resp.data:
+        raise HTTPException(status_code=400, detail="Location not found")
+        
+    location_id = loc_resp.data[0]["locationId"]
 
-    query2 = await db.execute(select(User.userId))
-    result2 = query2.scalars().all()
+    user_query = await supabase.table("users").select("userId").execute()
+    existing_ids = [u["userId"] for u in user_query.data]
+    id_uuid = generate_uuid(existing_ids)
 
-    id_uuid = generate_uuid(result2)
-
-    user = User(
-
-        userId = id_uuid,
-        userName = user.userName, 
-        hashedPassword = hashed_password,
-        email = user.email, 
-        locationId = result.locationId,
-        watchedAnime = [],
-        watchingAnime = [],
-        anime_watched_count = 0,
-        anime_watching_count = 0,
-        profilePicture = ""
-    )
+    new_user = {
+        "userId": id_uuid,
+        "userName": user.userName, 
+        "hashedPassword": hashed_password,
+        "email": user.email, 
+        "locationId": location_id,
+        "anime_watched_count": 0,
+        "anime_watching_count": 0,
+        "profilePicture": ""
+    }
 
     try:
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
+        await supabase.table("users").insert(new_user).execute()
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Due to error: {e} caused hence the new user was not created hence please try again")
     
@@ -223,23 +214,23 @@ async def get_user_info(user: UserBasicCreate, db: AsyncSession = Depends(get_db
 
 #For user login
 @app.post("/login", response_model=loginSuccess)
-async def login(credentials: userLogin, db: AsyncSession = Depends(get_db)):
+async def login(credentials: userLogin, supabase: AsyncClient = Depends(get_supabase)):
 
-    user_query = await db.execute(select(User).filter((User.userName == credentials.userName_or_email) | (User.email == credentials.userName_or_email)))
+    response = await supabase.table("users").select("*").or_(f"userName.eq.{credentials.userName_or_email},email.eq.{credentials.userName_or_email}").execute()
 
-    user = user_query.scalars().first()
-
-    if not user:
+    if not response.data:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or email", headers={"WWW-Authenticate": "Bearer"},)
 
-    if not password_verifier(credentials.password, user.hashedPassword):
+    user = response.data[0]
+
+    if not password_verifier(credentials.password, user["hashedPassword"]):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password", headers={"WWW-Authenticate": "Bearer"},)
 
-    return loginSuccess(userId=user.userId, userName=user.userName, email=user.email)
+    return loginSuccess(userId=user["userId"], userName=user["userName"], email=user["email"])
 
 #Recommendation model output to be displayed on the recommendation dashboard
 @app.get("/get_recommendations/{user_id}", status_code=status.HTTP_200_OK)
-async def recommendations(user_id: int, db: AsyncSession = Depends(get_db)):
+async def recommendations(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
     
     recommendation_list = main_recommendation_model(user_id)
     animeSet = set()
@@ -249,88 +240,80 @@ async def recommendations(user_id: int, db: AsyncSession = Depends(get_db)):
             animeSet.add(item)
 
     animeSet = list(animeSet)
-    animeList = []
-
-    for item in animeSet:
-
-        query = await db.execute(select(Anime).where(Anime.animeId == item))
-        result = query.scalars().first()
-        animeList.append(result)
+    
+    if animeSet:
+        response = await supabase.table("anime").select("*").in_("animeId", animeSet).execute()
+        animeList = response.data
+    else:
+        animeList = []
 
     #For ratings distribution
-    query2 = await db.execute(select(Rating.score, func.count(Rating.score).label("ratingCount")).group_by(Rating.score).order_by(Rating.score))
-    result2 = query2.all()
-
+    rating_resp = await supabase.table("ratings").select("score").execute()
     ratings_distrib = {}
-
-    for ratingScore, ratingCount in result2:
-        ratings_distrib[ratingScore] = ratingCount
-    
-    for key , values in ratings_distrib.items():
-        print(f"{key} ----> {values}")
+    for r in rating_resp.data:
+        score = r["score"]
+        ratings_distrib[score] = ratings_distrib.get(score, 0) + 1
+    ratings_distrib = dict(sorted(ratings_distrib.items()))
     
     print()
-    #For genre_anime_distribution
-    query3 = await db.execute(select(Anime.genres))
-    result3 = query3.scalars().all()
-
+    # For genre_anime_distribution  (N+1 optimizations applied)
+    genre_resp = await supabase.table("anime_genres").select("genres(name)").execute()
     genre_anime_distribution = {}
+    for item in genre_resp.data:
+        name = item["genres"]["name"]
+        genre_anime_distribution[name] = genre_anime_distribution.get(name, 0) + 1
 
-    for result in result3:
-        
-        for id in result:
-
-            if id in genre_anime_distribution:
-                genre_anime_distribution[id] += 1
-            else:
-                genre_anime_distribution[id] = 1
-
-    genre_anime_distributionList = []
-    for id, count in genre_anime_distribution.items():
-        newQuery = await db.execute(select(Genre.name).where(Genre.genreId == id))
-        result = newQuery.scalars().all()
-
-        for name in result:
-            genre_anime_distributionList.append({name: count})
+    genre_anime_distributionList = [{name: count} for name, count in genre_anime_distribution.items()]
     
-    sql_query_text = "SELECT \"animeId\", \"animeName\", \"releaseDate\", COUNT(CASE WHEN score > 5 THEN 1 ELSE NULL END) * 100.0 / COUNT(score) AS \"ratio\", \"image_url_base_anime\" from anime join ratings using(\"animeId\") group by \"animeId\" having count(score) > 0 order by ratio desc limit 1;"
+    # most popular animes
+    rt_resp = await supabase.table("ratings").select("score, anime(animeId, animeName, releaseDate, image_url_base_anime)").execute()
+    anime_stats = {}
+    for r in rt_resp.data:
+        anime = r.get("anime")
+        if not anime: continue
+        a_id = anime["animeId"]
+        if a_id not in anime_stats:
+            anime_stats[a_id] = {"anime": anime, "total": 0, "positive": 0}
+        anime_stats[a_id]["total"] += 1
+        if r["score"] > 5:
+            anime_stats[a_id]["positive"] += 1
+            
+    best_ratio = -1
+    best_anime = None
+    
+    for a_id, stats in anime_stats.items():
+        ratio = (stats["positive"] * 100.0) / stats["total"]
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_anime = stats["anime"]
 
-    proc = await db.execute(text(sql_query_text))
-    result = proc.all()
-
-    if result is None:
+    if best_anime is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Anime not found")
     
-
-    dict = {
-
-        "animeName" : result[0][1],
-        "releaseDate": result[0][2],
-        "image_url_base_anime": result[0][4],
-        "Positivity Percentage": result[0][3],
+    dict_res = {
+        "animeName" : best_anime["animeName"],
+        "releaseDate": best_anime["releaseDate"],
+        "image_url_base_anime": best_anime["image_url_base_anime"],
+        "Positivity Percentage": best_ratio,
     }
 
-    return {"recommendations": animeList, "ratings_distribution": ratings_distrib, "Genre_anime_distrib": genre_anime_distributionList, "most_popular_anime": dict, "message": f"Great Recommendations are generated for {user_id}"}
+    return {"recommendations": animeList, "ratings_distribution": ratings_distrib, "Genre_anime_distrib": genre_anime_distributionList, "most_popular_anime": dict_res, "message": f"Great Recommendations are generated for {user_id}"}
 
 #For admin side APIs where ADMIN_ID is fetched from env to prevent unauthorized access
 @app.post("/add_season", status_code=status.HTTP_200_OK)
-async def add_season(seasonData: SeasonsCreate, db: AsyncSession = Depends(get_db)):
+async def add_season(seasonData: SeasonsCreate, supabase: AsyncClient = Depends(get_supabase)):
 
-    seasonObj = Season(
-
-        animeId = seasonData.animeId,
-        seasonNumber = seasonData.seasonNumber,
-        seasonName = seasonData.seasonName,
-        seasonInfo = seasonData.seasonInfo,
-        seasonTrailer = seasonData.seasonTrailer,
-        seasonImage = seasonData.seasonImage,
-    )
+    seasonObj = {
+        "animeId": seasonData.animeId,
+        "seasonNumber": seasonData.seasonNumber,
+        "seasonName": seasonData.seasonName,
+        "seasonInfo": seasonData.seasonInfo,
+        "seasonTrailer": seasonData.seasonTrailer,
+        "seasonImage": seasonData.seasonImage,
+    }
 
     try:
-        db.add(seasonObj)
-        await db.commit()
-        await db.refresh(seasonObj)
-
+        await supabase.table("seasons").insert(seasonObj).execute()
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Season couldn't be added")
     
@@ -339,60 +322,52 @@ async def add_season(seasonData: SeasonsCreate, db: AsyncSession = Depends(get_d
 
 #To add new genres
 @app.post("/add_genre", status_code=status.HTTP_200_OK)
-async def add_anime(genre: genreCreate, user_id: int = 8, db: AsyncSession = Depends(get_db)):
+async def add_genre(genre: genreCreate, user_id: int = 8, supabase: AsyncClient = Depends(get_supabase)):
     
-    if user_id != ADMIN_ID:
+    if user_id != int(ADMIN_ID):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail=f"User is prohibited from doing this action")
 
     pass
 
 #To get all genres
 @app.get('/genres/all')
-async def get_all_genres(db: AsyncSession = Depends(get_db)):
+async def get_all_genres(supabase: AsyncClient = Depends(get_supabase)):
 
-    query = await db.execute(select(Genre))
-    result = query.scalars().all()
-
-    return result
+    response = await supabase.table("genres").select("*").execute()
+    return response.data
 
 #To get all seasons
 @app.get('/seasons/all')
-async def get_all_genres(db: AsyncSession = Depends(get_db)):
+async def get_all_seasons(supabase: AsyncClient = Depends(get_supabase)):
 
-    query = await db.execute(select(Season))
-    result = query.scalars().all()
-
-    return result
+    response = await supabase.table("seasons").select("*").execute()
+    return response.data
 
 
 @app.get('/get_cities/{stateName}')
-async def get_cities(stateName: str, db: AsyncSession = Depends(get_db)):
+async def get_cities(stateName: str, supabase: AsyncClient = Depends(get_supabase)):
 
-    query = await db.execute(select(distinct(Location.city)).where(Location.state == stateName).order_by(Location.city))
-    results = query.scalars().all()
-
-    return results
+    response = await supabase.table("locations").select("city").eq("state", stateName).execute()
+    cities = list(set([item["city"] for item in response.data if item.get("city")]))
+    cities.sort()
+    return cities
 
 @app.get('/get_states/{countryName}')
-async def get_states(countryName: str, db: AsyncSession = Depends(get_db)):
+async def get_states(countryName: str, supabase: AsyncClient = Depends(get_supabase)):
     
-    result = await db.execute(
-            select(distinct(Location.state))
-            .filter(Location.country.ilike(countryName)) # Safe, parameterized query
-            .order_by(Location.state) # Good for consistent dropdown order
-        )
-    states = result.scalars().all() # .scalars() extracts the first column of each row (the state name)
-
+    response = await supabase.table("locations").select("state").ilike("country", countryName).execute()
+    states = list(set([item["state"] for item in response.data if item.get("state")]))
+    states.sort()
+    
     if not states:
-            
         print(f"No states found for country: {countryName}")
         return [] 
-
+        
     print(f"Found states for {countryName}: {states}")
     return states
 
 @app.get('/get_countries')
-async def get_states(db: AsyncSession = Depends(get_db)):
+async def get_countries(supabase: AsyncClient = Depends(get_supabase)):
 
     return ["India"]
 
@@ -400,172 +375,106 @@ async def get_states(db: AsyncSession = Depends(get_db)):
 #APIs for watching and watched anime
 
 @app.patch("/add-to-watched-list/", status_code=status.HTTP_200_OK)
-async def add_to_watched_list(animeListUpdate: AnimeListUpdate, db: AsyncSession = Depends(get_db)):
+async def add_to_watched_list(animeListUpdate: AnimeListUpdate, supabase: AsyncClient = Depends(get_supabase)):
 
-    query = await db.execute(select(User).where(User.userId == animeListUpdate.userId))
-    results = query.scalars().first()
-
-    # watchedList = results.watchedAnime if results.watchedAnime is not None else []
-    # watchingList = results.watchingAnime if results.watchingAnime is not None else []
-
-    #If anime already in watchedList
-    if animeListUpdate.animeId in results.watchedAnime:
+    check_watched = await supabase.table("user_watched_anime").select("*").eq("userId", animeListUpdate.userId).eq("animeId", animeListUpdate.animeId).execute()
+    if check_watched.data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime already in watched list")
     
-    #If anime in watchingList, we are basically removing from watchingList and adding to watchedList
-    if animeListUpdate.animeId in results.watchingAnime:
-        results.watchingAnime.remove(animeListUpdate.animeId)
-
-    results.watchedAnime.append(animeListUpdate.animeId)
-    # results.watchedAnime = watchedList
-
+    await supabase.table("user_watching_anime").delete().eq("userId", animeListUpdate.userId).eq("animeId", animeListUpdate.animeId).execute()
+    
     try:
-        db.add(results)
-        await db.commit()
-        await db.refresh(results)
-
+        await supabase.table("user_watched_anime").insert({"userId": animeListUpdate.userId, "animeId": animeListUpdate.animeId}).execute()
     except Exception as e:
-        print(f"Error adding to watched list for user: {e}") # Log error for debugging
+        print(f"Error adding to watched list for user: {e}") 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be added to watchedlist")
     
     return {'message': "Anime added successfully to watch List"}
 
+
 @app.patch("/add-to-watching-list/", status_code=status.HTTP_200_OK)
-async def add_to_watching_list(animeListUpdate: AnimeListUpdate, db: AsyncSession = Depends(get_db)):
+async def add_to_watching_list(animeListUpdate: AnimeListUpdate, supabase: AsyncClient = Depends(get_supabase)):
 
-    query = await db.execute(select(User).where(User.userId == animeListUpdate.userId))
-    results = query.scalars().first()
-
-    # watchedList = results.watchedAnime if results.watchedAnime is not None else []
-    # watchingList = results.watchingAnime if results.watchingAnime is not None else []
-
-    #If anime already in watchedList
-    if animeListUpdate.animeId in results.watchingAnime:
+    check_watching = await supabase.table("user_watching_anime").select("*").eq("userId", animeListUpdate.userId).eq("animeId", animeListUpdate.animeId).execute()
+    if check_watching.data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime already in watching list")
     
-    #If anime in watchingList, we are basically removing from watchingList and adding to watchedList
-    if animeListUpdate.animeId in results.watchedAnime:
-        results.watchedAnime.remove(animeListUpdate.animeId)
-
-    results.watchingAnime.append(animeListUpdate.animeId)
-    # results.watchingAnime = watchingList
-
+    await supabase.table("user_watched_anime").delete().eq("userId", animeListUpdate.userId).eq("animeId", animeListUpdate.animeId).execute()
+    
     try:
-        db.add(results)
-        await db.commit()
-        await db.refresh(results)
-
+        await supabase.table("user_watching_anime").insert({"userId": animeListUpdate.userId, "animeId": animeListUpdate.animeId}).execute()
     except Exception as e:
-        print(f"Error adding to watching list for user {animeListUpdate.userId}: {e}") # Log error for debugging
+        print(f"Error adding to watching list for user {animeListUpdate.userId}: {e}") 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be added to watching list")
     
     return {'message': "Anime added successfully to watching List"}
 
 
 @app.patch("/remove-from-watched-list/", status_code=status.HTTP_200_OK)
-async def remove_from_watched_list(animeListUpdate: AnimeListUpdate, db: AsyncSession = Depends(get_db)):
+async def remove_from_watched_list(animeListUpdate: AnimeListUpdate, supabase: AsyncClient = Depends(get_supabase)):
 
-    query = await db.execute(select(User).where(User.userId == animeListUpdate.userId))
-    results = query.scalars().first()
-
-    # watchedList = results.watchedAnime if results.watchedAnime is not None else []
-
-    #If anime already in watchedList
-    if animeListUpdate.animeId in results.watchedAnime:
-        results.watchedAnime.remove(animeListUpdate.animeId)
-        # results.watchedAnime = watchedList
-    
-    else:
+    check_watched = await supabase.table("user_watched_anime").select("*").eq("userId", animeListUpdate.userId).eq("animeId", animeListUpdate.animeId).execute()
+    if not check_watched.data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime not in watched list")
 
     try:
-        db.add(results)
-        await db.commit()
-        await db.refresh(results)
-
+        await supabase.table("user_watched_anime").delete().eq("userId", animeListUpdate.userId).eq("animeId", animeListUpdate.animeId).execute()
     except Exception as e:
-        print(f"Error adding to watching list for user {animeListUpdate.userId}: {e}") # Log error for debugging
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be removed to watching list")
+        print(f"Error removing from watched list for user {animeListUpdate.userId}: {e}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be removed from watched list")
     
     return {'message': "Anime removed successfully from watched List"}
 
 
 @app.patch("/remove-from-watching-list/", status_code=status.HTTP_200_OK)
-async def remove_from_watching_list(animeListUpdate: AnimeListUpdate, db: AsyncSession = Depends(get_db)):
+async def remove_from_watching_list(animeListUpdate: AnimeListUpdate, supabase: AsyncClient = Depends(get_supabase)):
 
-    query = await db.execute(select(User).where(User.userId == animeListUpdate.userId))
-    results = query.scalars().first()
-
-    # watchingList = results.watchingAnime if results.watchingAnime is not None else []
-
-    #If anime already in watchedList
-    if animeListUpdate.animeId in results.watchingAnime:
-       results.watchingAnime.remove(animeListUpdate.animeId)
-    
-    else:
+    check_watching = await supabase.table("user_watching_anime").select("*").eq("userId", animeListUpdate.userId).eq("animeId", animeListUpdate.animeId).execute()
+    if not check_watching.data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime not in watching list")
 
     try:
-        db.add(results)
-        await db.commit()
-        await db.refresh(results)
-
+        await supabase.table("user_watching_anime").delete().eq("userId", animeListUpdate.userId).eq("animeId", animeListUpdate.animeId).execute()
     except Exception as e:
-        print(f"Error adding to watching list for user {animeListUpdate.userId}: {e}") # Log error for debugging
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be removed to watching list")
+        print(f"Error removing from watching list for user {animeListUpdate.userId}: {e}") 
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be removed from watching list")
     
     return {'message': "Anime removed successfully from watching List"}
 
 
 #User Profile API
 @app.get('/profile/{user_id}', status_code=status.HTTP_200_OK)
-async def user_profile(user_id: int, db: AsyncSession = Depends(get_db)):
+async def user_profile(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
 
-    query = await db.execute(select(User).where(User.userId == user_id))
-    result = query.scalars().first()
+    response = await supabase.table("users").select("*, user_watched_anime(animeId, anime(*)), user_watching_anime(animeId, anime(*))").eq("userId", user_id).execute()
+    data = response.data
 
-    if result is None:
+    if not data:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"User not found")
     
+    result = data[0]
 
-    query2 = await db.execute(select(Anime).where(Anime.animeId.in_(result.watchedAnime)))
-    result2 = query2.scalars().all()
+    watchedList = [
+        AnimesForUserProfile(
+            animeId=item["anime"]["animeId"],
+            animeName=item["anime"]["animeName"],
+            image_url_base_anime=item["anime"].get("image_url_base_anime"),
+        ) for item in result.get("user_watched_anime", []) if item.get("anime")
+    ]
 
-    watchedList = []
-
-    for item in result2:
-
-        watchedList.append(
-
-            AnimesForUserProfile(
-
-                animeId=item.animeId,
-                animeName=item.animeName,
-                image_url_base_anime=item.image_url_base_anime,
-            )
-        )
-
-    query3 = await db.execute(select(Anime).where(Anime.animeId.in_(result.watchingAnime)))
-    result3 = query3.scalars().all()
-
-    watchingList = []
-    for item in result3:
-        watchingList.append(
-
-            AnimesForUserProfile(
-
-                animeId=item.animeId,
-                animeName=item.animeName,
-                image_url_base_anime=item.image_url_base_anime,
-            )
-        )
+    watchingList = [
+        AnimesForUserProfile(
+            animeId=item["anime"]["animeId"],
+            animeName=item["anime"]["animeName"],
+            image_url_base_anime=item["anime"].get("image_url_base_anime"),
+        ) for item in result.get("user_watching_anime", []) if item.get("anime")
+    ]
 
     userProfileObj = UserProfile(
-
-        userId = result.userId,
-        userName = result.userName,
-        email = result.email,
-        profilePicture=result.profilePicture,
+        userId = result["userId"],
+        userName = result["userName"],
+        email = result["email"],
+        profilePicture=result.get("profilePicture", ""),
         watchedAnime=watchedList,
         watchingAnime=watchingList,
     )

@@ -1,149 +1,109 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { getAnimeWithFilters, getAllGenres } from '../api';
+import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Sparkles, Star, Search } from 'lucide-react';
+
+// Animation variants
+const floatingVariants = {
+  animate: {
+    y: [0, -20, 0],
+    rotate: [0, 5, -5, 0],
+    transition: {
+      duration: 5,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }
+  }
+};
 
 function HomePage() {
   const { userId } = useAuth();
-  const [animeList, setAnimeList] = useState([]);
-  const [allGenres, setAllGenres] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  // Dashboard filter state
-  const [selectedGenre, setSelectedGenre] = useState(''); // "" for all genres
-
-  // useCallback to memoize the fetch function to prevent unnecessary re-renders
-  const fetchAnime = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      // UPDATED: Only pass userId and selectedGenre
-      const data = await getAnimeWithFilters({
-        userId: userId,
-        genreId: selectedGenre,
-      });
-      setAnimeList(data);
-    } catch (err) {
-      setError(err.message || 'Failed to fetch anime.');
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, selectedGenre]); // Dependencies for useCallback
-
-  useEffect(() => {
-    // Fetch genres once when component mounts
-    const fetchGenres = async () => {
-      try {
-        const data = await getAllGenres();
-        setAllGenres(data);
-      } catch (err) {
-        console.error("Failed to fetch genres:", err);
-      }
-    };
-    fetchGenres();
-  }, []);
-
-  // Fetch anime whenever filter parameters or userId change
-  useEffect(() => {
-    fetchAnime();
-  }, [fetchAnime]); // Dependency on fetchAnime callback
-
-  const handleClearFilters = () => {
-    setSelectedGenre('');
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-anime-accent text-xl">Loading anime dashboard...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center p-4 text-anime-error text-xl">
-        {error}
-        {!userId && (
-          <p className="mt-2">
-            Consider <Link to="/signup" className="text-anime-accent hover:underline">signing up</Link> or{' '}
-            <Link to="/login" className="text-anime-accent hover:underline">logging in</Link> for personalized recommendations!
-          </p>
-        )}
-      </div>
-    );
-  }
 
   return (
-    <div className="py-8">
-      <h2 className="text-4xl font-bold text-anime-accent text-center mb-10">
-        {userId ? 'Your Personalized Anime Dashboard' : 'Explore Anime'}
-      </h2>
+    <div className="relative min-h-screen pb-16 overflow-hidden">
+      {/* Dynamic Background Elements (Parallax illusion) */}
+      <motion.div variants={floatingVariants} animate="animate" className="absolute top-20 left-10 text-kawaii-secondary opacity-50 z-0">
+        <Sparkles size={64} />
+      </motion.div>
+      <motion.div variants={floatingVariants} animate="animate" transition={{ delay: 1, duration: 6, repeat: Infinity }} className="absolute top-60 right-20 text-kawaii-tertiary opacity-40 z-0">
+        <Star size={80} fill="currentColor" />
+      </motion.div>
+      <motion.div variants={floatingVariants} animate="animate" transition={{ delay: 2, duration: 7, repeat: Infinity }} className="absolute bottom-40 left-1/4 text-kawaii-accent opacity-30 z-0">
+        <Sparkles size={100} />
+      </motion.div>
 
-      {/* Interactive Controls */}
-      <div className="bg-anime-card p-6 rounded-lg shadow-xl mb-8 flex flex-wrap justify-center items-center gap-4 border border-anime-border">
-        {/* Genre Filter */}
-        <select
-          value={selectedGenre}
-          onChange={(e) => setSelectedGenre(e.target.value)}
-          className="p-2 rounded-md bg-anime-bg border border-anime-border text-anime-text-light focus:outline-none focus:ring-2 focus:ring-anime-accent"
+      <div className="container mx-auto relative z-10 pt-10 px-4">
+        {/* Hero Section */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, type: "spring", bounce: 0.4 }}
+          className="text-center mb-16"
         >
-          <option value="">All Genres</option>
-          {allGenres.map((genre) => (
-            <option key={genre.genreId} value={genre.genreId}>
-              {genre.name}
-            </option>
-          ))}
-        </select>
-
-        {/* Clear Filters Button */}
-        <button
-          onClick={handleClearFilters}
-          className="bg-anime-border hover:bg-anime-accent-dark text-anime-text-light font-bold py-2 px-4 rounded transition duration-300 ease-in-out shadow-md"
-        >
-          Clear Filter
-        </button>
-      </div>
-
-      {/* Anime Display Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {animeList.length > 0 ? (
-          animeList.map((anime) => (
-            <Link to={`/anime/details/${anime.title}`} key={anime.animeId} className="block">
-              <div className="bg-anime-card rounded-lg shadow-xl overflow-hidden transform hover:scale-105 transition duration-300 ease-in-out border border-anime-border h-full flex flex-col">
-                <img
-                  src={anime.image_url || 'https://via.placeholder.com/200x280?text=No+Image'}
-                  alt={anime.title}
-                  className="w-full h-72 object-cover object-center flex-shrink-0"
-                />
-                <div className="p-4 flex-grow flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-xl font-semibold text-anime-accent mb-2 truncate">
-                      {anime.title}
-                    </h3>
-                    <p className="text-anime-text-light text-sm">
-                      Genre: {anime.genre?.name || 'N/A'}
-                    </p>
-                    <p className="text-anime-text-light text-sm">
-                      Episodes: {anime.episodes}
-                    </p>
-                    <p className="text-anime-text-light text-sm">
-                      Year: {anime.year}
-                    </p>
-                  </div>
-                  <div className="mt-2 text-anime-text-light text-sm">
-                    Rating: {anime.rating ? `${anime.rating.toFixed(1)}/5` : 'N/A'}
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))
-        ) : (
-          <p className="text-anime-text-dark text-center text-xl col-span-full">
-            No anime found matching your criteria.
+          <h1 className="text-5xl md:text-7xl font-display font-bold text-kawaii-accent mb-4 drop-shadow-md flex items-center justify-center gap-4">
+            <Sparkles className="text-kawaii-tertiary w-10 h-10 md:w-16 md:h-16" />
+            {userId ? 'Your Dashboard' : 'Explore Anime'}
+            <Sparkles className="text-kawaii-tertiary w-10 h-10 md:w-16 md:h-16" />
+          </h1>
+          <p className="text-lg md:text-xl text-kawaii-text-dark opacity-80 max-w-2xl mx-auto font-medium">
+            Discover your next obsession in a world of endless stories. 🌸
           </p>
-        )}
+        </motion.div>
+
+        {/* About Project Area */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="glass-card p-10 max-w-5xl mx-auto mt-8 text-center"
+        >
+          <h2 className="text-3xl md:text-4xl font-display font-bold text-kawaii-accent mb-6 drop-shadow-md">Welcome to Sensei Suggest</h2>
+          <p className="text-lg md:text-xl text-kawaii-text-dark leading-relaxed mb-8 max-w-3xl mx-auto font-medium">
+            An intelligent anime recommendation engine crafted with a modern, cyberpunk-inspired aesthetic. 
+            We analyze watch history, community ratings, and genre preferences to curate the perfect anime lineup just for you.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+             <div className="p-8 bg-white/5 rounded-2xl border border-white/10 hover:border-kawaii-secondary transition-all hover:-translate-y-2 duration-300 shadow-lg group">
+                <div className="bg-kawaii-secondary/20 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <Star className="w-10 h-10 text-kawaii-secondary" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-wide">Smart Recommendations</h3>
+                <p className="text-base text-kawaii-text-muted">Powered by personalized algorithms to ensure high-quality, tailored suggestions.</p>
+             </div>
+             <div className="p-8 bg-white/5 rounded-2xl border border-white/10 hover:border-kawaii-tertiary transition-all hover:-translate-y-2 duration-300 shadow-lg group">
+                <div className="bg-kawaii-tertiary/20 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <Search className="w-10 h-10 text-kawaii-tertiary" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-wide">Deep Discovery</h3>
+                <p className="text-base text-kawaii-text-muted">Filter through an extensive database of genres and seasons to find hidden masterpieces.</p>
+             </div>
+             <div className="p-8 bg-white/5 rounded-2xl border border-white/10 hover:border-kawaii-accent transition-all hover:-translate-y-2 duration-300 shadow-lg group">
+                <div className="bg-kawaii-accent/20 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <Sparkles className="w-10 h-10 text-kawaii-accent" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 tracking-wide">Premium Experience</h3>
+                <p className="text-base text-kawaii-text-muted">A sleek, fast, and responsive dark-mode interface built to delight the senses.</p>
+             </div>
+          </div>
+          
+          {!userId && (
+            <motion.div 
+               initial={{ opacity: 0 }} 
+               animate={{ opacity: 1 }} 
+               transition={{ delay: 0.5 }}
+               className="mt-14 flex flex-col sm:flex-row justify-center gap-6"
+            >
+               <Link to="/signup" className="px-8 py-3 bg-gradient-to-r from-kawaii-secondary to-kawaii-tertiary text-white rounded-full hover:opacity-90 transition font-bold shadow-kawaii-glow text-lg">
+                 Join the Community
+               </Link>
+               <Link to="/login" className="px-8 py-3 border border-white/20 bg-white/5 text-white rounded-full hover:bg-white/10 transition font-bold backdrop-blur-md text-lg">
+                 Log In
+               </Link>
+            </motion.div>
+          )}
+        </motion.div>
       </div>
     </div>
   );

@@ -1,6 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getUserProfile } from '../api';
+import { motion } from 'framer-motion';
+import { Star, Tv, Award, ListVideo, History, UserCircle, Play } from 'lucide-react';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0, scale: 0.95 },
+  visible: { y: 0, opacity: 1, scale: 1, transition: { type: "spring", stiffness: 100 } }
+};
 
 function UserProfilePage() {
   const { userId } = useParams();
@@ -21,139 +36,177 @@ function UserProfilePage() {
         setLoading(false);
       }
     };
-    
-    if (userId) { 
-      fetchUserProfile();
-    }
-
+    if (userId) fetchUserProfile();
   }, [userId]); 
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-anime-background text-anime-accent text-2xl">
-        Loading user profile...
+      <div className="flex justify-center items-center h-screen bg-anime-background relative overflow-hidden">
+        <motion.div animate={{ rotate: 360, scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+            <Tv className="w-20 h-20 text-anime-accent" />
+        </motion.div>
+        <motion.p animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="absolute mt-32 text-anime-accent font-bold text-xl">Loading Otaku Data...</motion.p>
       </div>
     );
   }
 
-  if (error) {
-    return <div className="text-center p-8 bg-anime-background text-anime-error text-xl h-screen flex items-center justify-center">{error}</div>;
-  }
+  if (error) return <div className="text-center p-8 text-anime-error text-xl h-screen flex items-center justify-center font-bold">{error}</div>;
+  if (!userProfile) return <div className="text-center p-8 text-anime-text-dark text-xl h-screen flex items-center justify-center font-bold">User Not Found in Database.</div>;
 
-  if (!userProfile) {
-    return <div className="text-center p-8 bg-anime-background text-anime-text-dark text-xl h-screen flex items-center justify-center">User not found.</div>;
-  }
+  const profilePicSrc = userProfile.profilePicture || `https://ui-avatars.com/api/?name=${userProfile.userName}&background=9D4EDD&color=fff&size=200`;
 
-  // Fallback for profile picture
-  const profilePicSrc = userProfile.profilePicture || 
-                        `https://ui-avatars.com/api/?name=${userProfile.userName}&background=E94560&color=1a1a2e&size=128`;
-
-  // Component for rendering an individual anime card in the lists
   const AnimeCard = ({ anime }) => (
-    <Link 
-      key={anime.animeId} 
-      to={`/anime/${encodeURIComponent(anime.animeName)}`} 
-      className="block group flex-shrink-0 w-36 sm:w-40 md:w-44 lg:w-48 xl:w-52 transform transition-transform duration-300 hover:scale-105"
-    >
-      <div className="bg-anime-sub-card rounded-lg shadow-md overflow-hidden border border-anime-border flex flex-col h-full">
-        <div className="relative w-full h-48 bg-gray-800 flex items-center justify-center overflow-hidden">
-          {anime.image_url_base_anime ? (
-            <img
-              src={anime.image_url_base_anime}
-              alt={anime.animeName}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-              onError={(e) => {e.target.onerror = null; e.target.src='https://placehold.co/150x200/16213E/E94560?text=No+Image';}}
-            />
-          ) : (
-            <div className="text-gray-500 text-sm flex flex-col items-center justify-center p-4 text-center">
-              <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              <span>Image Unavailable</span>
+    <motion.div variants={itemVariants} className="flex-shrink-0 w-40 sm:w-48 transform">
+      <Link 
+        to={`/anime/${encodeURIComponent(anime.animeName)}`} 
+        className="block group"
+      >
+        <div className="glass-card rounded-2xl shadow-md overflow-hidden border-2 border-white/20 flex flex-col h-full hover:shadow-lg transition-shadow bg-anime-sub-card">
+          <div className="relative w-full h-56 lg:h-64 bg-gray-800 flex items-center justify-center overflow-hidden">
+            {anime.image_url_base_anime ? (
+              <img
+                src={anime.image_url_base_anime}
+                alt={anime.animeName}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                onError={(e) => {e.target.onerror = null; e.target.src='https://placehold.co/150x200/16213E/fff?text=No+Image';}}
+              />
+            ) : (
+              <div className="text-gray-500 text-sm flex flex-col items-center justify-center p-4 text-center">
+                <Play className="w-10 h-10 mb-2 opacity-50" />
+                <span className="font-semibold">No Cover Art</span>
+              </div>
+            )}
+            {/* Play overlay on hover */}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Play className="w-12 h-12 text-white fill-white drop-shadow-md" />
             </div>
-          )}
+          </div>
+          <div className="p-3 bg-anime-sub-card border-t border-white/10">
+            <p className="text-anime-text-light group-hover:text-anime-accent text-sm md:text-base font-bold line-clamp-2 text-center leading-snug">
+              {anime.animeName}
+            </p>
+          </div>
         </div>
-        <div className="p-3 flex-grow flex flex-col justify-between">
-          <p className="text-anime-text-light group-hover:text-anime-accent text-base font-semibold line-clamp-2">
-            {anime.animeName}
-          </p>
-        </div>
-      </div>
-    </Link>
+      </Link>
+    </motion.div>
   );
 
   return (
-    <div className="bg-anime-background min-h-screen py-10 font-inter">
-      <div className="container mx-auto px-4">
-        <div className="bg-anime-card rounded-xl shadow-2xl p-8 md:p-12 border border-anime-border relative overflow-hidden">
-          {/* Background Gradient/Effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-anime-card via-anime-card to-anime-border opacity-70 rounded-xl"></div>
-          <div className="absolute inset-0 bg-pattern-dots opacity-5"></div> {/* Optional: Add a subtle pattern */}
+    <div className="relative min-h-screen py-10 overflow-hidden font-display">
+      {/* Decorative Parallax Backdrops */}
+      <motion.div animate={{ rotate: [0, 360], scale: [1, 1.2, 1] }} transition={{ duration: 30, repeat: Infinity }} className="absolute -top-20 -left-20 w-80 h-80 bg-kawaii-tertiary rounded-full mix-blend-multiply filter blur-3xl opacity-30 pointer-events-none"></motion.div>
+      <motion.div animate={{ rotate: [360, 0], scale: [1, 1.5, 1] }} transition={{ duration: 25, repeat: Infinity }} className="absolute -bottom-20 -right-20 w-96 h-96 bg-kawaii-secondary rounded-full mix-blend-multiply filter blur-3xl opacity-30 pointer-events-none"></motion.div>
 
-          <div className="relative z-10"> {/* Ensure content is above background effects */}
-            {/* Profile Header Section */}
-            <div className="flex flex-col md:flex-row items-center md:justify-between mb-8 md:mb-12">
-              <div className="flex flex-col md:flex-row items-center text-center md:text-left">
-                <img
-                  src={profilePicSrc}
-                  alt={`${userProfile.userName}'s profile`}
-                  className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-anime-accent shadow-lg mb-4 md:mb-0 md:mr-6 transform transition-transform duration-300 hover:scale-105"
-                />
-                <div>
-                  <h2 className="text-4xl md:text-5xl font-extrabold text-anime-accent leading-tight">
-                    {userProfile.userName}'s Profile
-                  </h2>
-                  <p className="text-anime-text-light text-lg mt-2">{userProfile.email}</p>
-                </div>
-              </div>
-              {/* Optional: Add an edit profile button here */}
-              {/* <button className="mt-6 md:mt-0 px-6 py-2 bg-anime-accent text-white rounded-lg font-semibold hover:bg-anime-accent-dark transition duration-300">
-                Edit Profile
-              </button> */}
+      <div className="container mx-auto px-4 relative z-10">
+        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="glass-card rounded-3xl shadow-2xl p-6 md:p-12 border-2 border-white/10">
+          
+          {/* Profile Header */}
+          <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center text-center md:text-left mb-10 pb-8 border-b-2 border-kawaii-border gap-6 sm:gap-10">
+            <div className="relative group">
+              <img
+                src={profilePicSrc}
+                alt={`${userProfile.userName}'s avatar`}
+                className="w-40 h-40 md:w-48 md:h-48 rounded-full object-cover border-8 border-anime-card shadow-kawaii-glow transition-transform duration-500 group-hover:rotate-6"
+              />
+              <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute -bottom-2 -right-2 bg-kawaii-accent text-white p-2 rounded-full shadow-md border-2 border-anime-card">
+                <Medal className="w-6 h-6" />
+              </motion.div>
             </div>
-
-            {/* User Details Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-lg bg-anime-sub-card p-6 rounded-lg border border-anime-border shadow-inner mb-12">
-              {/* Note: Location is removed as per your Pydantic model, add back if needed */}
-              <div className="flex items-center">
-                <span className="font-semibold text-anime-accent mr-2">Anime Watched:</span>
-                <span className="text-anime-text-light font-bold text-xl">{userProfile.anime_watched_count}</span>
-              </div>
-              <div className="flex items-center">
-                <span className="font-semibold text-anime-accent mr-2">Anime Watching:</span>
-                <span className="text-anime-text-light font-bold text-xl">{userProfile.anime_watching_count}</span>
-              </div>
-            </div>
-
-            {/* Watched Anime Section */}
-            <div className="mb-12">
-              <h3 className="text-3xl font-bold text-anime-accent mb-6">Watched Anime:</h3>
-              {userProfile.watchedAnime && userProfile.watchedAnime.length > 0 ? (
-                <div className="flex overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin scrollbar-thumb-anime-accent scrollbar-track-anime-sub-card">
-                  {userProfile.watchedAnime.map((anime) => (
-                    <AnimeCard key={anime.animeId} anime={anime} />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-anime-text-dark text-lg">No watched anime yet. Start exploring!</p>
-              )}
-            </div>
-
-            {/* Watching Anime Section */}
             <div>
-              <h3 className="text-3xl font-bold text-anime-accent mb-6">Watching Anime:</h3>
+              <h2 className="text-5xl md:text-6xl font-extrabold text-kawaii-accent mb-2 drop-shadow-sm flex items-center justify-center md:justify-start gap-2">
+                 {userProfile.userName} <UserCircle className="text-kawaii-tertiary w-8 h-8" />
+              </h2>
+              <p className="text-kawaii-text-muted text-xl font-bold bg-anime-sub-card/50 inline-block px-4 py-1 rounded-full">{userProfile.email}</p>
+            </div>
+          </motion.div>
+
+          {/* Stats Badges */}
+          <motion.div variants={itemVariants} className="flex flex-wrap justify-center md:justify-start gap-4 mb-12">
+            <div className="flex items-center gap-3 bg-anime-card/70 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
+              <History className="text-kawaii-secondary w-8 h-8" />
+              <div>
+                <p className="text-sm font-bold text-kawaii-text-muted uppercase">Anime Completed</p>
+                <p className="text-3xl font-extrabold text-kawaii-text-dark">{userProfile.anime_watched_count || 0}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 bg-anime-card/70 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
+              <ListVideo className="text-kawaii-tertiary w-8 h-8" />
+              <div>
+                <p className="text-sm font-bold text-kawaii-text-muted uppercase">Currently Playing</p>
+                <p className="text-3xl font-extrabold text-kawaii-text-dark">{userProfile.anime_watching_count || 0}</p>
+              </div>
+            </div>
+             <div className="flex items-center gap-3 bg-anime-card/70 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10 shadow-sm hover:shadow-md transition-shadow">
+              <Award className="text-kawaii-accent w-8 h-8" />
+              <div>
+                <p className="text-sm font-bold text-kawaii-text-muted uppercase">Otaku Level</p>
+                <p className="text-3xl font-extrabold text-kawaii-text-dark">{Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Anime Lists */}
+          <motion.div variants={itemVariants} className="space-y-12">
+            
+            {/* Watching List */}
+            <div>
+              <h3 className="text-3xl font-extrabold text-kawaii-accent mb-6 flex items-center gap-3">
+                 <ListVideo className="w-8 h-8"/> Currently Watching
+              </h3>
               {userProfile.watchingAnime && userProfile.watchingAnime.length > 0 ? (
-                <div className="flex overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin scrollbar-thumb-anime-accent scrollbar-track-anime-sub-card">
+                <div className="flex overflow-x-auto pb-6 -mx-4 px-4 gap-6 scrollbar-kawaii snap-x">
                   {userProfile.watchingAnime.map((anime) => (
-                    <AnimeCard key={anime.animeId} anime={anime} />
+                    <div className="snap-start" key={anime.animeId}>
+                       <AnimeCard anime={anime} />
+                    </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-anime-text-dark text-lg">Not watching any anime currently. Find your next obsession!</p>
+                <div className="bg-anime-sub-card/40 border-2 border-dashed border-kawaii-border rounded-2xl p-8 text-center text-kawaii-text-muted font-bold text-lg">
+                  Not watching anything right now. Time to explore! 🗺️
+                </div>
               )}
             </div>
-          </div>
-        </div>
+
+            {/* Watched List */}
+            <div>
+              <h3 className="text-3xl font-extrabold text-kawaii-accent mb-6 flex items-center gap-3">
+                 <History className="w-8 h-8"/> Completed Anime
+              </h3>
+              {userProfile.watchedAnime && userProfile.watchedAnime.length > 0 ? (
+                <div className="flex overflow-x-auto pb-6 -mx-4 px-4 gap-6 scrollbar-kawaii snap-x">
+                  {userProfile.watchedAnime.map((anime) => (
+                    <div className="snap-start" key={anime.animeId}>
+                       <AnimeCard anime={anime} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-anime-sub-card/40 border-2 border-dashed border-kawaii-border rounded-2xl p-8 text-center text-kawaii-text-muted font-bold text-lg">
+                  You haven't completed any anime yet. Get out there! ⚔️
+                </div>
+              )}
+            </div>
+
+          </motion.div>
+
+        </motion.div>
       </div>
     </div>
+  );
+}
+
+// Quick component for the little medal icon since I missed importing it initially
+function Medal(props) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15" />
+      <path d="M11 12 5.12 2.2" />
+      <path d="m13 12 5.88-9.8" />
+      <path d="M8 7h8" />
+      <circle cx="12" cy="17" r="5" />
+      <path d="M12 18v-2h-.5" />
+    </svg>
   );
 }
 

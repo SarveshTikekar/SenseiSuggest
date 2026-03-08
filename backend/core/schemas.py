@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, EmailStr, HttpUrl, ConfigDict, field_validator, model_validator,computed_field
 from typing import List, Optional
 from datetime import datetime
-from .models import Season
+
 #Database Tables
 class LocationTable(BaseModel):
     locationId: int

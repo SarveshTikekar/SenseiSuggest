@@ -81,7 +81,7 @@ const RecommendationPage = () => {
   return (
     <div className="bg-anime-card p-8 rounded-lg shadow-2xl border border-anime-border max-w-7xl mx-auto my-10 font-inter">
       <h2 className="text-5xl font-extrabold text-anime-accent text-center mb-10 tracking-wider">
-        Your Anime Nexus
+        Your Sensei Suggest
       </h2>
 
       {/* Conditional rendering for logged-in vs. logged-out users */}
@@ -123,18 +123,18 @@ const RecommendationPage = () => {
                     >
                       <div className="relative w-44 h-44 flex-shrink-0 mb-4 rounded-md shadow-md border border-anime-border overflow-hidden">
                         <img
-                          src={anime.image_url_base_anime || `https://placehold.co/176x176/16213E/E94560?text=No+Image`}
+                          src={anime.image_url_base_anime || `https://placehold.co/176x176/16213E/9CA3AF?text=No+Image`}
                           alt={anime.animeName || 'Anime Image'}
                           onError={(e) => { 
                             e.target.onerror = null; 
-                            e.target.src=`https://placehold.co/176x176/16213E/E94560?text=Image+Unavailable`; 
+                            e.target.src=`https://placehold.co/176x176/16213E/9CA3AF?text=Image+Unavailable`; 
                           }}
                           className="absolute inset-0 w-full h-full object-cover" 
                         />
                       </div>
 
-                      <h4 className="text-2xl font-bold text-anime-accent mb-2 truncate w-full px-2">{anime.animeName || 'Unknown Anime'}</h4>
-                      <p className="text-anime-text-light text-sm italic mb-2">{anime.studio || 'N/A'}</p>
+                      <h4 className="text-lg font-medium font-sans text-kawaii-text-dark tracking-wide mb-2 truncate w-full px-2">{anime.animeName || 'Unknown Anime'}</h4>
+                      <p className="text-kawaii-text-muted text-sm italic mb-2">{anime.studio || 'N/A'}</p>
                       <p className="text-anime-text-light text-sm line-clamp-3 overflow-hidden text-ellipsis px-2 mb-3">
                         {anime.description ? `${anime.description.substring(0, 120)}${anime.description.length > 120 ? '...' : ''}` : 'No description available.'}
                       </p>
@@ -229,17 +229,17 @@ const RecommendationPage = () => {
                 <div className="flex flex-col md:flex-row items-center bg-anime-bg p-6 rounded-lg border border-anime-border shadow-lg mx-auto max-w-2xl">
                   <div className="relative w-48 h-48 flex-shrink-0 mb-4 md:mb-0 md:mr-6 rounded-md shadow-md border border-anime-border overflow-hidden">
                     <img
-                      src={mostPopularAnime.image_url_base_anime || `https://placehold.co/192x192/16213E/E94560?text=No+Image`}
+                      src={mostPopularAnime.image_url_base_anime || `https://placehold.co/192x192/16213E/9CA3AF?text=No+Image`}
                       alt={mostPopularAnime.animeName || 'Most Popular Anime'}
                       onError={(e) => { 
                         e.target.onerror = null; 
-                        e.target.src=`https://placehold.co/192x192/16213E/E94560?text=Image+Unavailable`; 
+                        e.target.src=`https://placehold.co/192x192/16213E/9CA3AF?text=Image+Unavailable`; 
                       }}
                       className="absolute inset-0 w-full h-full object-cover" 
                     />
                   </div>
                   <div className="text-center md:text-left flex-grow">
-                    <h4 className="text-3xl font-bold text-anime-accent mb-2">{mostPopularAnime.animeName || 'Unknown Anime'}</h4>
+                    <h4 className="text-2xl font-semibold font-sans text-kawaii-text-dark tracking-wide mb-2">{mostPopularAnime.animeName || 'Unknown Anime'}</h4>
                     <p className="text-anime-text-light text-lg mb-2">
                       Release Year: <span className="font-semibold">{mostPopularAnime.releaseDate ? new Date(mostPopularAnime.releaseDate).getFullYear() : 'N/A'}</span>
                     </p>

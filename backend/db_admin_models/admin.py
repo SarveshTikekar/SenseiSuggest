@@ -7,5 +7,3 @@ admin.site.register(Users)
 admin.site.register(Seasons)
 admin.site.register(Ratings)
 admin.site.register(Locations)
-
-# Register your models here.

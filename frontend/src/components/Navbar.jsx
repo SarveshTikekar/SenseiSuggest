@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
-import { getUserProfile } from '../api'; 
+import { getUserProfile } from '../api';
+import { motion } from 'framer-motion';
+import { Sparkles, User, LogOut, LogIn, UserPlus } from 'lucide-react';
 
 function Navbar() {
   const { isAuthenticated, userId, logout, loadingAuth } = useAuth(); 
@@ -38,23 +40,29 @@ function Navbar() {
   };
 
   return (
-    <nav className="bg-anime-navbar p-4 shadow-lg">
-      <div className="container mx-auto flex justify-between items-center">
+    <motion.nav 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 100, damping: 20 }}
+      className="sticky top-0 z-50 p-4"
+    >
+      <div className="container mx-auto flex justify-between items-center glass-card px-6 py-3">
         {/* Logo/Home Link */}
-        <Link to="/" className="text-anime-accent text-2xl font-bold hover:text-anime-accent-dark transition duration-300">
-          AnimeNexus
+        <Link to="/" className="flex items-center gap-2 text-kawaii-accent font-display text-2xl font-bold hover:text-kawaii-accent-dark transition duration-300">
+          <motion.div whileHover={{ rotate: 20, scale: 1.2 }}>
+            <Sparkles className="w-8 h-8 text-kawaii-accent" />
+          </motion.div>
+          Sensei Suggest
         </Link>
 
         {/* Navigation Links */}
-        <div className="flex items-center space-x-6">
-          <Link to="/get_recommendations" className="text-anime-text-dark hover:text-anime-accent transition duration-300">
+        <div className="flex items-center space-x-6 font-semibold">
+          <Link to="/get_recommendations" className="text-kawaii-text-dark hover:text-kawaii-accent transition duration-300 hidden sm:block">
             Recommendations
           </Link>
-          {/* NEW: Browse Anime Link */}
-          <Link to="/all-anime" className="text-anime-text-dark hover:text-anime-accent transition duration-300">
+          <Link to="/all-anime" className="text-kawaii-text-dark hover:text-kawaii-accent transition duration-300 hidden sm:block">
             Browse Anime
           </Link>
-          {/* Add other navigation links here as needed */}
 
           {/* User Authentication / Profile Section */}
           {!loadingAuth && ( 
@@ -62,62 +70,64 @@ function Navbar() {
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
                   {loadingNavProfile ? (
-                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm animate-pulse">
-                      ...
-                    </div>
+                    <div className="w-10 h-10 rounded-full bg-kawaii-bg flex items-center justify-center animate-pulse border-2 border-kawaii-border" />
                   ) : (
                     navUserProfile && navUserProfile.profilePicture ? (
-                      <img
+                      <motion.img
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         src={navUserProfile.profilePicture}
                         alt="Profile"
-                        className="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-anime-accent hover:border-anime-accent-dark transition duration-300"
+                        className="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-kawaii-accent shadow-sm"
                         onClick={handleProfileClick}
                         onError={(e) => { 
                           e.target.onerror = null; 
-                          e.target.src = `https://ui-avatars.com/api/?name=${navUserProfile.userName}&background=E94560&color=1a1a2e&size=128`; 
+                          e.target.src = `https://ui-avatars.com/api/?name=${navUserProfile.userName}&background=FF9EB5&color=fff&size=128`; 
                         }}
                       />
-                    ) : navUserProfile && navUserProfile.userName ? ( 
-                      <img
-                        src={`https://ui-avatars.com/api/?name=${navUserProfile.userName}&background=E94560&color=1a1a2e&size=128`}
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-anime-accent hover:border-anime-accent-dark transition duration-300"
-                        onClick={handleProfileClick}
-                      />
                     ) : (
-                      <div 
-                        className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white text-lg cursor-pointer border-2 border-anime-accent" 
+                      <motion.div 
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="w-10 h-10 rounded-full bg-kawaii-tertiary flex items-center justify-center text-white cursor-pointer border-2 border-kawaii-accent shadow-sm" 
                         onClick={handleProfileClick}
                         title="View Profile"
                       >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                          </svg>
-                      </div>
+                         <User className="w-5 h-5" />
+                      </motion.div>
                     )
                   )}
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={logout}
-                    className="px-4 py-2 bg-anime-accent text-white rounded-md hover:bg-anime-accent-dark transition duration-300"
+                    className="flex items-center gap-2 px-4 py-2 bg-kawaii-error text-white rounded-full hover:bg-red-500 transition duration-300 shadow-md"
                   >
+                    <LogOut className="w-4 h-4" />
                     Logout
-                  </button>
+                  </motion.button>
                 </div>
               ) : (
                 <div className="flex items-center space-x-4">
-                  <Link to="/login" className="px-4 py-2 bg-anime-accent text-white rounded-md hover:bg-anime-accent-dark transition duration-300">
-                    Login
-                  </Link>
-                  <Link to="/signup" className="px-4 py-2 border border-anime-accent text-anime-accent rounded-md hover:bg-anime-accent hover:text-white transition duration-300">
-                    Sign Up
-                  </Link>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link to="/login" className="flex items-center gap-2 px-6 py-2 bg-white/5 border border-white/10 text-white rounded-full hover:bg-white/10 transition duration-300 backdrop-blur-md shadow-sm font-semibold">
+                      <LogIn className="w-4 h-4" />
+                      Login
+                    </Link>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Link to="/signup" className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-kawaii-secondary to-kawaii-tertiary text-white rounded-full hover:opacity-90 transition duration-300 font-bold shadow-kawaii-glow border border-white/20">
+                      <UserPlus className="w-4 h-4" />
+                      Sign Up
+                    </Link>
+                  </motion.div>
                 </div>
               )}
             </>
           )}
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 }
 

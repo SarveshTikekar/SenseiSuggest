@@ -1,42 +1,16 @@
-#Database connection setup using SQLAlchemy (Status: ToDo)
-
 import os
 from dotenv import load_dotenv
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from supabase import create_async_client, AsyncClient
 
 load_dotenv()
 
-DATABASE_URL_for_async_engine = os.getenv("DATABASE_URL_FOR_FASTAPI")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-if not DATABASE_URL_for_async_engine:
-    raise ValueError("DATABASE_URL for async engineis not set")
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("WARNING: SUPABASE_URL and SUPABASE_KEY must be set in .env")
 
-
-postgres_engine = create_async_engine(
-
-    DATABASE_URL_for_async_engine,
-    echo=True,
-    future = True
-)
-
-
-AsyncSessionLocal = async_sessionmaker(
-
-    autocommit = False,
-    autoflush=False,
-    bind = postgres_engine,
-    expire_on_commit = False
-)
-
-Base = declarative_base()
-
-async def get_db():
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        
-        finally:
-            await session.close()
-
+# Supabase AsyncClient
+async def get_supabase() -> AsyncClient:
+    return await create_async_client(SUPABASE_URL, SUPABASE_KEY)
 

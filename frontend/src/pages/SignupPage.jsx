@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { signupUser, getCountries, getStates, getCities } from '../api';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Sparkles, UserPlus, MapPin, Map, Globe2, ShieldCheck, Mail, User } from 'lucide-react';
 
 function SignupPage() {
   const [userName, setUserName] = useState('');
@@ -20,7 +22,6 @@ function SignupPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // --- API Call Logic (Backend-dependent, keeping as is) ---
   useEffect(() => {
     const fetchCountries = async () => {
       try {
@@ -28,7 +29,7 @@ function SignupPage() {
         setCountries(data);
       } catch (err) {
         console.error("Failed to fetch countries:", err);
-        setError("Failed to load countries. Please try again.");
+        setError("Failed to load countries.");
       }
     };
     fetchCountries();
@@ -44,7 +45,6 @@ function SignupPage() {
           setCities([]);
           setCity('');
         } catch (err) {
-          console.error(`Failed to fetch states for ${country}:`, err);
           setStates([]);
           setError(`Failed to load states for ${country}.`);
         }
@@ -59,14 +59,13 @@ function SignupPage() {
   }, [country]);
 
   useEffect(() => {
-    if (state && country) { // Pass country to getCities
+    if (state && country) { 
       const fetchCities = async () => {
         try {
-          const data = await getCities(state, country); // Pass country here
+          const data = await getCities(state, country); 
           setCities(data);
           setCity('');
         } catch (err) {
-          console.error(`Failed to fetch cities for ${state}, ${country}:`, err);
           setCities([]);
           setError(`Failed to load cities for ${state}.`);
         }
@@ -104,9 +103,8 @@ function SignupPage() {
         state,
       });
 
-      setMessage(response.message || 'Signup successful!');
+      setMessage(response.message || 'Account creation successful! 🌸');
 
-      // Clear form fields
       setUserName('');
       setEmail('');
       setPassword('');
@@ -117,10 +115,7 @@ function SignupPage() {
       setStates([]);
       setCities([]);
 
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
-
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
       setError(err.message || 'Failed to sign up. An unexpected error occurred.');
     } finally {
@@ -128,183 +123,114 @@ function SignupPage() {
     }
   };
 
-  // --- Beautification Starts Here ---
-
-  // Common classes for inputs and selects for consistency and cleaner code
   const inputClasses = `
-    shadow-sm appearance-none border border-anime-border rounded-md w-full py-2 px-3
-    text-anime-text-light leading-tight focus:outline-none focus:ring-2
-    focus:ring-anime-accent focus:border-transparent bg-anime-bg
-    transition duration-200 ease-in-out
+    pl-10 shadow-sm appearance-none border-2 border-kawaii-border rounded-xl w-full py-3 px-4
+    text-kawaii-text-dark leading-tight focus:outline-none focus:border-kawaii-accent bg-anime-sub-card/50
+    transition duration-200 ease-in-out font-medium placeholder-gray-400
   `;
 
-  const disabledInputClasses = `
-    disabled:opacity-60 disabled:cursor-not-allowed
-  `;
+  const disabledInputClasses = `disabled:opacity-60 disabled:bg-gray-100 disabled:cursor-not-allowed`;
 
   return (
-    <div className="flex flex-grow items-center justify-center py-8 px-4 bg-anime-bg"> {/* Enhanced main container for centering and background */}
-      <form
+    <div className="relative flex flex-grow items-center justify-center py-10 px-4 min-h-[calc(100vh-100px)] overflow-hidden">
+      {/* Dynamic Background Elements */}
+      <motion.div animate={{ y: [0, -30, 0] }} transition={{ duration: 6, repeat: Infinity }} className="absolute pt-4 top-10 right-10 md:right-32 text-kawaii-accent opacity-30 z-0">
+        <Sparkles size={120} />
+      </motion.div>
+      <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }} className="absolute bottom-10 left-10 md:left-32 text-kawaii-tertiary opacity-40 z-0">
+        <Sparkles size={80} />
+      </motion.div>
+
+      <motion.form
+        initial={{ opacity: 0, scale: 0.95, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 90 }}
         onSubmit={handleSubmit}
-        className="bg-anime-card p-8 rounded-xl shadow-2xl max-w-md w-full
-                   border border-anime-border transform transition-all duration-300
-                   hover:shadow-anime-glow" // Added a subtle hover glow for the card
+        className="glass-card p-8 md:p-10 max-w-lg w-full relative z-10 border-2 border-white/60"
       >
-        <h2 className="text-4xl font-extrabold text-anime-accent text-center mb-8 tracking-wide"> {/* Larger, bolder title */}
-          Join the Anime Community!
+        <div className="flex justify-center mb-6 text-kawaii-accent">
+          <motion.div whileHover={{ scale: 1.2, rotate: 10 }}>
+             <UserPlus size={48} />
+          </motion.div>
+        </div>
+        <h2 className="text-3xl md:text-4xl font-display font-extrabold text-kawaii-text-dark text-center mb-8">
+          Join the Community 🌸
         </h2>
 
         {message && (
-          <p className="bg-anime-success/20 text-anime-success border border-anime-success rounded-md p-3 mb-4 text-center text-base animate-pulse"> {/* Enhanced success message */}
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-green-100 text-green-700 border border-green-300 rounded-lg p-4 mb-6 text-center font-bold">
             {message}
-          </p>
+          </motion.p>
         )}
         {error && (
-          <p className="bg-anime-error/20 text-anime-error border border-anime-error rounded-md p-3 mb-4 text-center text-base animate-bounce-in"> {/* Enhanced error message, maybe an actual bounce-in if you define it in CSS */}
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-red-100 text-red-600 border border-red-300 rounded-lg p-4 mb-6 text-center font-bold">
             {error}
-          </p>
+          </motion.p>
         )}
 
-        <div className="mb-5"> {/* Increased margin-bottom for better spacing */}
-          <label htmlFor="userName" className="block text-anime-text-light text-sm font-medium mb-2"> {/* Slightly adjusted font */}
-            Username:
-          </label>
-          <input
-            type="text"
-            id="userName"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            required
-            className={`${inputClasses}`}
-          />
+        <div className="grid grid-cols-1 gap-5">
+          {/* Identity */}
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5" />
+            <input type="text" id="userName" value={userName} onChange={(e) => setUserName(e.target.value)} required className={inputClasses} placeholder="Username" />
+          </div>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5" />
+            <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClasses} placeholder="Email Address" />
+          </div>
+
+          <h3 className="text-lg font-display font-bold text-kawaii-text-dark mt-4 border-b-2 border-kawaii-border pb-2">Location Zone</h3>
+          
+          <div className="relative">
+             <Globe2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5 z-10 pointer-events-none" />
+             <select id="country" value={country} onChange={(e) => setCountry(e.target.value)} required className={inputClasses}>
+               <option value="" disabled>Select Country Region</option>
+               {countries.map(c => <option key={c} value={c}>{c}</option>)}
+             </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="relative">
+              <Map className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5 z-10 pointer-events-none" />
+              <select id="state" value={state} onChange={(e) => setState(e.target.value)} required disabled={!country || states.length === 0} className={`${inputClasses} ${disabledInputClasses}`}>
+                <option value="" disabled>Select State</option>
+                {states.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5 z-10 pointer-events-none" />
+              <select id="city" value={city} onChange={(e) => setCity(e.target.value)} required disabled={!state || cities.length === 0} className={`${inputClasses} ${disabledInputClasses}`}>
+                <option value="" disabled>Select City</option>
+                {cities.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <h3 className="text-lg font-display font-bold text-kawaii-text-dark mt-4 border-b-2 border-kawaii-border pb-2">Security</h3>
+          <div className="relative">
+            <ShieldCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5" />
+            <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={inputClasses} placeholder="Password" />
+          </div>
+          <div className="relative">
+             <ShieldCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5" />
+            <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={inputClasses} placeholder="Confirm Password" />
+          </div>
         </div>
 
-        <div className="mb-5">
-          <label htmlFor="email" className="block text-anime-text-light text-sm font-medium mb-2">
-            Email:
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className={`${inputClasses}`}
-          />
-        </div>
-
-        <h3 className="text-2xl font-semibold text-anime-text-light mt-8 mb-5 border-b border-anime-border pb-2"> {/* Styled subheading */}
-          Your Location:
-        </h3>
-        <div className="mb-5">
-          <label htmlFor="country" className="block text-anime-text-light text-sm font-medium mb-2">
-            Country:
-          </label>
-          <select
-            id="country"
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            required
-            className={`${inputClasses}`}
-          >
-            <option value="">Select Country</option>
-            {countries.map((c) => (
-              <option key={c} value={c} className="bg-anime-card text-anime-text-light">
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-5">
-          <label htmlFor="state" className="block text-anime-text-light text-sm font-medium mb-2">
-            State:
-          </label>
-          <select
-            id="state"
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-            required
-            disabled={!country || states.length === 0}
-            className={`${inputClasses} ${disabledInputClasses}`}
-          >
-            <option value="">Select State</option>
-            {states.map((s) => (
-              <option key={s} value={s} className="bg-anime-card text-anime-text-light">
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-5">
-          <label htmlFor="city" className="block text-anime-text-light text-sm font-medium mb-2">
-            City:
-          </label>
-          <select
-            id="city"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            required
-            disabled={!state || cities.length === 0}
-            className={`${inputClasses} ${disabledInputClasses}`}
-          >
-            <option value="">Select City</option>
-            {cities.map((c) => (
-              <option key={c} value={c} className="bg-anime-card text-anime-text-light">
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-5">
-          <label htmlFor="password" className="block text-anime-text-light text-sm font-medium mb-2">
-            Password:
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className={`${inputClasses}`}
-          />
-        </div>
-
-        <div className="mb-8"> {/* Increased margin-bottom for spacing before button */}
-          <label htmlFor="confirmPassword" className="block text-anime-text-light text-sm font-medium mb-2">
-            Confirm Password:
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className={`${inputClasses}`}
-          />
-        </div>
-
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           type="submit"
-          className="w-full bg-anime-accent hover:bg-anime-accent-dark text-anime-bg
-                     font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2
-                     focus:ring-anime-accent focus:ring-offset-2 focus:ring-offset-anime-card
-                     transition duration-300 ease-in-out shadow-lg hover:shadow-anime-glow
-                     transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed" // Enhanced button styles
+          className="w-full mt-8 bg-kawaii-accent hover:bg-kawaii-accent-dark text-white font-bold py-3 px-4 rounded-xl shadow-kawaii-soft transition-colors disabled:opacity-50"
           disabled={loading}
         >
-          {loading ? 'Signing Up...' : 'Sign Up'}
-        </button>
+          {loading ? 'Creating Account...' : 'Sign Up'}
+        </motion.button>
 
-        <p className="text-center text-anime-text-dark text-sm mt-6"> {/* Increased margin-top */}
-          Already have an account?{' '}
-          <Link to="/login" className="text-anime-accent hover:underline font-semibold">
-            Log In
-          </Link>
+        <p className="text-center text-kawaii-text-muted text-sm mt-6 font-semibold">
+          Already have an account? <Link to="/login" className="text-kawaii-accent hover:underline font-bold">Log In</Link>
         </p>
-      </form>
+      </motion.form>
     </div>
   );
 }
