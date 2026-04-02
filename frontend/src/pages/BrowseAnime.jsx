@@ -54,7 +54,7 @@ function BrowseAnimePage() {
           No anime found in the database.
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {animeList.map((anime) => (
             <Link to={`/anime/details/${encodeURIComponent(anime.animeName)}`} key={anime.animeId} className="block h-full">
               <motion.div 
@@ -85,17 +85,17 @@ function BrowseAnimePage() {
                       {anime.animeName}
                     </h3>
                     <div className="flex flex-wrap gap-2 mb-3">
-                      <span className="text-xs font-bold px-2 py-1 bg-kawaii-tertiary/20 text-kawaii-tertiary rounded-md">
+                      <span className="tech-label px-2 py-1 bg-kawaii-tertiary/20 text-kawaii-tertiary rounded-md">
                         Anime
                       </span>
-                      <span className="text-xs font-bold px-2 py-1 bg-kawaii-secondary/20 text-[#609ad6] rounded-md">
+                      <span className="tech-label px-2 py-1 bg-kawaii-secondary/20 text-kawaii-secondary rounded-md">
                         N/A
                       </span>
                     </div>
                   </div>
-                  <p className="text-kawaii-text-muted text-sm font-semibold flex items-center justify-between mt-2 pt-3 border-t border-kawaii-border">
+                  <p className="text-kawaii-text-muted text-xs font-bold flex items-center justify-between mt-2 pt-3 border-t border-kawaii-border uppercase tracking-widest">
                     <span>Episodes</span>
-                    <span className="text-kawaii-accent group-hover:underline">View info ➔</span>
+                    <span className="text-kawaii-accent group-hover:underline font-accent uppercase">View info ➔</span>
                   </p>
                 </div>
               </motion.div>

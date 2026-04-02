@@ -33,8 +33,9 @@ export default {
         'anime-sub-card': '#1F2937',
       },
       fontFamily: {
-        'sans': ['Nunito', 'sans-serif'],
-        'display': ['Fredoka', 'sans-serif'],
+        'sans': ['Inter', 'sans-serif'],
+        'display': ['Outfit', 'sans-serif'],
+        'accent': ['Space Grotesk', 'sans-serif'],
       },
       boxShadow: {
         'kawaii-glow': '0 0 20px rgba(255, 46, 147, 0.4)',

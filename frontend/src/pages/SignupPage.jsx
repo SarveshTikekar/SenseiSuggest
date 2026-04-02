@@ -129,7 +129,7 @@ function SignupPage() {
     transition duration-200 ease-in-out font-medium placeholder-gray-400
   `;
 
-  const disabledInputClasses = `disabled:opacity-60 disabled:bg-gray-100 disabled:cursor-not-allowed`;
+  const disabledInputClasses = `disabled:opacity-40 disabled:bg-anime-sub-card/20 disabled:text-kawaii-text-muted disabled:cursor-not-allowed`;
 
   return (
     <div className="relative flex flex-grow items-center justify-center py-10 px-4 min-h-[calc(100vh-100px)] overflow-hidden">

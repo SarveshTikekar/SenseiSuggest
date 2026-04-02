@@ -355,15 +355,14 @@ async def get_cities(stateName: str, supabase: AsyncClient = Depends(get_supabas
 @app.get('/get_states/{countryName}')
 async def get_states(countryName: str, supabase: AsyncClient = Depends(get_supabase)):
     
-    response = await supabase.table("locations").select("state").ilike("country", countryName).execute()
-    states = list(set([item["state"] for item in response.data if item.get("state")]))
+    response = await supabase.table("distinct_country_state_pairs").select("state").ilike("country", countryName).execute()
+    states = list(item["state"] for item in response.data)
     states.sort()
     
     if not states:
         print(f"No states found for country: {countryName}")
         return [] 
-        
-    print(f"Found states for {countryName}: {states}")
+
     return states
 
 @app.get('/get_countries')
@@ -389,6 +388,7 @@ async def add_to_watched_list(animeListUpdate: AnimeListUpdate, supabase: AsyncC
         print(f"Error adding to watched list for user: {e}") 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be added to watchedlist")
     
+    await sync_user_stats(animeListUpdate.userId, supabase)
     return {'message': "Anime added successfully to watch List"}
 
 
@@ -407,6 +407,7 @@ async def add_to_watching_list(animeListUpdate: AnimeListUpdate, supabase: Async
         print(f"Error adding to watching list for user {animeListUpdate.userId}: {e}") 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be added to watching list")
     
+    await sync_user_stats(animeListUpdate.userId, supabase)
     return {'message': "Anime added successfully to watching List"}
 
 
@@ -423,6 +424,7 @@ async def remove_from_watched_list(animeListUpdate: AnimeListUpdate, supabase: A
         print(f"Error removing from watched list for user {animeListUpdate.userId}: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be removed from watched list")
     
+    await sync_user_stats(animeListUpdate.userId, supabase)
     return {'message': "Anime removed successfully from watched List"}
 
 
@@ -439,7 +441,27 @@ async def remove_from_watching_list(animeListUpdate: AnimeListUpdate, supabase: 
         print(f"Error removing from watching list for user {animeListUpdate.userId}: {e}") 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be removed from watching list")
     
+    await sync_user_stats(animeListUpdate.userId, supabase)
     return {'message': "Anime removed successfully from watching List"}
+
+
+async def sync_user_stats(user_id: int, supabase: AsyncClient):
+    """Synchronizes anime_watched_count and anime_watching_count for a user."""
+    try:
+        watched_res = await supabase.table("user_watched_anime").select("animeId", count="exact").eq("userId", user_id).execute()
+        watching_res = await supabase.table("user_watching_anime").select("animeId", count="exact").eq("userId", user_id).execute()
+        
+        watched_count = watched_res.count if watched_res.count is not None else 0
+        watching_count = watching_res.count if watching_res.count is not None else 0
+        
+        await supabase.table("users").update({
+            "anime_watched_count": watched_count,
+            "anime_watching_count": watching_count
+        }).eq("userId", user_id).execute()
+        return True
+    except Exception as e:
+        print(f"Error syncing stats for user {user_id}: {e}")
+        return False
 
 
 #User Profile API

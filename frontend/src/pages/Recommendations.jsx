@@ -113,7 +113,7 @@ const RecommendationPage = () => {
                 No recommendations found for you yet. Rate more anime to help us understand your tastes!
               </p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {recommendedAnimeDetails.map((anime, index) => (
                   anime ? (
                     <div 
@@ -133,16 +133,16 @@ const RecommendationPage = () => {
                         />
                       </div>
 
-                      <h4 className="text-lg font-medium font-sans text-kawaii-text-dark tracking-wide mb-2 truncate w-full px-2">{anime.animeName || 'Unknown Anime'}</h4>
-                      <p className="text-kawaii-text-muted text-sm italic mb-2">{anime.studio || 'N/A'}</p>
-                      <p className="text-anime-text-light text-sm line-clamp-3 overflow-hidden text-ellipsis px-2 mb-3">
+                      <h4 className="text-lg font-display font-extrabold text-kawaii-text-dark tracking-tight mb-1 truncate w-full px-2">{anime.animeName || 'Unknown Anime'}</h4>
+                      <p className="tech-label text-kawaii-text-muted mb-3 italic">{anime.studio || 'N/A'}</p>
+                      <p className="text-kawaii-text-light text-sm line-clamp-3 overflow-hidden text-ellipsis px-2 mb-4 leading-relaxed opacity-80">
                         {anime.description ? `${anime.description.substring(0, 120)}${anime.description.length > 120 ? '...' : ''}` : 'No description available.'}
                       </p>
-                      <div className="mt-auto text-sm text-anime-text-dark w-full">
-                        <p className="bg-anime-border rounded-sm px-3 py-1 mb-1 inline-block"> 
-                          <strong>Genres:</strong> {anime.genres && anime.genres.length > 0 ? anime.genres.map(g => `G${g}`).join(', ') : 'N/A'}
+                      <div className="mt-auto text-[10px] font-black uppercase tracking-widest text-kawaii-text-muted w-full border-t border-kawaii-border pt-3">
+                        <p className="bg-kawaii-tertiary/10 text-kawaii-tertiary rounded-md px-2 py-0.5 mb-2 inline-block"> 
+                          {anime.genres && anime.genres.length > 0 ? anime.genres.map(g => `G${g}`).join(', ') : 'N/A'}
                         </p>
-                        <p><strong>Release:</strong> {anime.releaseDate ? new Date(anime.releaseDate).getFullYear() : 'N/A'}</p>
+                        <p className="block">Release: <span className="text-kawaii-text-dark">{anime.releaseDate ? new Date(anime.releaseDate).getFullYear() : 'N/A'}</span></p>
                       </div>
                     </div>
                   ) : (

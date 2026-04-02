@@ -189,88 +189,98 @@ function AnimeDetailPage() {
               animate="visible"
               className="max-w-6xl mx-auto glass-card rounded-3xl shadow-2xl p-6 md:p-10 border-2 border-white/60 relative z-10"
             >
-                <motion.h1 variants={itemVariants} className="text-4xl md:text-5xl font-display font-extrabold text-kawaii-accent text-center mb-10 drop-shadow-sm flex items-center justify-center gap-3">
-                    <Sparkles className="text-kawaii-tertiary" />
+                <motion.h1 
+                  variants={itemVariants} 
+                  className="text-3xl md:text-5xl font-display font-extrabold text-kawaii-text-dark text-center mb-4 drop-shadow-sm flex items-center justify-center gap-3"
+                >
+                    <Sparkles className="text-kawaii-tertiary w-6 h-6 md:w-10 md:h-10" />
                     {anime.animeName}
-                    <Sparkles className="text-kawaii-tertiary" />
+                    <Sparkles className="text-kawaii-tertiary w-6 h-6 md:w-10 md:h-10" />
                 </motion.h1>
+
+                {/* Status Reflection Badge */}
+                <motion.div variants={itemVariants} className="flex justify-center mb-10">
+                   {animeStatus === 'watching' ? (
+                       <span className="flex items-center gap-2 px-4 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-full font-accent text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] shadow-lg animate-pulse-gentle">
+                          <Zap size={14} className="fill-blue-500/20" /> IN ACTION
+                       </span>
+                   ) : animeStatus === 'watched' ? (
+                       <span className="flex items-center gap-2 px-4 py-1.5 bg-kawaii-accent/10 border border-kawaii-accent/30 rounded-full font-accent text-[10px] font-black text-kawaii-accent uppercase tracking-[0.2em] shadow-lg">
+                          <Medal size={14} className="fill-kawaii-accent/20" /> MASTERED
+                       </span>
+                   ) : null}
+                </motion.div>
 
                 <div className="md:flex gap-12">
                     {/* Left Column: Image & Details */}
                     <div className="md:w-1/3 flex flex-col items-center">
-                        <motion.div variants={itemVariants} className="relative w-full max-w-sm rounded-2xl overflow-hidden shadow-kawaii-glow border-4 border-white mb-8 group">
+                        <motion.div variants={itemVariants} className="relative w-full max-w-sm rounded-[2rem] overflow-hidden shadow-kawaii-glow border-4 border-white/60 mb-8 group">
                             <img
-                                src={anime.image_url_base_anime || 'https://placehold.co/400x560/16213E/9CA3AF?text=No+Image'}
+                                src={anime.image_url_base_anime || '/placeholder.png'}
                                 alt={anime.animeName}
-                                className="w-full h-auto object-cover transform transition-transform duration-500 group-hover:scale-110"
+                                className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-110"
+                                onError={(e) => {e.target.onerror = null; e.target.src='/placeholder.png';}}
                             />
                             {/* Floating Rating Badge */}
-                            <div className="absolute top-4 right-4 bg-anime-card/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg flex items-center gap-2 font-bold text-kawaii-accent-dark">
-                                <Star className="w-5 h-5 fill-kawaii-accent-dark" />
+                            <div className="absolute top-4 right-4 bg-anime-card/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 font-accent text-xs font-black text-kawaii-accent-dark">
+                                <Star className="w-4 h-4 fill-kawaii-accent-dark" />
                                 {anime.rating ? anime.rating.toFixed(1) : 'N/A'}
                             </div>
                         </motion.div>
 
-                        {/* List Management (Moved under image for better flow) */}
-                        <AnimatePresence>
-                          {userId && (
-                            <motion.div variants={itemVariants} className="w-full bg-anime-card/60 p-6 rounded-2xl border border-kawaii-border shadow-sm mb-8 text-center backdrop-blur-sm">
-                                <p className="text-sm font-bold text-kawaii-text-muted uppercase tracking-wider mb-2 flex items-center justify-center gap-2">
-                                     <Sparkles className="w-4 h-4" /> Global Score
-                                </p>
-                                <div className="text-5xl font-extrabold text-kawaii-text-dark drop-shadow-sm">
-                                    {anime.rating ? anime.rating.toFixed(1) : '-'}
-                                </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-
-                        {/* List Management (Moved under image for better flow) */}
-                        <AnimatePresence>
-                          {userId && (
-                            <motion.div variants={itemVariants} className="w-full bg-anime-card/60 p-6 rounded-2xl border border-kawaii-border shadow-sm mb-8 flex flex-col gap-3">
-                                <h3 className="text-xl font-display font-bold text-kawaii-accent mb-4">Your Library</h3>
-                                <div className="flex flex-col gap-3">
-                                    {animeStatus === 'none' && (
-                                        <>
-                                            <button onClick={() => handleAddToList('watching')} disabled={processingListAction} className="btn-kawaii bg-blue-400 hover:bg-blue-500 flex justify-center items-center gap-2 text-white font-bold py-2 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-md">
-                                                <Eye className="w-5 h-5" /> Start Watching
-                                            </button>
-                                            <button onClick={() => handleAddToList('watched')} disabled={processingListAction} className="btn-kawaii bg-green-400 hover:bg-green-500 flex justify-center items-center gap-2 text-white font-bold py-2 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-md">
-                                                <CheckCircle className="w-5 h-5" /> Completed
-                                            </button>
-                                        </>
-                                    )}
-
-                                    {animeStatus === 'watching' && (
-                                        <>
-                                            <button onClick={() => handleAddToList('watched')} disabled={processingListAction} className="btn-kawaii bg-green-400 hover:bg-green-500 flex justify-center items-center gap-2 text-white font-bold py-2 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-md">
-                                                <CheckCircle className="w-5 h-5" /> Mark as Completed
-                                            </button>
-                                            <button onClick={() => handleRemoveFromList('watching')} disabled={processingListAction} className="btn-kawaii bg-kawaii-error hover:bg-red-500 flex justify-center items-center gap-2 text-white font-bold py-2 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-md">
-                                                <MinusCircle className="w-5 h-5" /> Remove from Library
-                                            </button>
-                                        </>
-                                    )}
-
-                                    {animeStatus === 'watched' && (
-                                        <>
-                                            <button onClick={() => handleAddToList('watching')} disabled={processingListAction} className="btn-kawaii bg-blue-400 hover:bg-blue-500 flex justify-center items-center gap-2 text-white font-bold py-2 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-md">
-                                                <Eye className="w-5 h-5" /> Rewatch
-                                            </button>
-                                            <button onClick={() => handleRemoveFromList('watched')} disabled={processingListAction} className="btn-kawaii bg-kawaii-error hover:bg-red-500 flex justify-center items-center gap-2 text-white font-bold py-2 rounded-xl transition-transform hover:scale-105 active:scale-95 shadow-md">
-                                                <MinusCircle className="w-5 h-5" /> Remove from Log
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
+                        {/* Smart Action Center */}
+                        <AnimatePresence mode="wait">
+                          <motion.div 
+                             key={animeStatus}
+                             initial={{ opacity: 0, y: 10 }}
+                             animate={{ opacity: 1, y: 0 }}
+                             exit={{ opacity: 0, y: -10 }}
+                             variants={itemVariants} 
+                             className="w-full bg-anime-card/40 p-1 rounded-2xl border border-white/10 shadow-sm mb-8 flex flex-col gap-2 overflow-hidden"
+                          >
+                                {animeStatus === 'none' ? (
+                                    <div className="flex flex-col gap-2 p-4">
+                                        <button onClick={() => handleAddToList('watching')} disabled={processingListAction} className="group relative overflow-hidden bg-blue-500 rounded-xl px-4 py-3 flex items-center justify-center gap-3 transition-all hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+                                            <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                                            <Eye className="w-5 h-5 text-white" />
+                                            <span className="font-accent text-xs font-black text-white uppercase tracking-wider">Start Watching</span>
+                                        </button>
+                                        <button onClick={() => handleAddToList('watched')} disabled={processingListAction} className="group relative overflow-hidden bg-kawaii-accent rounded-xl px-4 py-3 flex items-center justify-center gap-3 transition-all hover:shadow-[0_0_20px_rgba(255,46,147,0.5)]">
+                                            <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                                            <CheckCircle className="w-5 h-5 text-white" />
+                                            <span className="font-accent text-xs font-black text-white uppercase tracking-wider">Mark as Completed</span>
+                                        </button>
+                                    </div>
+                                ) : animeStatus === 'watching' ? (
+                                    <div className="p-4 flex flex-col gap-2">
+                                        <button onClick={() => handleAddToList('watched')} disabled={processingListAction} className="group relative overflow-hidden bg-kawaii-accent rounded-xl px-4 py-3 flex items-center justify-center gap-3 transition-all hover:shadow-kawaii-glow">
+                                            <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                                            <CheckCircle className="w-5 h-5 text-white" />
+                                            <span className="font-accent text-xs font-black text-white uppercase tracking-wider">Finish & Rank</span>
+                                        </button>
+                                        <button onClick={() => handleRemoveFromList('watching')} disabled={processingListAction} className="bg-anime-sub-card/60 hover:bg-red-500/20 text-kawaii-error font-accent text-[10px] font-black uppercase py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                            <MinusCircle className="w-4 h-4" /> Drop from Current List
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="p-4 flex flex-col gap-2">
+                                        <button onClick={() => handleAddToList('watching')} disabled={processingListAction} className="group relative overflow-hidden bg-blue-500 rounded-xl px-4 py-3 flex items-center justify-center gap-3 transition-all hover:shadow-[0_0_15px_rgba(59,130,246,0.4)]">
+                                            <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                                            <History className="w-5 h-5 text-white" />
+                                            <span className="font-accent text-xs font-black text-white uppercase tracking-wider">Start Rewatching</span>
+                                        </button>
+                                        <button onClick={() => handleRemoveFromList('watched')} disabled={processingListAction} className="bg-anime-sub-card/60 hover:bg-red-500/20 text-kawaii-error font-accent text-[10px] font-black uppercase py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                            <MinusCircle className="w-4 h-4" /> Reset Achievement
+                                        </button>
+                                    </div>
+                                )}
+                                
                                 {listActionMessage && (
-                                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`text-sm mt-4 font-bold ${listActionMessage.includes('Failed') ? 'text-kawaii-error' : 'text-green-500'}`}>
+                                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`text-[10px] pb-4 px-4 font-black uppercase text-center tracking-tighter ${listActionMessage.includes('Failed') ? 'text-kawaii-error' : 'text-green-400'}`}>
                                         {listActionMessage}
                                     </motion.p>
                                 )}
-                            </motion.div>
-                          )}
+                          </motion.div>
                         </AnimatePresence>
                     </div>
 
