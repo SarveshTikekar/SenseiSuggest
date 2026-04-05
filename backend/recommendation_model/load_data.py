@@ -1,15 +1,11 @@
-import django
 import pandas as pd
 import os
-import sys 
+import sys
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PROJECT_ROOT)
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-django.setup()
 
 load_dotenv()
 

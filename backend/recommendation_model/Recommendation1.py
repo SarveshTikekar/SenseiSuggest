@@ -5,14 +5,11 @@ Anime A, would be recommended anime B as well
 """
 
 from sklearn.metrics.pairwise import cosine_similarity
-import os, django, sys, ast
+import os, sys, ast
 import pandas as pd
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PROJECT_ROOT)
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-django.setup()
 
 def collaborative_recommender(user_id, ratings_df, anime_df, number_of_recommendations):
     

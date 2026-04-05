@@ -1,14 +1,12 @@
 """ Recommendation method 2: Using Association Rule Mining using watched Anime list of user as well as watching Anime List"""
 
-import os, sys, django, ast
+import os, sys, ast
 import pandas as pd
 from mlxtend.frequent_patterns import association_rules, apriori
 from mlxtend.preprocessing import TransactionEncoder
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(PROJECT_ROOT)
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 #Use a transaction encoder to transform the lists into transaction matrix, where transc is row and all animeIds are columns
 

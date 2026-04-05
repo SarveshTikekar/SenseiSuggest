@@ -1,11 +1,6 @@
 import os
-from django.conf import settings
-import django 
 import pandas as pd
 import ast
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-django.setup()
 
 def process_data(ratings_df, anime_df, users_df, locations_df, genres_df, seasons_df):
 
