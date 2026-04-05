@@ -30,13 +30,14 @@ origins = [
 app.add_middleware(
 
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials = True,
-    allow_methods = ["*"],
-    allow_headers = ["*"],
+    allow_origins=["*"] if os.environ.get("VERCEL") == "1" else origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 load_dotenv()
+IS_PROD = os.environ.get("VERCEL") == "1"
 ADMIN_ID = os.environ.get("ADMIN_ID")
 
 """User APIs are declared here """

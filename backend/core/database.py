@@ -12,5 +12,11 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 # Supabase AsyncClient
 async def get_supabase() -> AsyncClient:
-    return await create_async_client(SUPABASE_URL, SUPABASE_KEY)
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return await create_async_client("MISSING", "MISSING") # Will fail gracefully later
+    try:
+        return await create_async_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception as e:
+        print(f"Error connecting to Supabase: {e}")
+        raise e
 
