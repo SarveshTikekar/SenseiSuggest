@@ -214,11 +214,18 @@ function AnimeDetailPage() {
                 <div className="md:flex gap-12">
                     {/* Left Column: Image & Details */}
                     <div className="md:w-1/3 flex flex-col items-center">
-                        <motion.div variants={itemVariants} className="relative w-full max-w-sm rounded-[2rem] overflow-hidden shadow-kawaii-glow border-4 border-white/60 mb-8 group">
+                        <motion.div variants={itemVariants} className="relative w-full max-w-sm max-h-[500px] rounded-[2rem] overflow-hidden shadow-kawaii-glow border-4 border-white/60 mb-8 group bg-anime-bg flex items-center justify-center transition-all">
+                            {/* High-Vibrancy Ambient Backdrop */}
+                            <img
+                                src={anime.image_url_base_anime || ''}
+                                className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-50 scale-150 pointer-events-none"
+                                alt=""
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-anime-bg/40 via-transparent to-anime-bg/20 z-0"></div>
                             <img
                                 src={anime.image_url_base_anime || '/placeholder.png'}
                                 alt={anime.animeName}
-                                className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-110"
+                                className="relative z-10 w-full h-auto max-h-[500px] object-contain transform transition-transform duration-700 group-hover:scale-105 shadow-2xl"
                                 onError={(e) => {e.target.onerror = null; e.target.src='/placeholder.png';}}
                             />
                             {/* Floating Rating Badge */}

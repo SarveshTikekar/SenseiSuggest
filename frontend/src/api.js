@@ -225,3 +225,16 @@ export const getUserProfile = async(user_id) => {
   return fetchData(`${API_BASE_URL}/profile/${user_id}`);
   
 }
+export const updateWatchList = async (userId, animeId, status) => {
+  const endpoint = status === 'watched' ? 'add-to-watched-list/' : 'add-to-watching-list/';
+  return fetchData(`${API_BASE_URL}/${endpoint}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      userId: userId,
+      animeId: animeId
+    }),
+  });
+};

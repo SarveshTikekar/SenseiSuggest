@@ -62,11 +62,18 @@ function BrowseAnimePage() {
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="glass-card overflow-hidden h-full flex flex-col group relative border border-white/10 shadow-lg hover:shadow-kawaii-glow"
               >
-                <div className="relative overflow-hidden w-full h-80">
+                <div className="relative overflow-hidden w-full max-h-[250px] bg-anime-bg flex items-center justify-center group-hover:shadow-[0_0_30px_rgba(0,0,0,0.5)] transition-all">
+                  {/* High-Vibrancy Ambient Backdrop */}
+                  <img 
+                    src={anime.image_url_base_anime || ''} 
+                    className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-60 scale-150 pointer-events-none"
+                    alt=""
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-anime-bg/80 via-transparent to-anime-bg/20 z-0"></div>
                   <img
                     src={anime.image_url_base_anime || 'https://placehold.co/200x280/16213E/9CA3AF?text=No+Image'}
                     alt={anime.animeName}
-                    className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
+                    className="relative z-10 w-full h-auto max-h-[250px] object-contain group-hover:scale-105 transition-transform duration-700 shadow-2xl"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = 'https://placehold.co/200x280/16213E/9CA3AF?text=Image+Missing';

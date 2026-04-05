@@ -21,10 +21,10 @@ app = FastAPI(
 #Defined origins from where req would be sent / recieved
 
 origins = [
-
-    "https://localhost",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://sensei-suggest.vercel.app",
+    "https://sensei-suggest-git-main-sarveshtikekar.vercel.app"
 ]
 
 app.add_middleware(
