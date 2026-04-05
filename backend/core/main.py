@@ -7,7 +7,7 @@ from .utils import password_verifier, argon2_pwd_hasher, generate_uuid
 from dotenv import load_dotenv
 import os
 import json
-from recommendation_model.main_ml_model import main_recommendation_model
+from backend.recommendation_model.main_ml_model import main_recommendation_model
 
 #Testing if application is working
 app = FastAPI(
