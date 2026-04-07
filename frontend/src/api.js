@@ -43,6 +43,22 @@ export const getAnimeDetails = async (animeName) => {
   return fetchData(`${API_BASE_URL}/anime/${encodeURIComponent(animeName)}`);
 };
 
+// Caching mechanism for search results
+const searchCache = new Map();
+
+export const searchAnime = async (query) => {
+  if (!query || query.trim() === "") return [];
+  
+  const normalizedQuery = query.toLowerCase().trim();
+  if (searchCache.has(normalizedQuery)) {
+    return searchCache.get(normalizedQuery);
+  }
+
+  const results = await fetchData(`${API_BASE_URL}/anime/search/${encodeURIComponent(normalizedQuery)}`);
+  searchCache.set(normalizedQuery, results);
+  return results;
+};
+
 export const loginUser = async (credentials) => {
   return fetchData(`${API_BASE_URL}/login`, {
     method: 'POST',

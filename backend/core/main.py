@@ -503,3 +503,15 @@ async def user_profile(user_id: int, supabase: AsyncClient = Depends(get_supabas
     )
 
     return {"UserProfile": userProfileObj, "message": "User profile fetched successfully"}
+
+@app.get('/anime/search/{query}', status_code=status.HTTP_200_OK)
+async def search_anime(query: str, supabase: AsyncClient = Depends(get_supabase)):
+
+    response = await supabase.table("lowercased_anime_names").select("*").ilike("animeName", f"{query}%").execute()
+
+    # If nothing returned, return an empty list
+    if response.data is None:
+        return []
+    
+    anime_ids = [item["animeId"] for item in response.data if item.get("animeId")]
+    return anime_ids
