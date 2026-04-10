@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Sparkles, 
-  TrendingUp, 
-  Zap, 
-  History, 
+  Sparkle, 
+  TrendUp, 
+  Lightning, 
+  Clock, 
   Play, 
-  CheckCircle2, 
+  CheckCircle, 
   Info,
-  ChevronRight,
+  CaretRight,
   Trophy,
-  Calendar,
-  Layers,
-  PieChart as ChartIcon
-} from 'lucide-react';
+  CalendarBlank,
+  Browsers,
+  ChartBar as ChartIcon
+} from '@phosphor-icons/react';
 import { getRecommendations, updateWatchList } from '../api'; 
 import { useAuth } from '../context/AuthContext'; 
 import { 
@@ -27,6 +27,44 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
+
+const SkeletonHero = () => (
+  <div className="ss-card h-[460px] mb-16 overflow-hidden animate-none">
+    <div className="flex flex-col lg:flex-row h-full">
+      <div className="w-full lg:w-1/2 h-full ss-skeleton"></div>
+      <div className="w-full lg:w-1/2 p-10 space-y-5">
+        <div className="h-4 w-28 ss-skeleton rounded-full"></div>
+        <div className="h-12 w-3/4 ss-skeleton rounded-xl"></div>
+        <div className="h-4 w-1/3 ss-skeleton rounded-full"></div>
+        <div className="space-y-2.5 pt-4">
+          <div className="h-4 w-full ss-skeleton rounded"></div>
+          <div className="h-4 w-full ss-skeleton rounded"></div>
+          <div className="h-4 w-2/3 ss-skeleton rounded"></div>
+        </div>
+        <div className="pt-8 flex gap-3">
+          <div className="h-12 flex-1 ss-skeleton rounded-xl"></div>
+          <div className="h-12 w-14 ss-skeleton rounded-xl"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const SkeletonItem = () => (
+  <div className="ss-card overflow-hidden">
+    <div className="w-full aspect-[2/3] ss-skeleton"></div>
+    <div className="p-6 space-y-3">
+      <div className="h-3 w-1/4 ss-skeleton rounded"></div>
+      <div className="h-6 w-3/4 ss-skeleton rounded"></div>
+      <div className="h-4 w-full ss-skeleton rounded pt-3"></div>
+      <div className="h-4 w-2/3 ss-skeleton rounded"></div>
+      <div className="pt-4 flex gap-2">
+        <div className="h-10 flex-1 ss-skeleton rounded-xl"></div>
+        <div className="h-10 w-11 ss-skeleton rounded-xl"></div>
+      </div>
+    </div>
+  </div>
+);
 
 const RecommendationPage = () => {
   const { userId } = useAuth(); 
@@ -113,10 +151,22 @@ const RecommendationPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-anime-card">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-anime-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-anime-text-light font-display text-xl animate-pulse font-bold tracking-widest uppercase">Consulting the Sensei...</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Skeleton Header */}
+        <div className="flex flex-col items-center mb-16 space-y-4 animate-pulse">
+          <div className="h-4 w-32 bg-white/10 rounded-full"></div>
+          <div className="h-16 w-96 bg-white/10 rounded-2xl"></div>
+          <div className="h-6 w-64 bg-white/5 rounded-lg"></div>
+        </div>
+
+        {/* Skeleton Hero */}
+        <SkeletonHero />
+
+        {/* Skeleton Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {[...Array(3)].map((_, i) => (
+            <SkeletonItem key={i} />
+          ))}
         </div>
       </div>
     );
@@ -126,7 +176,7 @@ const RecommendationPage = () => {
   const otherPicks = recommendedAnimeDetails.slice(1);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 font-inter selection:bg-anime-accent selection:text-white">
+    <div className="max-w-[1640px] mx-auto px-4 sm:px-6 lg:px-8 py-12 font-inter selection:bg-anime-accent selection:text-white">
       
       {/* Header Section */}
       <motion.div 
@@ -134,108 +184,102 @@ const RecommendationPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-16"
       >
-        <span className="tech-label text-anime-accent text-sm font-bold tracking-[0.2em] uppercase mb-2 block">Personalized Intelligence</span>
-        <h1 className="text-6xl font-display font-black text-white leading-tight">
-          Sensei <span className="text-anime-accent font-outline italic">Spotlight</span>
+        <span className="text-[#E8385A] text-[11px] font-mono font-black tracking-[0.3em] uppercase mb-3 block">Neural Recommendations</span>
+        <h1 className="text-5xl md:text-6xl font-display font-black text-[#F0F0F5] leading-tight tracking-tight">
+          Sensei <span className="text-[#E8385A] italic">Spotlight.</span>
         </h1>
-        <p className="text-anime-text-dark mt-4 max-w-2xl mx-auto text-lg leading-relaxed">
-          Artificial intelligence refined by your personal taste.
+        <p className="text-[#888895] mt-4 max-w-xl mx-auto text-sm font-sans leading-relaxed">
+          Intelligence refined by your unique watch patterns.
         </p>
       </motion.div>
 
       {!userId ? (
-        <div className="text-center p-12 bg-anime-bg rounded-3xl border border-anime-border shadow-2xl backdrop-blur-sm">
-          <Sparkles className="w-16 h-16 text-anime-accent mx-auto mb-6 opacity-50" />
-          <h2 className="text-3xl font-display font-bold text-white mb-4">Unlock Your Destiny</h2>
-          <p className="text-anime-text-dark text-xl mb-8 leading-relaxed">
-            Please log in to allow the Sensei to analyze your watch patterns.
+        <div className="text-center p-16 bg-[#131316] rounded-3xl border border-[#222228] shadow-2xl backdrop-blur-sm ss-card">
+          <Sparkle size={64} weight="bold" className="text-[#E8385A] mx-auto mb-6 opacity-40 shrink-0" />
+          <h2 className="text-3xl font-display font-black text-[#F0F0F5] mb-2">Identify Yourself.</h2>
+          <p className="text-[#888895] text-sm max-w-md mx-auto mb-8 leading-relaxed">
+            Personalized intelligence requires a user profile. Log in to allow the Sensei to analyze your destiny.
           </p>
+          <Link to="/login" className="ss-btn-primary px-8 py-3.5 rounded-xl font-bold inline-flex items-center gap-2">
+            Proceed to Login
+          </Link>
         </div>
       ) : (
         <AnimatePresence>
           {/* Sensei's Choice - Hero Spotlight */}
           {topPick && (
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="relative rounded-[2.5rem] overflow-hidden border border-anime-border bg-gradient-to-br from-anime-card to-[#0d1526] shadow-[0_0_50px_rgba(0,0,0,0.5)] mb-20 group"
+              className="relative rounded-[2.5rem] overflow-hidden border border-[#222228] bg-[#0C0C0E] shadow-[0_40px_100px_rgba(0,0,0,0.6)] mb-24 group"
             >
-              <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] pointer-events-none"></div>
-              
-              <div className="flex flex-col lg:flex-row items-center">
+              <div className="flex flex-col lg:flex-row items-stretch">
                 {/* Hero Image */}
-                <div className="w-full lg:w-1/2 h-[400px] lg:h-[600px] relative overflow-hidden bg-anime-bg flex items-center justify-center">
-                  {/* High-Vibrancy Ambient Backdrop */}
-                  <img src={topPick.image_url_base_anime} className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-50 scale-150 pointer-events-none" alt="" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-anime-bg/60 via-transparent to-anime-bg/20 z-0"></div>
+                <div className="w-full lg:w-1/2 h-[400px] lg:h-[640px] relative overflow-hidden bg-[#131316]">
+                  {/* Blurred Backdrop */}
+                  <img 
+                    src={topPick.image_url_base_anime} 
+                    alt="" 
+                    className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-125 pointer-events-none"
+                    aria-hidden
+                  />
                   <img 
                     src={topPick.image_url_base_anime} 
                     alt={topPick.animeName}
-                    className="relative z-10 max-w-full max-h-full object-contain transition-transform duration-1000 group-hover:scale-105 shadow-2xl"
-                    onError={(e) => { e.target.src=`https://placehold.co/600x800/16213E/9CA3AF?text=Anime` }}
+                    className="absolute inset-0 w-full h-full object-contain transition-transform duration-[1.5s] scale-100 group-hover:scale-105 z-10"
+                    onError={(e) => { e.target.src=`https://placehold.co/800x1200/131316/3A3A4A?text=Post-Image` }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-anime-card via-transparent to-transparent lg:bg-gradient-to-r"></div>
-                  <div className="absolute top-6 left-6 flex gap-2">
-                    <span className="bg-anime-accent text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg flex items-center gap-2">
-                      <Trophy className="w-3 h-3" /> Sensei's Choice
-                    </span>
-                    <span className="bg-white/10 backdrop-blur-md text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border border-white/20">
-                      {topPick.recommendation_source}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0C0C0E] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#0C0C0E]/40 z-20" />
+                  <div className="absolute top-8 left-8 flex gap-3">
+                    <span className="bg-[#E8385A] text-white px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2">
+                      <Trophy size={14} weight="bold" /> Top Selection
                     </span>
                   </div>
                 </div>
 
-                {/* Hero Content */}
-                <div className="w-full lg:w-1/2 p-8 lg:p-16 relative">
-                  <div className="mb-4 flex items-center gap-3">
-                    <div className="w-12 h-[2px] bg-anime-accent"></div>
-                    <span className="text-anime-accent font-bold uppercase tracking-tighter text-sm">Top Match Predicted</span>
+                <div className="w-full lg:w-1/2 p-10 lg:p-20 flex flex-col justify-center">
+                  <div className="inline-flex items-center gap-2 text-[#E8385A] font-mono text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+                    <Lightning size={16} weight="bold" /> Compatibility High
                   </div>
                   
-                  <h2 className="text-4xl lg:text-6xl font-display font-black text-white mb-2 leading-none">
+                  <h2 className="text-4xl lg:text-5xl font-display font-black text-[#F0F0F5] mb-4 leading-tight">
                     {topPick.animeName}
                   </h2>
-                  <p className="tech-label text-anime-accent-dark mb-6 tracking-widest">{topPick.studio || 'Unknown Studio'}</p>
                   
-                  <div className="flex flex-wrap gap-2 mb-8">
+                  <div className="flex flex-wrap gap-2 mb-8 lowercase font-mono pb-8 border-b border-[#222228]">
                     {topPick.display_genres.map((genre, i) => (
-                      <span key={i} className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-xs font-accent text-anime-text-light whitespace-nowrap">
-                        {genre}
+                      <span key={i} className="text-[#888895] text-[11px] px-2 py-0.5 border border-[#222228] rounded">
+                        #{genre.replace(/\s+/g, '') || genre}
                       </span>
                     ))}
                   </div>
 
-                  <p className="text-anime-text-light text-lg mb-10 leading-relaxed line-clamp-4 font-inter opacity-90 italic">
-                    "{topPick.description || 'No description available for this masterpiece.'}"
-                  </p>
-
-                  <div className="bg-anime-accent/10 border-l-4 border-anime-accent p-6 rounded-r-xl mb-10 backdrop-blur-md">
-                    <h4 className="text-anime-accent font-bold mb-2 flex items-center gap-2 text-sm uppercase tracking-widest">
-                      <Info className="w-4 h-4" /> Sensei Reasoning:
+                  <div className="bg-[#131316] border border-[#222228] p-6 rounded-2xl mb-10 shadow-inner">
+                    <h4 className="text-[#3A3A4A] font-mono text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <Info size={14} weight="bold" /> Neural Logic
                     </h4>
-                    <p className="text-white text-lg font-medium">
+                    <p className="text-[#F0F0F5] text-sm font-sans leading-relaxed">
                       {topPick.sensei_reason}
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-6 mb-10 text-anime-text-dark text-sm border-y border-white/5 py-4">
-                     <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-anime-accent" /> {topPick.releaseDate ? new Date(topPick.releaseDate).getFullYear() : 'N/A'}</span>
-                     <span className="flex items-center gap-2"><Layers className="w-4 h-4 text-anime-accent" /> {topPick.genre_count || topPick.display_genres.length} Genres</span>
+                  <div className="flex items-center gap-8 text-[#888895] text-[11px] mb-12 uppercase tracking-widest font-mono">
+                     <span className="flex items-center gap-2"><CalendarBlank size={16} weight="bold" className="text-[#3A3A4A]" /> {topPick.releaseDate ? new Date(topPick.releaseDate).getFullYear() : 'Classic'}</span>
+                     <span className="flex items-center gap-2"><Browsers size={16} weight="bold" className="text-[#3A3A4A]" /> {topPick.genre_count || topPick.display_genres.length} Nodes</span>
                   </div>
 
                   <div className="flex items-center gap-4">
                     <button 
                       onClick={() => handleStatusUpdate(topPick.animeId, 'watching')}
-                      className="flex-1 bg-anime-accent hover:bg-anime-accent-dark text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl shadow-anime-accent/20"
+                      className="ss-btn-primary flex-1 py-4 justify-center"
                     >
-                      <Play className="w-5 h-5 fill-current" /> Start Watching
+                      <Play size={20} weight="fill" /> Track Progress
                     </button>
                     <button 
                       onClick={() => handleStatusUpdate(topPick.animeId, 'watched')}
-                      className="w-16 h-16 border border-anime-border rounded-2xl flex items-center justify-center hover:bg-white/5 transition-colors group"
+                      className="w-16 h-16 border border-[#222228] rounded-2xl flex items-center justify-center hover:bg-white/5 transition-colors group"
                     >
-                      <CheckCircle2 className="w-6 h-6 text-anime-text-dark group-hover:text-green-400" />
+                      <CheckCircle size={24} weight="bold" className="text-[#3A3A4A] group-hover:text-[#E8385A]" />
                     </button>
                   </div>
                 </div>
@@ -243,85 +287,61 @@ const RecommendationPage = () => {
             </motion.div>
           )}
 
-          {/* More Handpicked Suggestions */}
           <section className="mb-24">
-            <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
+            <div className="flex items-center justify-between mb-10 border-b border-[#222228] pb-6">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-orange-400" />
+                <div className="w-10 h-10 rounded-xl bg-[#E8385A]/10 flex items-center justify-center">
+                  <TrendUp size={24} weight="bold" className="text-[#E8385A]" />
                 </div>
-                <h3 className="text-3xl font-display font-bold text-white tracking-tight">Handpicked Discoveries</h3>
+                <h3 className="text-2xl font-display font-black text-[#F0F0F5] tracking-tight">Handpicked Records</h3>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
               {otherPicks.map((anime, idx) => (
                 <motion.div 
                   key={anime.animeId || idx}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * idx }}
-                  className="bg-anime-card rounded-[2rem] border border-anime-border hover:border-anime-accent/50 transition-all duration-300 overflow-hidden flex flex-col group h-full shadow-2xl"
+                  className="ss-anime-card group"
                 >
-                  <div className="relative overflow-hidden w-full max-h-[250px] bg-anime-bg flex items-center justify-center group-hover:shadow-[0_0_30px_rgba(0,0,0,0.5)] transition-all">
-                    {/* High-Vibrancy Ambient Backdrop */}
-                    <img src={anime.image_url_base_anime} className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-60 scale-150 pointer-events-none" alt="" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-anime-bg/80 via-transparent to-anime-bg/20 z-0"></div>
+                  <div className="ss-anime-card__img-container">
+                    {/* Blurred Backdrop */}
                     <img 
                       src={anime.image_url_base_anime} 
-                      className="relative z-10 w-full h-auto max-h-[250px] object-contain transition-transform duration-700 group-hover:scale-105 shadow-2xl"
-                      alt={anime.animeName}
-                      onError={(e) => { e.target.src=`https://placehold.co/400x250/16213E/9CA3AF?text=Anime` }}
+                      className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none"
+                      alt=""
+                      aria-hidden
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-anime-card via-transparent to-transparent opacity-90"></div>
-                    <div className="absolute top-4 right-4 animate-float">
-                       <span className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg text-[10px] font-bold text-anime-accent uppercase tracking-tighter border border-anime-accent/30">
-                         {anime.recommendation_source}
+                    <img 
+                      src={anime.image_url_base_anime} 
+                      className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                      alt={anime.animeName}
+                      onError={(e) => { e.target.src=`https://placehold.co/400x200/131316/3A3A4A?text=Missing+Intel` }}
+                    />
+                    <div className="absolute top-2 right-2 z-20">
+                       <span className="bg-[#E8385A] px-2 py-0.5 rounded text-[8px] font-black text-white uppercase tracking-tighter border border-white/10 shadow-lg">
+                         REC
                        </span>
                     </div>
                   </div>
 
-                  <div className="p-8 flex flex-col flex-grow">
-                    <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-anime-accent-dark italic">{anime.studio || 'General Release'}</div>
-                    <h4 className="text-2xl font-display font-bold text-white mb-2 leading-tight group-hover:text-anime-accent transition-colors">
+                  <div className="ss-anime-card__body">
+                    <h4 className="text-[13px] font-display font-black text-[#F0F0F5] mb-1 leading-tight group-hover:text-[#E8385A] transition-colors line-clamp-1 truncate">
                       {anime.animeName}
                     </h4>
                     
-                    <p className="text-anime-text-dark text-xs mb-4 line-clamp-2 leading-relaxed opacity-90 min-h-[2.5rem] italic border-l-2 border-anime-accent/30 pl-3">
-                      {anime.sensei_reason}
-                    </p>
-
-                    <p className="text-anime-text-muted text-xs mb-6 line-clamp-3 leading-relaxed opacity-70">
-                      {anime.description || 'Dive into another fascinating world of storytelling.'}
-                    </p>
-
-                    <div className="mt-auto space-y-6">
-                       <div className="flex flex-wrap gap-2 transition-all duration-500 py-3 border-t border-white/5">
-                          <span className="flex items-center gap-1.5 text-[10px] font-bold text-white bg-white/5 py-1 px-2 rounded-md uppercase tracking-tighter border border-white/5">
-                             <Calendar className="w-3 h-3 text-anime-accent" /> {anime.releaseDate ? new Date(anime.releaseDate).getFullYear() : 'N/A'}
-                          </span>
-                          {anime.display_genres.slice(0, 2).map((g, i) => (
-                             <span key={i} className="text-[10px] font-bold text-anime-text-dark bg-anime-accent/5 py-1 px-2 rounded-md uppercase tracking-tighter border border-anime-accent/10 whitespace-nowrap">
-                               {g}
-                             </span>
-                          ))}
-                       </div>
-
-                       <div className="flex gap-2">
-                          <button 
-                            disabled={actionLoading === anime.animeId}
-                            onClick={() => handleStatusUpdate(anime.animeId, 'watching')}
-                            className="flex-1 bg-white/5 hover:bg-anime-accent hover:text-white text-anime-text-light py-3 rounded-xl text-xs font-bold transition-all border border-anime-border flex items-center justify-center gap-2 "
-                          >
-                            {actionLoading === anime.animeId ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <><Play className="w-3 h-3 fill-current" /> List</>}
-                          </button>
-                          <button 
-                             onClick={() => handleStatusUpdate(anime.animeId, 'watched')}
-                             className="px-4 py-3 bg-white/5 rounded-xl border border-anime-border hover:text-green-400 hover:border-green-400/50 transition-all text-anime-text-dark"
-                          >
-                             <CheckCircle2 className="w-4 h-4" />
-                          </button>
-                       </div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] text-[#3A3A4A] font-medium leading-none">
+                        Sub | Dub
+                      </p>
+                      {anime.rating && (
+                        <div className="flex items-center gap-1 opacity-60">
+                           <Star size={10} weight="fill" className="text-[#D97706]" />
+                           <span className="text-[10px] text-[#888895] font-bold">{anime.rating.toFixed(1)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -331,30 +351,30 @@ const RecommendationPage = () => {
 
           {/* Analytics Visualizers */}
           <section className="mt-32">
-             <div className="flex items-center gap-4 mb-12 justify-center">
-                <div className="w-12 h-[1px] bg-anime-border"></div>
-                <div className="flex items-center gap-3">
-                   <ChartIcon className="text-anime-accent w-6 h-6" />
-                   <h3 className="text-4xl font-display font-black text-white tracking-widest uppercase">Intelligence <span className="text-anime-accent">Metrics</span></h3>
+             <div className="flex items-center gap-6 mb-16 justify-center">
+                <div className="h-[1px] flex-grow max-w-[100px] bg-[#222228]"></div>
+                <div className="flex items-center gap-4 text-center">
+                   <ChartIcon size={32} weight="bold" className="text-[#E8385A]" />
+                   <h3 className="text-3xl font-display font-black text-[#F0F0F5] tracking-tight">Intelligence <span className="text-[#E8385A]">Analysis.</span></h3>
                 </div>
-                <div className="w-12 h-[1px] bg-anime-border"></div>
+                <div className="h-[1px] flex-grow max-w-[100px] bg-[#222228]"></div>
              </div>
 
              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                <motion.div 
-                   whileInView={{ opacity: 1, x: 0 }}
-                   initial={{ opacity: 0, x: -30 }}
-                   className="lg:col-span-8 bg-anime-bg/50 backdrop-blur-xl p-8 rounded-[3rem] border border-anime-border shadow-2xl relative overflow-hidden"
-                >
-                   <div className="absolute top-0 right-0 p-8 opacity-10">
-                      <Zap className="w-32 h-32 text-anime-accent" />
-                   </div>
-                   <div className="flex justify-between items-center mb-8">
-                      <h4 className="text-xl font-bold text-white flex items-center gap-3">
-                         <Sparkles className="text-yellow-400 w-5 h-5" /> Global Genre Popularity
-                      </h4>
-                      <span className="text-[10px] font-accent text-anime-text-dark uppercase tracking-[0.3em]">Realtime Cluster Analysis</span>
-                   </div>
+                 <motion.div 
+                    whileInView={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, x: -20 }}
+                    className="lg:col-span-8 bg-[#131316] p-10 rounded-3xl border border-[#222228] shadow-2xl relative overflow-hidden"
+                 >
+                    <div className="absolute top-0 right-0 p-10 opacity-[0.03]">
+                       <Lightning size={160} weight="bold" className="text-[#F0F0F5]" />
+                    </div>
+                    <div className="flex justify-between items-center mb-8">
+                       <h4 className="text-xl font-display font-black text-[#F0F0F5] flex items-center gap-3">
+                          <Sparkle size={20} weight="bold" className="text-yellow-400" /> Global Genre Popularity
+                       </h4>
+                       <span className="text-[10px] font-mono text-[#3A3A4A] uppercase tracking-[0.3em]">Realtime Cluster Analysis</span>
+                    </div>
 
                    <ResponsiveContainer width="100%" height={350}>
                       <BarChart data={genrePopularity} margin={{ top: 20, bottom: 20 }}>
@@ -391,10 +411,10 @@ const RecommendationPage = () => {
                 <motion.div 
                    whileInView={{ opacity: 1, x: 0 }}
                    initial={{ opacity: 0, x: 30 }}
-                   className="lg:col-span-4 bg-anime-bg/50 backdrop-blur-xl p-8 rounded-[3rem] border border-anime-border shadow-2xl flex flex-col"
+                   className="lg:col-span-4 bg-[#131316] p-10 rounded-3xl border border-[#222228] shadow-2xl flex flex-col"
                 >
-                   <h4 className="text-xl font-bold text-white mb-10 flex items-center gap-3">
-                      <History className="text-anime-accent w-5 h-5" /> Rating Density
+                   <h4 className="text-xl font-display font-black text-[#F0F0F5] mb-10 flex items-center gap-3">
+                      <Clock size={20} weight="bold" className="text-[#E8385A]" /> Density Map
                    </h4>
                    
                    <div className="flex-grow space-y-8">
@@ -416,66 +436,60 @@ const RecommendationPage = () => {
                       ))}
                    </div>
                    
-                   <div className="mt-8 p-6 bg-anime-accent/5 rounded-3xl border border-anime-accent/10">
-                      <p className="text-[10px] text-anime-accent font-black uppercase tracking-[0.2em] mb-2">Algorithm Verdict</p>
-                      <p className="text-xs text-anime-text-dark leading-relaxed font-accent">The global user base is currently favoriting high-complexity narratives with 8+ scores.</p>
+                   <div className="mt-8 p-6 bg-[#E8385A]/5 rounded-3xl border border-[#E8385A]/10">
+                      <p className="text-[10px] text-[#E8385A] font-black uppercase tracking-[0.2em] mb-2">Algorithm Verdict</p>
+                      <p className="text-xs text-[#888895] leading-relaxed font-sans opacity-95">The global user base is currently favoriting high-complexity narratives with 8+ scores.</p>
                    </div>
                 </motion.div>
              </div>
           </section>
 
           {/* Hall of Fame - Most Popular overall */}
-          <section className="mt-40 mb-32 text-center relative">
-             <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-96 bg-anime-accent/5 blur-[120px] rounded-full pointer-events-none"></div>
-             
-             <div className="inline-block px-10 py-4 bg-white/5 border border-white/10 rounded-full mb-16 backdrop-blur-md">
-                <span className="flex items-center gap-4 text-xs font-black uppercase tracking-[0.5em] text-white">
-                   <ChevronRight className="w-4 h-4 text-anime-accent animate-pulse" /> Legendary Picks <ChevronRight className="w-4 h-4 text-anime-accent animate-pulse" />
+          <section className="mt-40 mb-32 text-center relative px-4">
+             <div className="inline-block px-10 py-3 bg-[#131316] border border-[#222228] rounded-full mb-16">
+                <span className="flex items-center gap-4 text-[10px] font-mono font-black uppercase tracking-[0.4em] text-[#888895]">
+                   <CaretRight size={16} weight="bold" className="text-[#E8385A] animate-pulse" /> Legendary Picks <CaretRight size={16} weight="bold" className="text-[#E8385A] animate-pulse" />
                 </span>
              </div>
 
              {mostPopularAnime && (
                 <div className="max-w-5xl mx-auto relative group">
-                   <div className="absolute -inset-2 bg-gradient-to-r from-anime-accent via-pink-500 to-cyan-500 rounded-[4rem] blur opacity-10 group-hover:opacity-30 transition duration-1000 group-hover:duration-200"></div>
-                   <div className="relative bg-anime-card rounded-[4rem] border border-anime-border p-10 lg:p-16 flex flex-col md:flex-row items-center gap-16 shadow-[0_0_100px_rgba(0,0,0,0.6)]">
-                      <div className="w-72 h-72 lg:w-96 lg:h-96 rounded-[3rem] overflow-hidden shadow-2xl border-[6px] border-anime-border flex-shrink-0 group-hover:border-anime-accent/30 transition-all duration-500 bg-anime-bg relative flex items-center justify-center">
-                         {/* High-Vibrancy Ambient Backdrop */}
-                         <img src={mostPopularAnime.image_url_base_anime} className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-50 scale-150 pointer-events-none" alt="" />
-                         <div className="absolute inset-0 bg-gradient-to-t from-anime-bg/40 via-transparent to-anime-bg/20 z-0"></div>
+                   <div className="relative bg-[#131316] rounded-3xl border border-[#222228] p-10 lg:p-16 flex flex-col md:flex-row items-center gap-16 shadow-[0_40px_120px_rgba(0,0,0,0.6)]">
+                      <div className="w-72 h-72 lg:w-96 lg:h-96 rounded-2xl overflow-hidden border border-[#222228] flex-shrink-0 group-hover:border-[#E8385A]/40 transition-all duration-500 bg-[#0C0C0E] relative flex items-center justify-center">
                          <img 
                            src={mostPopularAnime.image_url_base_anime} 
-                           className="relative z-10 max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105 shadow-2xl" 
+                           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-50" 
                            alt={mostPopularAnime.animeName}
                          />
                       </div>
                       <div className="text-center md:text-left flex-grow">
-                         <div className="flex flex-col md:flex-row items-center gap-6 mb-6">
-                            <h4 className="text-5xl font-display font-black text-white leading-tight">{mostPopularAnime.animeName}</h4>
-                            <div className="bg-green-500/10 text-green-400 px-6 py-2 rounded-full text-xs font-black tracking-widest border border-green-500/20">
+                         <div className="flex flex-col md:flex-row items-center gap-6 mb-6 justify-center md:justify-start">
+                            <h4 className="text-4xl lg:text-5xl font-display font-black text-[#F0F0F5] tracking-tight">{mostPopularAnime.animeName}</h4>
+                            <div className="bg-[#E8385A]/10 text-[#E8385A] px-5 py-1.5 rounded-lg text-[10px] font-mono font-black tracking-widest border border-[#E8385A]/20 uppercase">
                                HALL OF FAME
                             </div>
                          </div>
-                         <p className="text-anime-text-light text-xl mb-12 leading-relaxed opacity-80 font-accent max-w-2xl">
-                            Consistently ranking at the apex of the global otaku ecosystem. This masterpiece defines current narrative benchmarks.
+                         <p className="text-[#888895] text-lg mb-10 leading-relaxed font-sans italic opacity-80">
+                            The pinnacle of global narrative benchmarks. Consistently ranked at the apex.
                          </p>
                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                            <div className="p-6 bg-white/5 rounded-3xl border border-white/5 group-hover:border-anime-accent/20 transition-colors">
-                               <p className="text-[10px] text-anime-text-dark font-black uppercase tracking-widest mb-2">Positivity</p>
-                               <p className="text-3xl font-display font-bold text-white">{Math.round(mostPopularAnime["Positivity Percentage"] || 0)}%</p>
+                            <div className="p-6 bg-[#0C0C0E] rounded-2xl border border-[#222228]">
+                               <p className="text-[10px] text-[#3A3A4A] font-black uppercase tracking-widest mb-2">Positivity</p>
+                               <p className="text-3xl font-display font-black text-[#F0F0F5]">{Math.round(mostPopularAnime["Positivity Percentage"] || 0)}%</p>
                             </div>
-                            <div className="p-6 bg-white/5 rounded-3xl border border-white/5 group-hover:border-anime-accent/20 transition-colors">
-                               <p className="text-[10px] text-anime-text-dark font-black uppercase tracking-widest mb-2">Release</p>
-                               <p className="text-3xl font-display font-bold text-white">{mostPopularAnime.releaseDate ? new Date(mostPopularAnime.releaseDate).getFullYear() : 'N/A'}</p>
+                            <div className="p-6 bg-[#0C0C0E] rounded-2xl border border-[#222228]">
+                               <p className="text-[10px] text-[#3A3A4A] font-black uppercase tracking-widest mb-2">Records</p>
+                               <p className="text-3xl font-display font-black text-[#F0F0F5]">{mostPopularAnime.releaseDate ? new Date(mostPopularAnime.releaseDate).getFullYear() : '2024'}</p>
                             </div>
-                            <div className="p-6 bg-white/5 rounded-3xl border border-white/5 group-hover:border-anime-accent/20 transition-colors">
-                               <p className="text-[10px] text-anime-text-dark font-black uppercase tracking-widest mb-2">Status</p>
-                               <p className="text-3xl font-display font-bold text-anime-accent">Viral</p>
+                            <div className="p-6 bg-[#E8385A] rounded-2xl shadow-[0_10px_30px_rgba(232,56,90,0.3)] border border-white/10 text-white">
+                               <p className="text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">Status</p>
+                               <p className="text-3xl font-display font-black">Viral</p>
                             </div>
                          </div>
                       </div>
                    </div>
                 </div>
-             )}
+              )}
           </section>
         </AnimatePresence>
       )}

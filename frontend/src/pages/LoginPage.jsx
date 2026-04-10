@@ -3,7 +3,7 @@ import { loginUser } from '../api';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { Tv, Lock, User, LogIn } from 'lucide-react';
+import { TelevisionSimple, LockSimple, UserCircle, SignIn } from '@phosphor-icons/react';
 
 function LoginPage() {
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
@@ -30,103 +30,102 @@ function LoginPage() {
   };
 
   return (
-    <div className="relative container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[calc(100vh-100px)] overflow-hidden">
-      {/* Decorative Background Elements */}
+    <div className="relative min-h-[calc(100vh-64px)] flex flex-col items-center justify-center px-4 overflow-hidden" style={{ background: '#0C0C0E' }}>
+      {/* Ambient background glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[20%] left-[10%] w-[40%] h-[40%] rounded-full bg-[#E8385A]/[0.03] blur-[120px]" />
+        <div className="absolute bottom-[20%] right-[10%] w-[40%] h-[40%] rounded-full bg-[#6D28D9]/[0.02] blur-[120px]" />
+      </div>
+
       <motion.div 
-        animate={{ y: [0, -20, 0], rotate: [0, 10, -10, 0] }} 
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-20 left-10 md:left-1/4 text-kawaii-secondary opacity-40 z-0"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="w-full max-w-[400px] relative z-10"
       >
-        <Tv size={80} />
-      </motion.div>
-      <motion.div 
-        animate={{ y: [0, 20, 0], rotate: [0, -10, 10, 0] }} 
-        transition={{ duration: 7, delay: 1, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-20 right-10 md:right-1/4 text-kawaii-accent opacity-30 z-0"
-      >
-        <Tv size={100} />
-      </motion.div>
-
-      <motion.form 
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 100 }}
-        onSubmit={handleSubmit} 
-        className="glass-card p-8 md:p-10 max-w-md w-full relative z-10 border-2 border-white/60"
-      >
-        <div className="flex justify-center mb-6 text-kawaii-accent">
-          <motion.div whileHover={{ rotate: 180 }} transition={{ duration: 0.5 }}>
-            <Tv size={48} />
-          </motion.div>
-        </div>
-        <h2 className="text-3xl font-display font-extrabold text-kawaii-text-dark text-center mb-8">Welcome Back!</h2>
-
-        {error && (
-          <motion.p 
-            initial={{ opacity: 0, x: -10 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            className="bg-red-100 text-red-600 border border-red-300 rounded-lg p-3 mb-6 text-center text-sm font-bold"
-          >
-            {error}
-          </motion.p>
-        )}
-
-        <div className="mb-5 relative">
-          <label htmlFor="usernameOrEmail" className="block text-kawaii-text-dark text-sm font-bold mb-2">
-            Username or Email
-          </label>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5" />
-            <input
-              type="text"
-              id="usernameOrEmail"
-              value={usernameOrEmail}
-              onChange={(e) => setUsernameOrEmail(e.target.value)}
-              required
-              className="pl-10 appearance-none border-2 border-kawaii-border rounded-xl w-full py-3 px-4 text-kawaii-text-dark leading-tight focus:outline-none focus:border-kawaii-accent bg-anime-sub-card/50 transition-colors placeholder-gray-400 font-medium"
-              placeholder="e.g. Kirito01"
-            />
+        {/* Header branding */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E8385A] to-[#C94470] mb-6 shadow-[0_8px_30px_rgba(232,56,90,0.2)]">
+            <TelevisionSimple size={32} weight="bold" className="text-white" />
           </div>
+          <h2 className="text-3xl font-display font-black text-[#F0F0F5] tracking-tight mb-2">Welcome Back.</h2>
+          <p className="text-[#888895] text-sm font-sans">Continue your anime journey with Sensei.</p>
         </div>
 
-        <div className="mb-8 relative">
-          <label htmlFor="password" className="block text-kawaii-text-dark text-sm font-bold mb-2">
-            Password
-          </label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5" />
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="pl-10 appearance-none border-2 border-kawaii-border rounded-xl w-full py-3 px-4 text-kawaii-text-dark leading-tight focus:outline-none focus:border-kawaii-accent bg-anime-sub-card/50 transition-colors placeholder-gray-400 font-medium"
-              placeholder="••••••••"
-            />
-          </div>
-        </div>
-
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          type="submit"
-          className="w-full flex items-center justify-center gap-2 bg-kawaii-accent hover:bg-kawaii-accent-dark text-white font-bold py-3 px-4 rounded-xl focus:outline-none transition-colors shadow-kawaii-soft disabled:opacity-50"
-          disabled={loading}
+        <form 
+          onSubmit={handleSubmit} 
+          className="ss-card p-8 md:p-10 border border-[#222228] bg-[#131316] rounded-2xl shadow-[0_24px_80px_rgba(0,0,0,0.5)]"
         >
-          {loading ? (
-             <span className="animate-pulse">Logging in...</span>
-          ) : (
-            <>
-              <LogIn className="w-5 h-5" /> Login
-            </>
+          {error && (
+            <motion.p 
+              initial={{ opacity: 0, x: -10 }} 
+              animate={{ opacity: 1, x: 0 }} 
+              className="bg-[#EF4444]/[0.08] text-[#EF4444] border border-[#EF4444]/[0.15] rounded-xl p-3.5 mb-6 text-center text-xs font-mono"
+            >
+              {error}
+            </motion.p>
           )}
-        </motion.button>
 
-        <p className="text-center text-kawaii-text-muted text-sm mt-6 font-semibold">
-          Don't have an account? <Link to="/signup" className="text-kawaii-accent hover:text-kawaii-accent-dark transition-colors">Sign Up</Link>
+          <div className="mb-5">
+            <label htmlFor="usernameOrEmail" className="block text-[#F0F0F5] text-xs font-mono uppercase tracking-widest mb-2.5 ml-1">
+              Identify Yourself
+            </label>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#3A3A4A] group-focus-within:text-[#E8385A] transition-colors">
+                <UserCircle size={20} weight="bold" />
+              </div>
+              <input
+                type="text"
+                id="usernameOrEmail"
+                value={usernameOrEmail}
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
+                required
+                className="pl-12 appearance-none border border-[#222228] rounded-xl w-full py-3 px-4 bg-[#0C0C0E] text-[#F0F0F5] leading-tight outline-none focus:border-[#E8385A]/40 transition-all placeholder-[#3A3A4A] text-sm font-sans"
+                placeholder="Username or Email"
+              />
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <label htmlFor="password" className="block text-[#F0F0F5] text-xs font-mono uppercase tracking-widest mb-2.5 ml-1">
+              Secret Key
+            </label>
+            <div className="relative group">
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#3A3A4A] group-focus-within:text-[#E8385A] transition-colors">
+                <LockSimple size={20} weight="bold" />
+              </div>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="pl-12 appearance-none border border-[#222228] rounded-xl w-full py-3 px-4 bg-[#0C0C0E] text-[#F0F0F5] leading-tight outline-none focus:border-[#E8385A]/40 transition-all placeholder-[#3A3A4A] text-sm font-sans"
+                placeholder="••••••••"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="ss-btn-primary w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 group disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? (
+               <span className="animate-pulse">Authorizing...</span>
+            ) : (
+              <>
+                <SignIn size={18} weight="bold" className="transition-transform group-hover:translate-x-1" />
+                Access Library
+              </>
+            )}
+          </button>
+        </form>
+
+        <p className="text-center text-[#3A3A4A] text-[13px] mt-8 font-sans">
+          New to the library? <Link to="/signup" className="text-[#E8385A] hover:text-[#F0A0B0] font-semibold transition-colors">Create account</Link>
         </p>
-      </motion.form>
+      </motion.div>
     </div>
   );
 }

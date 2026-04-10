@@ -39,6 +39,12 @@ export const getAllAnime = async () => {
 };
 
 
+export const getSortedAnime = async (sortParam, sortOrder) => {
+  return fetchData(`${API_BASE_URL}/anime/sort?sort_param=${sortParam}&sort_order=${sortOrder}`);
+};
+
+
+
 export const getAnimeDetails = async (animeName) => {
   return fetchData(`${API_BASE_URL}/anime/${encodeURIComponent(animeName)}`);
 };

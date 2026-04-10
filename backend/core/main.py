@@ -129,6 +129,20 @@ async def get_top_rated(supabase: AsyncClient = Depends(get_supabase)) -> dict:
 
     return dict
 
+#Sorting logic
+@app.get('/anime/sort', status_code=status.HTTP_200_OK)
+async def sort_results(sort_param: str, sort_order: str, supabase: AsyncClient = Depends(get_supabase)):
+
+
+    response = await supabase.table("anime").select("*").order(f"{sort_param}", desc=True if sort_order == "desc" else False)\
+    .execute()
+
+    return response.data
+
+#Filtering logic
+@app.get('/anime/filter', status_code=status.HTTP_200_OK)
+async def apply_filter(supabase: AsyncClient = Depends(get_supabase)):
+    pass
 #Get all anime
 @app.get("/anime/all", status_code=status.HTTP_200_OK)
 async def get_all_anime(supabase: AsyncClient = Depends(get_supabase)):
@@ -515,3 +529,4 @@ async def search_anime(query: str, supabase: AsyncClient = Depends(get_supabase)
     
     anime_ids = [item["animeId"] for item in response.data if item.get("animeId")]
     return anime_ids
+

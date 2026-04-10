@@ -2,7 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { signupUser, getCountries, getStates, getCities } from '../api';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Sparkles, UserPlus, MapPin, Map, Globe2, ShieldCheck, Mail, User } from 'lucide-react';
+import {
+  Sparkle,
+  UserCircle,
+  MapPin,
+  MapTrifold,
+  Globe,
+  ShieldCheck,
+  EnvelopeSimple,
+  UserPlus,
+  LockSimple
+} from '@phosphor-icons/react';
 
 function SignupPage() {
   const [userName, setUserName] = useState('');
@@ -124,113 +134,124 @@ function SignupPage() {
   };
 
   const inputClasses = `
-    pl-10 shadow-sm appearance-none border-2 border-kawaii-border rounded-xl w-full py-3 px-4
-    text-kawaii-text-dark leading-tight focus:outline-none focus:border-kawaii-accent bg-anime-sub-card/50
-    transition duration-200 ease-in-out font-medium placeholder-gray-400
+    pl-11 appearance-none border border-[#222228] rounded-xl w-full py-3 px-4
+    bg-[#0C0C0E] text-[#F0F0F5] leading-tight outline-none focus:border-[#E8385A]/40
+    transition-all placeholder-[#3A3A4A] text-sm font-sans
   `;
 
-  const disabledInputClasses = `disabled:opacity-40 disabled:bg-anime-sub-card/20 disabled:text-kawaii-text-muted disabled:cursor-not-allowed`;
+  const disabledInputClasses = `disabled:opacity-40 disabled:cursor-not-allowed`;
 
   return (
-    <div className="relative flex flex-grow items-center justify-center py-10 px-4 min-h-[calc(100vh-100px)] overflow-hidden">
-      {/* Dynamic Background Elements */}
-      <motion.div animate={{ y: [0, -30, 0] }} transition={{ duration: 6, repeat: Infinity }} className="absolute pt-4 top-10 right-10 md:right-32 text-kawaii-accent opacity-30 z-0">
-        <Sparkles size={120} />
-      </motion.div>
-      <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }} className="absolute bottom-10 left-10 md:left-32 text-kawaii-tertiary opacity-40 z-0">
-        <Sparkles size={80} />
-      </motion.div>
+    <div className="relative min-h-[calc(100vh-64px)] flex flex-col items-center justify-center py-12 px-4 overflow-hidden" style={{ background: '#0C0C0E' }}>
+      {/* Ambient background glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[10%] right-[10%] w-[50%] h-[50%] rounded-full bg-[#E8385A]/[0.02] blur-[120px]" />
+        <div className="absolute bottom-[10%] left-[10%] w-[50%] h-[50%] rounded-full bg-[#6D28D9]/[0.015] blur-[120px]" />
+      </div>
 
-      <motion.form
-        initial={{ opacity: 0, scale: 0.95, y: 30 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 90 }}
-        onSubmit={handleSubmit}
-        className="glass-card p-8 md:p-10 max-w-lg w-full relative z-10 border-2 border-white/60"
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="w-full max-w-[520px] relative z-10"
       >
-        <div className="flex justify-center mb-6 text-kawaii-accent">
-          <motion.div whileHover={{ scale: 1.2, rotate: 10 }}>
-             <UserPlus size={48} />
-          </motion.div>
-        </div>
-        <h2 className="text-3xl md:text-4xl font-display font-extrabold text-kawaii-text-dark text-center mb-8">
-          Join the Community 🌸
-        </h2>
-
-        {message && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-green-100 text-green-700 border border-green-300 rounded-lg p-4 mb-6 text-center font-bold">
-            {message}
-          </motion.p>
-        )}
-        {error && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-red-100 text-red-600 border border-red-300 rounded-lg p-4 mb-6 text-center font-bold">
-            {error}
-          </motion.p>
-        )}
-
-        <div className="grid grid-cols-1 gap-5">
-          {/* Identity */}
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5" />
-            <input type="text" id="userName" value={userName} onChange={(e) => setUserName(e.target.value)} required className={inputClasses} placeholder="Username" />
+        {/* Header branding */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E8385A] to-[#C94470] mb-6 shadow-[0_8px_30px_rgba(232,56,90,0.2)]">
+            <UserPlus size={32} weight="bold" className="text-white" />
           </div>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5" />
-            <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClasses} placeholder="Email Address" />
-          </div>
-
-          <h3 className="text-lg font-display font-bold text-kawaii-text-dark mt-4 border-b-2 border-kawaii-border pb-2">Location Zone</h3>
-          
-          <div className="relative">
-             <Globe2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5 z-10 pointer-events-none" />
-             <select id="country" value={country} onChange={(e) => setCountry(e.target.value)} required className={inputClasses}>
-               <option value="" disabled>Select Country Region</option>
-               {countries.map(c => <option key={c} value={c}>{c}</option>)}
-             </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="relative">
-              <Map className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5 z-10 pointer-events-none" />
-              <select id="state" value={state} onChange={(e) => setState(e.target.value)} required disabled={!country || states.length === 0} className={`${inputClasses} ${disabledInputClasses}`}>
-                <option value="" disabled>Select State</option>
-                {states.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5 z-10 pointer-events-none" />
-              <select id="city" value={city} onChange={(e) => setCity(e.target.value)} required disabled={!state || cities.length === 0} className={`${inputClasses} ${disabledInputClasses}`}>
-                <option value="" disabled>Select City</option>
-                {cities.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <h3 className="text-lg font-display font-bold text-kawaii-text-dark mt-4 border-b-2 border-kawaii-border pb-2">Security</h3>
-          <div className="relative">
-            <ShieldCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5" />
-            <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={inputClasses} placeholder="Password" />
-          </div>
-          <div className="relative">
-             <ShieldCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 text-kawaii-text-muted w-5 h-5" />
-            <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={inputClasses} placeholder="Confirm Password" />
-          </div>
+          <h2 className="text-3xl font-display font-black text-[#F0F0F5] tracking-tight mb-2">Join the Elite.</h2>
+          <p className="text-[#888895] text-sm font-sans">Start your personalized anime discovery.</p>
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          type="submit"
-          className="w-full mt-8 bg-kawaii-accent hover:bg-kawaii-accent-dark text-white font-bold py-3 px-4 rounded-xl shadow-kawaii-soft transition-colors disabled:opacity-50"
-          disabled={loading}
+        <form 
+          onSubmit={handleSubmit} 
+          className="ss-card p-8 md:p-10 border border-[#222228] bg-[#131316] rounded-2xl shadow-[0_24px_80px_rgba(0,0,0,0.5)]"
         >
-          {loading ? 'Creating Account...' : 'Sign Up'}
-        </motion.button>
+          {message && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#22C55E]/[0.08] text-[#22C55E] border border-[#22C55E]/[0.15] rounded-xl p-3.5 mb-6 text-center text-xs font-mono">
+              {message}
+            </motion.p>
+          )}
+          {error && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#EF4444]/[0.08] text-[#EF4444] border border-[#EF4444]/[0.15] rounded-xl p-3.5 mb-6 text-center text-xs font-mono">
+              {error}
+            </motion.p>
+          )}
 
-        <p className="text-center text-kawaii-text-muted text-sm mt-6 font-semibold">
-          Already have an account? <Link to="/login" className="text-kawaii-accent hover:underline font-bold">Log In</Link>
+          <div className="space-y-5">
+            {/* Identity */}
+            <div className="relative group">
+              <UserCircle size={20} weight="bold" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#3A3A4A] group-focus-within:text-[#E8385A] transition-colors" />
+              <input type="text" id="userName" value={userName} onChange={(e) => setUserName(e.target.value)} required className={inputClasses} placeholder="Public Username" />
+            </div>
+            <div className="relative group">
+              <EnvelopeSimple size={20} weight="bold" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#3A3A4A] group-focus-within:text-[#E8385A] transition-colors" />
+              <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClasses} placeholder="Email Courier" />
+            </div>
+
+            <div className="pt-2">
+              <h3 className="text-[#F0F0F5] text-xs font-mono uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
+                <Globe size={14} weight="bold" className="text-[#E8385A]" />
+                Location Node
+              </h3>
+              
+              <div className="space-y-4">
+                <div className="relative group">
+                   <select id="country" value={country} onChange={(e) => setCountry(e.target.value)} required className={`${inputClasses} appearance-none cursor-pointer`}>
+                     <option value="" disabled>Select Country Region</option>
+                     {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                   </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="relative group">
+                    <select id="state" value={state} onChange={(e) => setState(e.target.value)} required disabled={!country || states.length === 0} className={`${inputClasses} appearance-none cursor-pointer ${disabledInputClasses}`}>
+                      <option value="" disabled>State</option>
+                      {states.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div className="relative group">
+                    <select id="city" value={city} onChange={(e) => setCity(e.target.value)} required disabled={!state || cities.length === 0} className={`${inputClasses} appearance-none cursor-pointer ${disabledInputClasses}`}>
+                      <option value="" disabled>City</option>
+                      {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <h3 className="text-[#F0F0F5] text-xs font-mono uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
+                <ShieldCheck size={14} weight="bold" className="text-[#E8385A]" />
+                Security Layer
+              </h3>
+              <div className="space-y-4">
+                <div className="relative group">
+                  <LockSimple size={20} weight="bold" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#3A3A4A] group-focus-within:text-[#E8385A] transition-colors" />
+                  <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={inputClasses} placeholder="Passkey" />
+                </div>
+                <div className="relative group">
+                  <LockSimple size={20} weight="bold" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#3A3A4A] group-focus-within:text-[#E8385A] transition-colors" />
+                  <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={inputClasses} placeholder="Verify Passkey" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="ss-btn-primary w-full mt-10 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 group disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? 'Initializing...' : 'Construct Account'}
+          </button>
+        </form>
+
+        <p className="text-center text-[#3A3A4A] text-[13px] mt-8 font-sans">
+          Already a member? <Link to="/login" className="text-[#E8385A] hover:text-[#F0A0B0] font-semibold transition-colors">Log in</Link>
         </p>
-      </motion.form>
+      </motion.div>
     </div>
   );
 }

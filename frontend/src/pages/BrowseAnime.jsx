@@ -1,312 +1,226 @@
-// my-anime-recs-frontend/src/pages/BrowseAnimePage.js
-
 import React, { useEffect, useState, useMemo } from 'react';
-import { getAllAnime, searchAnime } from '../api';
-import { Link } from 'react-router-dom';
+import { getAllAnime, getSortedAnime } from '../api';
+import { Link }       from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Loader2, X, ChevronLeft, ChevronRight, Hash } from 'lucide-react';
+import {
+  SortAscending, SortDescending,
+  FilmSlate, CalendarBlank, Star, Funnel
+} from '@phosphor-icons/react';
+import {
+  CaretLeft,
+  CaretRight,
+  MagnifyingGlass,
+  Sliders
+} from '@phosphor-icons/react';
 
-function BrowseAnimePage() {
-  const [animeList, setAnimeList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  
-  // Search & Pagination States
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const itemsPerPage = 12;
+/* ─── Skeleton card ─── */
+const SkeletonCard = () => (
+  <div className="ss-anime-card">
+    <div className="ss-anime-card__img-container ss-skeleton" />
+    <div className="ss-anime-card__body py-4 px-5">
+      <div className="ss-skeleton rounded mb-2" style={{ height: '14px', width: '90%' }} />
+      <div className="ss-skeleton rounded" style={{ height: '11px', width: '50%' }} />
+    </div>
+  </div>
+);
 
-  useEffect(() => {
-    const fetchAnime = async () => {
-      setLoading(true);
-      setError('');
-      try {
-        const data = await getAllAnime();
-        setAnimeList(data);
-      } catch (err) {
-        setError(err.message || 'Failed to load anime.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAnime();
-  }, []);
-
-  // Debounced Search Effect
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      setIsSearching(false);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setIsSearching(true);
-      try {
-        const ids = await searchAnime(searchQuery);
-        // Map IDs to full objects from the master animeList
-        const results = animeList.filter(anime => ids.includes(anime.animeId));
-        setSearchResults(results);
-      } catch (err) {
-        console.error("Search failed:", err);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, animeList]);
-
-  // Reset pagination on search
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
-  // OPTIMIZATION: Memoize the base filtered list
-  const displayedAnimeBase = useMemo(() => {
-    return searchQuery.trim() ? searchResults : animeList;
-  }, [searchQuery, searchResults, animeList]);
-
-  // OPTIMIZATION: Memoize the paginated slice
-  const paginatedAnime = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return displayedAnimeBase.slice(startIndex, startIndex + itemsPerPage);
-  }, [displayedAnimeBase, currentPage, itemsPerPage]);
-
-  const totalPages = Math.ceil(displayedAnimeBase.length / itemsPerPage);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-anime-accent text-xl">Loading all anime...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center p-4 text-anime-error text-xl">
-        {error}
-      </div>
-    );
-  }
+/* ─── Anime card — fixed image + text panel ─── */
+const AnimeCard = ({ anime, index }) => {
+  const year   = anime.releaseDate ? new Date(anime.releaseDate).getFullYear() : null;
+  const genres = anime.genres?.map(g => g.name) || [];
 
   return (
-    <div className="py-8 px-4">
-      <h2 className="text-4xl font-bold text-anime-accent text-center mb-6">
-        Browse All Anime
-      </h2>
-
-      {/* Expandable Search Button - Premium UI */}
-      <div className="flex justify-center mb-16 relative">
-        <motion.div 
-          initial={false}
-          animate={{ 
-            width: isSearchExpanded ? '100%' : '60px',
-            maxWidth: isSearchExpanded ? '672px' : '60px' // 672px is max-w-2xl
-          }}
-          transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
-          style={{ willChange: 'transform, width', transform: 'translateZ(0)' }}
-          className={`relative h-[60px] bg-anime-sub-card/30 backdrop-blur-xl border-2 rounded-2xl overflow-hidden shadow-lg group transition-colors duration-300 ${isSearchExpanded ? 'border-kawaii-accent/40 shadow-kawaii-glow' : 'border-white/10 hover:border-white/20'}`}
-        >
-          {/* Search/Toggle Button */}
-          <div className="absolute inset-y-0 left-0 w-[60px] flex items-center justify-center z-20">
-            <button 
-              onClick={() => setIsSearchExpanded(prev => !prev)}
-              className={`w-full h-full flex items-center justify-center rounded-full transition-all duration-300 ${isSearchExpanded ? 'text-kawaii-accent scale-110' : 'text-kawaii-text-muted hover:text-white'}`}
-            >
-              <Search className={`w-6 h-6 ${isSearching ? 'animate-pulse' : ''}`} />
-            </button>
-          </div>
-
-          <AnimatePresence>
-            {isSearchExpanded && (
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="w-full h-full flex items-center pl-14 pr-12"
-              >
-                <input
-                  type="text"
-                  autoFocus
-                  className="w-full bg-transparent border-none text-kawaii-text-dark focus:outline-none placeholder:text-kawaii-text-muted/50 font-medium text-lg"
-                  placeholder="Search for your favorite anime..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                
-                {searchQuery && (
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      // Optional: collapse back when cleared
-                      // setIsSearchExpanded(false); 
-                    }}
-                    className="absolute right-4 text-kawaii-text-muted hover:text-kawaii-error transition-colors"
-                  >
-                    {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <X className="w-5 h-5" />}
-                  </button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25, delay: Math.min(index * 0.025, 0.4) }}
+    >
+      <Link 
+        to={`/anime/details/${encodeURIComponent(anime.animeName)}`} 
+        className="ss-anime-card group"
+      >
+        <div className="ss-anime-card__img-container">
+          {/* Blurred Backdrop */}
+          <img 
+            className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110 pointer-events-none"
+            src={anime.image_url_base_anime || ''} 
+            alt=""
+            aria-hidden
+          />
+          <img
+            className="ss-anime-card__img relative z-10"
+            src={anime.image_url_base_anime || ''}
+            alt={anime.animeName}
+            loading="lazy"
+            onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x600/131316/3A3A4A?text=No+Image'; }}
+          />
+        </div>
         
-        {/* Search Status Indicator - Outside the expanding div for layout stability */}
-        <AnimatePresence>
-          {searchQuery && isSearchExpanded && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 text-sm font-bold tracking-wider text-center"
-            >
-              {isSearching ? (
-                <span className="text-kawaii-accent animate-pulse">
-                  Searching the database...
-                </span>
-              ) : (
-                <span className="text-kawaii-text-muted">
-                  Showing {searchResults.length} {searchResults.length === 1 ? 'item' : 'items'} for "{searchQuery}"
-                </span>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="ss-anime-card__body">
+          <p className="font-display font-black text-[13px] text-[#F0F0F5] line-clamp-1 group-hover:text-[#E8385A] transition-colors tracking-tight">
+            {anime.animeName}
+          </p>
+          <p className="text-[11px] text-[#3A3A4A] font-medium">
+            Sub | Dub
+          </p>
+        </div>
+      </Link>
+    </motion.div>
+  );
+};
+
+/* ─── Main page ─── */
+function BrowseAnimePage() {
+  const [animeList, setAnimeList] = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy]       = useState('animeName');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const ITEMS = 18; // 6 columns × 3 rows — high density discovery layout
+
+  useEffect(() => {
+    setLoading(true);
+    getSortedAnime(sortBy, sortOrder)
+      .then(d => setAnimeList(d))
+      .catch(e => setError(e.message || 'Failed to load.'))
+      .finally(() => setLoading(false));
+  }, [sortBy, sortOrder]);
+
+  useEffect(() => { setCurrentPage(1); }, [sortBy, sortOrder]);
+
+  const total  = Math.ceil(animeList.length / ITEMS);
+  const paged  = useMemo(() => animeList.slice((currentPage - 1) * ITEMS, currentPage * ITEMS), [animeList, currentPage]);
+
+  const pages = () => {
+    if (total <= 7) return [...Array(total)].map((_, i) => i + 1);
+    if (currentPage <= 4) return [1, 2, 3, 4, 5, '…', total];
+    if (currentPage >= total - 3) return [1, '…', total-4, total-3, total-2, total-1, total];
+    return [1, '…', currentPage-1, currentPage, currentPage+1, '…', total];
+  };
+
+  if (loading) return (
+    <div className="max-w-screen-xl mx-auto py-10">
+      <div className="ss-skeleton rounded" style={{ height: '32px', width: '160px', marginBottom: '6px' }} />
+      <div className="ss-skeleton rounded" style={{ height: '14px', width: '240px', marginBottom: '28px' }} />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="py-32 text-center">
+      <p className="font-display font-bold text-xl mb-1" style={{ color: '#F0F0F5' }}>Failed to load</p>
+      <p className="text-sm" style={{ color: '#888895' }}>{error}</p>
+    </div>
+  );
+
+  return (
+    <div className="max-w-[1640px] mx-auto py-10 px-4 sm:px-6 lg:px-8">
+
+      {/* Header — compact, no wasted space */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+        <div>
+          <h1 className="font-display font-black" style={{ color: '#F0F0F5', fontSize: 'clamp(1.5rem,3vw,2rem)', letterSpacing: '-0.02em' }}>
+            Library
+          </h1>
+          <p style={{ color: '#3A3A4A', fontSize: '11px', fontFamily: 'Space Grotesk', marginTop: '4px' }}>
+            {animeList.length.toLocaleString()} titles · page {currentPage}/{total}
+          </p>
+        </div>
+
+        {/* Sort controls — right side, compact */}
+        <div className="flex items-center gap-2">
+          <Funnel size={14} weight="bold" style={{ color: '#3A3A4A' }} />
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            style={{ fontSize: '12px', fontFamily: 'Space Grotesk', minWidth: '130px', padding: '6px 28px 6px 10px' }}
+          >
+            <option value="animeName">By Name</option>
+            <option value="releaseDate">By Date</option>
+          </select>
+
+          <button
+            onClick={() => setSortOrder(p => p === 'asc' ? 'desc' : 'asc')}
+            className="flex items-center gap-1.5 transition-all"
+            style={{
+              padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontFamily: 'Space Grotesk',
+              fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+              background: sortOrder === 'asc' ? 'rgba(232,56,90,0.1)' : 'rgba(109,40,217,0.1)',
+              border: `1px solid ${sortOrder === 'asc' ? 'rgba(232,56,90,0.25)' : 'rgba(109,40,217,0.25)'}`,
+              color: sortOrder === 'asc' ? '#E8385A' : '#8B5CF6',
+            }}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={sortOrder}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.12 }}
+                className="flex items-center gap-1.5"
+              >
+                {sortOrder === 'asc'
+                  ? <><SortAscending size={13} weight="bold" /> Asc</>
+                  : <><SortDescending size={13} weight="bold" /> Desc</>
+                }
+              </motion.div>
+            </AnimatePresence>
+          </button>
+        </div>
       </div>
 
-      {displayedAnimeBase.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 opacity-80">
-          <div className="w-24 h-24 bg-kawaii-bg/50 rounded-full flex items-center justify-center mb-6 border-2 border-dashed border-kawaii-border">
-            <Search className="w-10 h-10 text-kawaii-text-muted" />
-          </div>
-          <p className="text-kawaii-text-dark text-center text-2xl font-bold mb-2">
-            {searchQuery ? "No results found" : "No anime found in the database"}
-          </p>
-          <p className="text-kawaii-text-muted text-center max-w-md">
-            {searchQuery 
-              ? `We couldn't find any anime matching "${searchQuery}". Try a different term!` 
-              : "Wait for it... the database seems to be empty or still loading!"}
-          </p>
-          {searchQuery && (
-            <button 
-              onClick={() => setSearchQuery('')}
-              className="mt-6 px-6 py-2 bg-kawaii-accent/10 text-kawaii-accent rounded-full hover:bg-kawaii-accent hover:text-white transition-all font-bold"
-            >
-              Clear Search
-            </button>
-          )}
+      {/* Grid — 4 cols, larger image cards */}
+      {animeList.length === 0 ? (
+        <div className="py-32 text-center" style={{ color: '#3A3A4A', fontFamily: 'Space Grotesk', fontSize: '13px' }}>
+          No anime found in the library.
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {paginatedAnime.map((anime) => (
-              <Link to={`/anime/details/${encodeURIComponent(anime.animeName)}`} key={anime.animeId} className="block h-full">
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ y: -5, scale: 1.01 }}
-                  transition={{ type: "tween", duration: 0.2 }}
-                  style={{ transform: 'translateZ(0)' }}
-                  className="glass-card overflow-hidden h-full flex flex-col group relative border border-white/10 shadow-lg hover:shadow-kawaii-glow"
-                >
-                  <div className="relative overflow-hidden w-full max-h-[250px] bg-anime-bg flex items-center justify-center group-hover:shadow-[0_0_30px_rgba(0,0,0,0.5)] transition-all">
-                    {/* High-Vibrancy Ambient Backdrop */}
-                    <img 
-                      src={anime.image_url_base_anime || ''} 
-                      className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-60 scale-150 pointer-events-none"
-                      alt=""
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-anime-bg/80 via-transparent to-anime-bg/20 z-0"></div>
-                    <img
-                      src={anime.image_url_base_anime || 'https://placehold.co/200x280/16213E/9CA3AF?text=No+Image'}
-                      alt={anime.animeName}
-                      className="relative z-10 w-full h-auto max-h-[250px] object-contain group-hover:scale-105 transition-transform duration-700 shadow-2xl"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://placehold.co/200x280/16213E/9CA3AF?text=Image+Missing';
-                      }}
-                    />
-                  </div>
-                  
-                  <div className="p-5 flex-grow flex flex-col justify-between bg-anime-sub-card/50 backdrop-blur-sm">
-                    <div>
-                      <h3 className="text-lg font-sans font-medium text-kawaii-text-dark mb-2 line-clamp-2 leading-tight group-hover:text-kawaii-accent transition-colors tracking-wide">
-                        {anime.animeName}
-                      </h3>
-                      <div className="flex flex-wrap gap-2 mb-1">
-                        <span className="tech-label px-2 py-1 bg-kawaii-tertiary/20 text-kawaii-tertiary rounded-md">
-                          Anime
-                        </span>
-                        {/* Redundant labels removed for cleaner UI */}
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-kawaii-border">
-                      <span className="text-kawaii-text-muted text-[10px] uppercase tracking-widest font-bold">Details Available</span>
-                      <span className="text-kawaii-accent text-xs font-accent uppercase group-hover:underline">Explore ➔</span>
-                    </div>
-                  </div>
-                </motion.div>
-              </Link>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            {paged.map((anime, i) => <AnimeCard key={anime.animeId} anime={anime} index={i} />)}
           </div>
 
-          {/* Pagination Controls - Premium UI */}
-          {totalPages > 1 && (
-            <div className="mt-16 flex flex-col items-center gap-6">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="p-3 rounded-full bg-anime-sub-card/30 border border-white/5 hover:border-kawaii-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                >
-                  <ChevronLeft className="w-5 h-5 text-kawaii-text-dark" />
-                </button>
-                
-                <div className="flex items-center gap-2 px-4 py-2 bg-anime-sub-card/30 rounded-2xl border border-white/5">
-                  {[...Array(totalPages)].map((_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setCurrentPage(i + 1)}
-                      className={`w-10 h-10 rounded-xl font-bold transition-all ${
-                        currentPage === i + 1 
-                          ? 'bg-kawaii-accent text-white shadow-kawaii-glow' 
-                          : 'text-kawaii-text-muted hover:bg-white/5 hover:text-kawaii-text-dark'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  )).slice(Math.max(0, currentPage - 3), Math.min(totalPages, currentPage + 2))}
-                  
-                  {totalPages > 5 && currentPage < totalPages - 2 && (
-                    <span className="text-kawaii-text-muted px-2">...</span>
-                  )}
-                  
-                  {totalPages > 5 && currentPage < totalPages - 2 && (
-                    <button
-                      onClick={() => setCurrentPage(totalPages)}
-                      className="w-10 h-10 rounded-xl font-bold text-kawaii-text-muted hover:bg-white/5 hover:text-kawaii-text-dark"
-                    >
-                      {totalPages}
-                    </button>
-                  )}
-                </div>
+          {/* Pagination */}
+          {total > 1 && (
+            <div className="mt-12 flex items-center justify-center gap-1.5">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-25"
+                style={{ border: '1px solid #222228', background: '#131316', color: '#888895' }}
+              >
+                <CaretLeft size={16} weight="bold" />
+              </button>
 
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="p-3 rounded-full bg-anime-sub-card/30 border border-white/5 hover:border-kawaii-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                >
-                  <ChevronRight className="w-5 h-5 text-kawaii-text-dark" />
-                </button>
-              </div>
+              {pages().map((p, i) =>
+                p === '…' ? (
+                  <span key={`e${i}`} className="w-8 text-center" style={{ color: '#3A3A4A', fontSize: '13px' }}>···</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(p)}
+                    className="w-8 h-8 rounded-lg text-xs font-semibold transition-all"
+                    style={currentPage === p
+                      ? { background: '#E8385A', color: '#fff', boxShadow: '0 0 14px rgba(232,56,90,0.35)', border: '1px solid transparent' }
+                      : { border: '1px solid #222228', background: '#131316', color: '#3A3A4A' }
+                    }
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(p + 1, total))}
+                disabled={currentPage === total}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-25"
+                style={{ border: '1px solid #222228', background: '#131316', color: '#888895' }}
+              >
+                <CaretRight size={16} weight="bold" />
+              </button>
             </div>
           )}
         </>

@@ -2,7 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getUserProfile } from '../api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Tv, Award, ListVideo, History, UserCircle, Play, ShieldAlert, Zap, Medal } from 'lucide-react';
+import {
+  Star,
+  TelevisionSimple,
+  Trophy,
+  Stack,
+  ClockCounterClockwise,
+  UserCircle,
+  Play,
+  WarningCircle,
+  Lightning,
+  Medal
+} from '@phosphor-icons/react';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -18,11 +29,47 @@ const itemVariants = {
 };
 
 const getOtakuRank = (count) => {
-  if (count >= 50) return { name: "Kage", color: "text-red-400", bg: "bg-red-400/20" };
-  if (count >= 25) return { name: "Jonin", color: "text-purple-400", bg: "bg-purple-400/20" };
-  if (count >= 10) return { name: "Chunin", color: "text-blue-400", bg: "bg-blue-400/20" };
-  return { name: "Genin", color: "text-green-400", bg: "bg-green-400/20" };
+  if (count >= 50) return { name: "Sensei", color: "text-[#E8385A]", bg: "bg-[#E8385A]/10" };
+  if (count >= 25) return { name: "Pro", color: "text-[#8B5CF6]", bg: "bg-[#8B5CF6]/10" };
+  if (count >= 10) return { name: "Enthusiast", color: "text-[#3B82F6]", bg: "bg-[#3B82F6]/10" };
+  return { name: "Watcher", color: "text-[#10B981]", bg: "bg-[#10B981]/10" };
 };
+
+const SkeletonProfile = () => (
+  <div className="max-w-screen-xl mx-auto space-y-6">
+    {/* ID Card */}
+    <div className="ss-card p-6 md:p-8 flex flex-col md:flex-row gap-6 items-center">
+      <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl ss-skeleton flex-shrink-0"></div>
+      <div className="flex-grow space-y-3 w-full">
+        <div className="flex gap-3">
+          <div className="h-9 w-44 ss-skeleton rounded-lg"></div>
+          <div className="h-6 w-20 ss-skeleton rounded-full mt-1.5"></div>
+        </div>
+        <div className="h-4 w-44 ss-skeleton rounded"></div>
+        <div className="pt-3 space-y-1.5">
+          <div className="flex justify-between w-60">
+            <div className="h-3 w-28 ss-skeleton rounded"></div>
+            <div className="h-3 w-8 ss-skeleton rounded"></div>
+          </div>
+          <div className="h-2 w-60 ss-skeleton rounded-full"></div>
+        </div>
+      </div>
+    </div>
+    {/* Stats */}
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {[...Array(3)].map((_, i) => <div key={i} className="h-24 ss-skeleton rounded-2xl"></div>)}
+    </div>
+    {/* Library */}
+    <div className="space-y-10">
+      <div className="h-7 w-44 ss-skeleton rounded"></div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="ss-skeleton rounded-2xl" style={{ aspectRatio: '2/3' }}></div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
 
 function UserProfilePage() {
   const { userId } = useParams();
@@ -48,17 +95,14 @@ function UserProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-anime-background relative overflow-hidden">
-        <motion.div animate={{ rotate: 360, scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-            <Tv className="w-16 h-16 text-anime-accent" />
-        </motion.div>
-        <motion.p animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1.5 }} className="absolute mt-32 text-anime-accent font-bold text-lg">Synchronizing Otaku Data...</motion.p>
+      <div className="container mx-auto py-20 px-4">
+        <SkeletonProfile />
       </div>
     );
   }
 
-  if (error) return <div className="text-center p-8 text-kawaii-error text-xl h-screen flex items-center justify-center font-bold">{error}</div>;
-  if (!userProfile) return <div className="text-center p-8 text-kawaii-text-dark text-xl h-screen flex items-center justify-center font-bold">User Not Found. 🚫</div>;
+  if (error) return <div className="text-center p-8 text-[#EF4444] text-xl h-screen flex items-center justify-center font-bold font-display">{error}</div>;
+  if (!userProfile) return <div className="text-center p-8 text-[#888895] text-xl h-screen flex items-center justify-center font-bold font-display">User Not Found.</div>;
 
   const profilePicSrc = userProfile.profilePicture || `https://ui-avatars.com/api/?name=${userProfile.userName}&background=FF2E93&color=fff&size=200`;
   const watchedCount = userProfile.anime_watched_count || 0;
@@ -68,31 +112,32 @@ function UserProfilePage() {
 
   const AnimeCard = ({ anime }) => (
     <motion.div variants={itemVariants} className="block group">
-      <Link to={`/anime/details/${encodeURIComponent(anime.animeName)}`} className="h-full">
-        <div className="glass-card rounded-2xl shadow-lg border-2 border-white/10 flex flex-col h-full hover:shadow-kawaii-glow transition-all duration-300 bg-anime-sub-card/40 group-hover:-translate-y-2">
-          <div className="relative w-full h-64 overflow-hidden">
-            <img
-              src={anime.image_url_base_anime || 'https://placehold.co/200x280/16213E/9CA3AF?text=No+Image'}
-              alt={anime.animeName}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              onError={(e) => {e.target.onerror = null; e.target.src='https://placehold.co/200x280/16213E/9CA3AF?text=Image+Missing';}}
-            />
-            {/* Play overlay on hover */}
-            <div className="absolute inset-0 bg-kawaii-accent/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <div className="p-3 bg-white/20 backdrop-blur-md rounded-full border border-white/40 shadow-xl">
-                 <Play className="w-8 h-8 text-white fill-white" />
-              </div>
-            </div>
-            {/* Genre Badge */}
-             <div className="absolute top-2 left-2 px-2 py-0.5 bg-anime-card/80 backdrop-blur-md border border-white/10 rounded-md text-[10px] font-bold text-kawaii-secondary uppercase tracking-widest">
-                Anime
-            </div>
-          </div>
-          <div className="p-4 bg-anime-sub-card/80 backdrop-blur-sm flex-grow flex flex-col">
-            <p className="text-kawaii-text-dark group-hover:text-kawaii-accent text-sm font-bold line-clamp-2 text-center leading-snug transition-colors">
-              {anime.animeName}
-            </p>
-          </div>
+      <Link 
+        to={`/anime/details/${encodeURIComponent(anime.animeName)}`} 
+        className="ss-anime-card group"
+      >
+        <div className="ss-anime-card__img-container">
+          {/* Blurred Backdrop */}
+          <img 
+            src={anime.image_url_base_anime || 'https://placehold.co/400x600/131316/3A3A4A?text=No+Image'} 
+            className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110 pointer-events-none"
+            alt=""
+            aria-hidden
+          />
+          <img
+            src={anime.image_url_base_anime || 'https://placehold.co/400x600/131316/3A3A4A?text=No+Image'}
+            alt={anime.animeName}
+            className="ss-anime-card__img relative z-10"
+            onError={(e) => {e.target.onerror = null; e.target.src='https://placehold.co/400x600/131316/3A3A4A?text=Image+Missing';}}
+          />
+        </div>
+        <div className="ss-anime-card__body">
+          <p className="text-[#F0F0F5] group-hover:text-[#E8385A] text-[13px] font-black tracking-tight transition-colors line-clamp-1">
+            {anime.animeName}
+          </p>
+          <p className="text-[11px] text-[#3A3A4A] font-medium">
+            Sub | Dub
+          </p>
         </div>
       </Link>
     </motion.div>
@@ -104,42 +149,42 @@ function UserProfilePage() {
       <motion.div animate={{ y: [0, -40, 0], opacity: [0.1, 0.3, 0.1] }} transition={{ duration: 10, repeat: Infinity }} className="absolute -top-20 right-10 w-96 h-96 bg-kawaii-accent/20 blur-3xl rounded-full z-0 pointer-events-none" />
       <motion.div animate={{ x: [0, 50, 0], opacity: [0.1, 0.2, 0.1] }} transition={{ duration: 12, repeat: Infinity }} className="absolute bottom-10 left-10 w-80 h-80 bg-kawaii-tertiary/20 blur-3xl rounded-full z-0 pointer-events-none" />
 
-      <div className="container mx-auto relative z-10 max-w-6xl">
+      <div className="container mx-auto relative z-10 max-w-[1640px] px-4 md:px-8">
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
           
           {/* Header Card: The ID Card Experience */}
-          <motion.div variants={itemVariants} className="glass-card rounded-[2.5rem] p-6 md:p-8 border-2 border-white/20 shadow-2xl flex flex-col md:flex-row gap-8 items-center bg-gradient-to-br from-anime-card/90 to-anime-sub-card/90">
+          <motion.div variants={itemVariants} className="ss-card rounded-[2rem] p-6 md:p-8 border border-[#222228] shadow-2xl flex flex-col md:flex-row gap-8 items-center bg-[#131316]">
              <div className="relative">
-                <div className="w-32 h-32 md:w-40 md:h-40 rounded-3xl overflow-hidden border-4 border-kawaii-accent shadow-kawaii-glow rotate-3 hover:rotate-0 transition-transform duration-500">
+                <div className="w-32 h-32 md:w-36 md:h-36 rounded-2xl overflow-hidden border-2 border-[#E8385A] shadow-[0_0_20px_rgba(232,56,90,0.3)]">
                    <img src={profilePicSrc} alt={userProfile.userName} className="w-full h-full object-cover" />
                 </div>
-                <div className="absolute -bottom-3 -right-3 bg-kawaii-text-dark text-anime-bg font-black px-3 py-1 rounded-lg shadow-lg text-xs transform -rotate-6 border-2 border-kawaii-accent">
+                <div className="absolute -bottom-2 -right-2 bg-[#0C0C0E] text-[#F0F0F5] font-black px-2 py-1 rounded-lg shadow-lg text-[10px] border border-[#E8385A]/40 uppercase tracking-widest">
                    LVL {Math.floor(watchedCount / 5) + 1}
                 </div>
              </div>
              
              <div className="flex-grow text-center md:text-left space-y-3">
                 <div className="flex flex-col md:flex-row items-center gap-3">
-                   <h2 className="text-3xl md:text-4xl font-display font-extrabold text-kawaii-text-dark tracking-tight leading-none">
+                   <h2 className="text-3xl md:text-4xl font-display font-black text-[#F0F0F5] tracking-tight leading-none">
                       {userProfile.userName}
                    </h2>
-                   <div className={`px-4 py-1 rounded-full text-xs font-black uppercase tracking-tighter shadow-sm border border-current ${rank.bg} ${rank.color}`}>
+                   <div className={`px-4 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${rank.bg} ${rank.color} border-[#222228]`}>
                       {rank.name} CLASS
                    </div>
                 </div>
-                <p className="text-kawaii-text-muted text-sm font-semibold flex items-center justify-center md:justify-start gap-2 opacity-80 italic">
-                   <UserCircle size={16} className="text-kawaii-accent" />
+                <p className="text-[#888895] text-[13px] font-mono flex items-center justify-center md:justify-start gap-2 opacity-80">
+                   <UserCircle size={14} weight="bold" className="text-[#3A3A4A]" />
                    {userProfile.email}
                 </p>
                 
                 {/* Leveling System */}
-                <div className="mt-4 pt-4 border-t border-white/5 w-full max-w-md mx-auto md:mx-0">
+                <div className="mt-4 pt-4 border-t border-[#222228] w-full max-w-sm mx-auto md:mx-0">
                    <div className="flex justify-between items-end mb-2">
-                       <span className="tech-label text-kawaii-text-muted">Next Class: {nextRankCount} Completed</span>
-                       <span className="text-xs font-accent font-bold text-kawaii-accent">{progressPercent.toFixed(0)}%</span>
+                       <span className="text-[10px] font-mono text-[#3A3A4A] uppercase tracking-widest">Next Class: {nextRankCount} Items</span>
+                       <span className="text-[10px] font-mono font-bold text-[#E8385A]">{progressPercent.toFixed(0)}%</span>
                    </div>
-                   <div className="h-2.5 w-full bg-anime-border rounded-full p-0.5 border border-white/10 shadow-inner overflow-hidden">
-                       <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} transition={{ duration: 1.5, ease: "easeOut" }} className="h-full bg-gradient-to-r from-kawaii-accent to-kawaii-tertiary rounded-full shadow-glow" />
+                   <div className="h-1.5 w-full bg-[#0C0C0E] rounded-full border border-[#222228] shadow-inner overflow-hidden">
+                       <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} transition={{ duration: 1.5, ease: "easeOut" }} className="h-full bg-gradient-to-r from-[#E8385A] to-[#F0A0B0] rounded-full" />
                    </div>
                 </div>
              </div>
@@ -147,77 +192,77 @@ function UserProfilePage() {
 
           {/* Stats Section: Compact Grid */}
           <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-             <div className="bg-anime-card/40 backdrop-blur-xl p-5 rounded-3xl border border-white/10 shadow-sm flex items-center gap-4 group hover:border-kawaii-secondary transition-colors">
-                 <div className="p-3 bg-kawaii-secondary/20 rounded-2xl text-kawaii-secondary group-hover:scale-110 transition-transform">
-                    <History size={24} />
+             <div className="bg-[#131316] p-5 rounded-2xl border border-[#222228] shadow-sm flex items-center gap-4 group hover:border-[#E8385A]/40 transition-colors">
+                 <div className="p-3 bg-white/[0.03] rounded-xl text-[#888895] group-hover:text-[#E8385A] transition-colors">
+                    <ClockCounterClockwise size={20} weight="bold" />
                  </div>
                  <div>
-                    <p className="tech-label text-kawaii-text-muted">Anime Watched</p>
-                    <p className="text-2xl font-display font-extrabold text-kawaii-text-dark mt-1">{userProfile.anime_watched_count || 0}</p>
+                    <p className="text-[10px] font-mono text-[#3A3A4A] uppercase tracking-widest">Watched</p>
+                    <p className="text-2xl font-display font-black text-[#F0F0F5] mt-1">{userProfile.anime_watched_count || 0}</p>
                  </div>
              </div>
-             <div className="bg-anime-card/40 backdrop-blur-xl p-5 rounded-3xl border border-white/10 shadow-sm flex items-center gap-4 group hover:border-kawaii-tertiary transition-colors">
-                 <div className="p-3 bg-kawaii-tertiary/20 rounded-2xl text-kawaii-tertiary group-hover:scale-110 transition-transform">
-                    <ListVideo size={24} />
+             <div className="bg-[#131316] p-5 rounded-2xl border border-[#222228] shadow-sm flex items-center gap-4 group hover:border-[#E8385A]/40 transition-colors">
+                 <div className="p-3 bg-white/[0.03] rounded-xl text-[#888895] group-hover:text-[#E8385A] transition-colors">
+                    <Stack size={20} weight="bold" />
                  </div>
                  <div>
-                    <p className="tech-label text-kawaii-text-muted">Currently Playing</p>
-                    <p className="text-2xl font-display font-extrabold text-kawaii-text-dark mt-1">{userProfile.anime_watching_count || 0}</p>
+                    <p className="text-[10px] font-mono text-[#3A3A4A] uppercase tracking-widest">In-Progress</p>
+                    <p className="text-2xl font-display font-black text-[#F0F0F5] mt-1">{userProfile.anime_watching_count || 0}</p>
                  </div>
              </div>
-             <div className="bg-anime-card/40 backdrop-blur-xl p-5 rounded-3xl border border-white/10 shadow-sm flex items-center gap-4 group hover:border-kawaii-accent transition-colors">
-                 <div className="p-3 bg-kawaii-accent/20 rounded-2xl text-kawaii-accent group-hover:scale-110 transition-transform">
-                    <Zap size={24} />
+             <div className="bg-[#131316] p-5 rounded-2xl border border-[#222228] shadow-sm flex items-center gap-4 group hover:border-[#E8385A]/40 transition-colors">
+                 <div className="p-3 bg-white/[0.03] rounded-xl text-[#888895] group-hover:text-[#E8385A] transition-colors">
+                    <Lightning size={20} weight="bold" />
                  </div>
                  <div>
-                    <p className="tech-label text-kawaii-text-muted">Otaku Level</p>
-                    <p className="text-2xl font-display font-extrabold text-kawaii-text-dark mt-1">{Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}</p>
+                    <p className="text-[10px] font-mono text-[#3A3A4A] uppercase tracking-widest">Seniority</p>
+                    <p className="text-2xl font-display font-black text-[#F0F0F5] mt-1">LVL {Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}</p>
                  </div>
              </div>
           </motion.div>
 
-          {/* Library Section: Using the 3-Column Standard */}
-          <div className="space-y-12 pt-8">
+          {/* Library Section */}
+          <div className="space-y-16 pt-8">
             {/* Watching List */}
             <motion.div variants={itemVariants}>
-              <div className="flex items-center justify-between mb-8 border-b-2 border-kawaii-border pb-4">
-                 <h3 className="text-2xl font-display font-extrabold text-kawaii-accent flex items-center gap-3">
-                   <ListVideo size={28} className="text-kawaii-secondary" /> Currently In-Action
+              <div className="flex items-center justify-between mb-8 border-b border-[#222228] pb-4">
+                 <h3 className="text-lg font-display font-black text-[#F0F0F5] tracking-tight flex items-center gap-3">
+                   <Stack size={20} weight="bold" className="text-[#E8385A]" /> Currently Tracking
                  </h3>
-                 <span className="bg-anime-sub-card px-3 py-1 rounded-full text-[10px] font-black text-kawaii-text-muted uppercase tracking-widest">{userProfile.watchingAnime?.length || 0} Anime</span>
+                 <span className="text-[10px] font-mono text-[#3A3A4A] uppercase tracking-widest">{userProfile.watchingAnime?.length || 0} Units</span>
               </div>
               
               {userProfile.watchingAnime && userProfile.watchingAnime.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                   {userProfile.watchingAnime.map((anime) => (
                     <AnimeCard key={anime.animeId} anime={anime} />
                   ))}
                 </div>
               ) : (
-                <div className="bg-anime-sub-card/20 border-2 border-dashed border-white/5 rounded-[2rem] p-12 text-center text-kawaii-text-muted font-bold text-sm tracking-wide">
-                  Your library is currently empty. Start discovering new worlds! 🗾
+                <div className="border border-dashed border-[#222228] rounded-2xl p-12 text-center text-[#3A3A4A] text-[13px] font-sans">
+                  No active tracking. Start your discovery in the library.
                 </div>
               )}
             </motion.div>
 
             {/* Completed List */}
             <motion.div variants={itemVariants}>
-              <div className="flex items-center justify-between mb-8 border-b-2 border-kawaii-border pb-4">
-                 <h3 className="text-2xl font-display font-extrabold text-kawaii-accent flex items-center gap-3">
-                   <Award size={28} className="text-kawaii-tertiary" /> Hall of Masterpieces
+              <div className="flex items-center justify-between mb-8 border-b border-[#222228] pb-4">
+                 <h3 className="text-lg font-display font-black text-[#F0F0F5] tracking-tight flex items-center gap-3">
+                   <Trophy size={20} weight="bold" className="text-[#E8385A]" /> Hall of Records
                  </h3>
-                 <span className="bg-anime-sub-card px-3 py-1 rounded-full text-[10px] font-black text-kawaii-text-muted uppercase tracking-widest">{userProfile.watchedAnime?.length || 0} Anime</span>
+                 <span className="text-[10px] font-mono text-[#3A3A4A] uppercase tracking-widest">{userProfile.watchedAnime?.length || 0} Units</span>
               </div>
               
               {userProfile.watchedAnime && userProfile.watchedAnime.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                   {userProfile.watchedAnime.map((anime) => (
                     <AnimeCard key={anime.animeId} anime={anime} />
                   ))}
                 </div>
               ) : (
-                <div className="bg-anime-sub-card/20 border-2 border-dashed border-white/5 rounded-[2rem] p-12 text-center text-kawaii-text-muted font-bold text-sm tracking-wide">
-                   No completed anime found yet. Every legend starts somewhere! ⚔️
+                <div className="border border-dashed border-[#222228] rounded-2xl p-12 text-center text-[#3A3A4A] text-[13px] font-sans">
+                   No completed records found.
                 </div>
               )}
             </motion.div>
