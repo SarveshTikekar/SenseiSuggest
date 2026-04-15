@@ -1,6 +1,4 @@
-#The main recommendation model
 import os, pandas as pd, numpy as np
-import scipy
 
 #Import all ML training methods from other modules
 from .load_data import load_data

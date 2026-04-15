@@ -4,7 +4,7 @@ i.e if many people like anime A, and those same people like anime B as well, the
 Anime A, would be recommended anime B as well
 """
 
-from sklearn.metrics.pairwise import cosine_similarity
+from .ml_utils import cosine_similarity
 import os, sys, ast
 import pandas as pd
 

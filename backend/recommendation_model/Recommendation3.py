@@ -1,7 +1,6 @@
 """ Recommender 3 using Content based filtering on Anime Genre and which animes are adult rated """
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import TfidfVectorizer
+from .ml_utils import cosine_similarity, SimpleTfidf
 
 import numpy as np
 import os, ast, sys
@@ -14,12 +13,11 @@ def content_based_recommender(user_id, ratings_df, anime_df, number_of_recommend
     anime_df['genres_for_tfidf'] = anime_df['genres'].apply(
         lambda x: ' '.join(map(str, x)) if isinstance(x, list) and len(x) > 0 else ''
     )
-    #anime_df['genres'] = anime_df['genres'].fillna('')
 
-    tfid_vector = TfidfVectorizer(stop_words='english', token_pattern=r'(?u)\b\w+\b')
-    anime_genre_matrix = tfid_vector.fit_transform(anime_df['genres_for_tfidf'])
+    tfidf_vectorizer = SimpleTfidf()
+    anime_genre_matrix = tfidf_vectorizer.fit_transform(anime_df['genres_for_tfidf'])
 
-    anime_genre_df = pd.DataFrame(anime_genre_matrix.toarray(), index=anime_df['animeId'], columns = tfid_vector.get_feature_names_out())
+    anime_genre_df = pd.DataFrame(anime_genre_matrix, index=anime_df['animeId'], columns = tfidf_vectorizer.get_feature_names_out())
 
     user_ratings = ratings_df[ratings_df['userId']==user_id]
  
