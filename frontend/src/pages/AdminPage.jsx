@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
   addAnime, // This function in api.js and backend must be updated for new payload
@@ -52,14 +52,7 @@ function AdminPage() {
   const [seasons, setSeasons] = useState([]); // These are 'Release Seasons' (e.g., Fall 2023), not anime-specific seasons
   const [allAnime, setAllAnime] = useState([]);
 
-  useEffect(() => {
-    if (!isAdmin) {
-      navigate('/');
-    }
-    fetchAdminData();
-  }, [isAdmin, navigate]);
-
-  const fetchAdminData = async () => {
+  const fetchAdminData = useCallback(async () => {
     if (!userId || !isAdmin) {
       setDataLoading(false);
       return;
@@ -79,7 +72,14 @@ function AdminPage() {
     } finally {
       setDataLoading(false);
     }
-  };
+  }, [userId, isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate('/');
+    }
+    fetchAdminData();
+  }, [isAdmin, navigate, fetchAdminData]);
 
   // UPDATED: handleAddAnimeSubmit with new fields and adjusted types for model
   const handleAddAnimeSubmit = async (e) => {
@@ -226,8 +226,8 @@ function AdminPage() {
   }
 
   return (
-    <div className="bg-anime-card p-8 rounded-lg shadow-xl border border-anime-border max-w-7xl mx-auto my-8">
-      <h2 className="text-4xl font-bold text-anime-accent text-center mb-8">Admin Dashboard</h2>
+    <div className="ss-card p-8 rounded-[2rem] border border-white/10 max-w-7xl mx-auto my-8 bg-white/[0.03] backdrop-blur-md">
+      <h2 className="text-4xl font-display font-black text-[#DD0426] text-center mb-10 tracking-tight">Admin <span className="text-[#F5EBE0] italic">Terminal.</span></h2>
 
       {message && <p className="text-anime-success text-center mb-4 text-lg">{message}</p>}
       {error && <p className="text-anime-error text-center mb-4 text-lg">{error}</p>}
@@ -239,8 +239,8 @@ function AdminPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
           {/* Add New Anime Form (UPDATED FIELDS FOR ANIME MODEL) */}
-          <div className="bg-anime-bg p-6 rounded-lg border border-anime-border shadow-md col-span-full md:col-span-1">
-            <h3 className="text-2xl font-bold text-anime-accent mb-4">Add New Anime</h3>
+          <div className="p-6 rounded-2xl border border-white/10 shadow-md col-span-full md:col-span-1 bg-black/20">
+            <h3 className="text-xl font-display font-black text-[#DD0426] mb-6 uppercase tracking-wider">Deploy Anime</h3>
             <form onSubmit={handleAddAnimeSubmit} className="space-y-4">
               <div>
                 <label htmlFor="animeName" className="block text-anime-text-light text-sm font-bold mb-1">Anime Name:</label>
@@ -301,8 +301,8 @@ function AdminPage() {
           </div>
 
           {/* Delete Anime Form */}
-          <div className="bg-anime-bg p-6 rounded-lg border border-anime-border shadow-md col-span-full md:col-span-1">
-            <h3 className="text-2xl font-bold text-anime-accent mb-4">Delete Anime by ID</h3>
+          <div className="p-6 rounded-2xl border border-white/10 shadow-md col-span-full md:col-span-1 bg-black/20">
+            <h3 className="text-xl font-display font-black text-[#DD0426] mb-6 uppercase tracking-wider">Purge Node</h3>
             <form onSubmit={(e) => { e.preventDefault(); handleDeleteAnime(deleteAnimeId); }} className="space-y-4">
               <div>
                 <label htmlFor="deleteAnimeId" className="block text-anime-text-light text-sm font-bold mb-1">Anime ID to Delete:</label>
@@ -327,8 +327,8 @@ function AdminPage() {
           </div>
 
           {/* Add Genre Form */}
-          <div className="bg-anime-bg p-6 rounded-lg border border-anime-border shadow-md">
-            <h3 className="text-2xl font-bold text-anime-accent mb-4">Add New Genre</h3>
+          <div className="p-6 rounded-2xl border border-white/10 shadow-md bg-black/20">
+            <h3 className="text-xl font-display font-black text-[#DD0426] mb-6 uppercase tracking-wider">Inject Genre</h3>
             <form onSubmit={handleAddGenre} className="space-y-4">
               <div>
                 <label htmlFor="newGenreName" className="block text-anime-text-light text-sm font-bold mb-1">Genre Name:</label>
@@ -352,8 +352,8 @@ function AdminPage() {
           </div>
 
           {/* Add Season Form */}
-          <div className="bg-anime-bg p-6 rounded-lg border border-anime-border shadow-md">
-            <h3 className="text-2xl font-bold text-anime-accent mb-4">Add New Season</h3>
+          <div className="p-6 rounded-2xl border border-white/10 shadow-md bg-black/20">
+            <h3 className="text-xl font-display font-black text-[#DD0426] mb-6 uppercase tracking-wider">Link Season</h3>
             <form onSubmit={handleAddSeason} className="space-y-4">
               <div>
                 <label htmlFor="animeIdForSeason" className="block text-anime-text-light text-sm font-bold mb-1">Link to Anime:</label>
@@ -440,8 +440,8 @@ function AdminPage() {
       )}
 
       {/* List All Anime Section */}
-      <div className="bg-anime-bg p-6 rounded-lg border border-anime-border shadow-md mt-8">
-        <h3 className="text-2xl font-bold text-anime-accent mb-4">All Anime</h3>
+      <div className="p-6 rounded-2xl border border-white/10 shadow-md mt-12 bg-black/20">
+        <h3 className="text-xl font-display font-black text-[#DD0426] mb-8 uppercase tracking-wider">Neural Library Index</h3>
         {allAnime.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-anime-border text-anime-text-light">

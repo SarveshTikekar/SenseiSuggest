@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile } from '../api';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   Compass,
   SquaresFour,
@@ -21,7 +21,7 @@ const WordMark = () => (
     style={{
       fontSize: '20px',
       letterSpacing: '-0.04em',
-      background: 'linear-gradient(135deg, #E8385A 0%, #F0A0B0 100%)',
+      background: 'linear-gradient(135deg, #DD0426 0%, #F5EBE0 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       backgroundClip: 'text',
@@ -67,8 +67,8 @@ function Navbar({ onSearchOpen }) {
       <nav
         className={`sticky top-0 z-50 w-full transition-all duration-300 ${
           scrolled
-            ? 'bg-[#06080F]/95 border-b border-[#1E2535] shadow-[0_1px_0_rgba(255,255,255,0.03)]'
-            : 'bg-[#06080F]/80 border-b border-[#1E2535]/60'
+            ? 'bg-[#0D0D0D]/95 border-b border-[#AAAAAA]/10 shadow-[0_1px_15px_rgba(0,0,0,0.2)]'
+            : 'bg-[#0D0D0D]/80 border-b border-[#AAAAAA]/5'
         }`}
         style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       >
@@ -81,26 +81,29 @@ function Navbar({ onSearchOpen }) {
 
           {/* center links */}
           <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
-            {NAV_LINKS.map(({ label, to, icon: Icon }) => (
-              <Link
-                key={to}
-                to={to}
-                className={`relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
-                  isActive(to)
-                    ? 'text-[#E8385A] bg-[#E8385A]/8'
-                    : 'text-[#8892A4] hover:text-[#EDF0F7] hover:bg-white/[0.04]'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {label}
-                {isActive(to) && (
-                  <motion.div
-                    layoutId="nav-indicator"
-                    className="absolute inset-0 rounded-lg ring-1 ring-[#E8385A]/30"
-                  />
-                )}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                    isActive(link.to)
+                      ? 'text-[#DD0426] bg-[#DD0426]/8'
+                      : 'text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {link.label}
+                  {isActive(link.to) && (
+                    <Motion.div
+                      layoutId="nav-indicator"
+                      className="absolute inset-0 rounded-lg ring-1 ring-[#DD0426]/30"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </div>
 
           {/* right: search + auth */}
@@ -109,13 +112,13 @@ function Navbar({ onSearchOpen }) {
             {/* Q10-B: Cmd+K trigger */}
             <button
               onClick={onSearchOpen}
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#161B27] border border-[#1E2535] text-[#3D4A5C] hover:text-[#8892A4] hover:border-[#3D4A5C] transition-all text-[12px] font-mono group"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#AAAAAA]/5 border border-[#AAAAAA]/10 text-[#AAAAAA] hover:text-[#F5EBE0] hover:border-[#AAAAAA]/30 transition-all text-[12px] font-mono group"
             >
               <MagnifyingGlass size={14} weight="bold" />
               <span>Search</span>
               <kbd className="hidden lg:flex items-center gap-0.5 ml-1">
-                <span className="px-1 py-0.5 rounded bg-[#0D1117] border border-[#1E2535] text-[10px]">⌘</span>
-                <span className="px-1 py-0.5 rounded bg-[#0D1117] border border-[#1E2535] text-[10px]">K</span>
+                <span className="px-1 py-0.5 rounded bg-black/20 border border-[#AAAAAA]/10 text-[10px]">⌘</span>
+                <span className="px-1 py-0.5 rounded bg-black/20 border border-[#AAAAAA]/10 text-[10px]">K</span>
               </kbd>
             </button>
 
@@ -125,7 +128,7 @@ function Navbar({ onSearchOpen }) {
                   <>
                     <button
                       onClick={() => navigate(`/profile/${userId}`)}
-                      className="w-8 h-8 rounded-lg overflow-hidden border border-[#1E2535] hover:border-[#E8385A]/40 transition-colors"
+                      className="w-8 h-8 rounded-lg overflow-hidden border border-[#2A2A2A] hover:border-[#DD0426]/40 transition-colors"
                     >
                       {navUserProfile?.profilePicture ? (
                         <img
@@ -137,14 +140,14 @@ function Navbar({ onSearchOpen }) {
                           }}
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-[#E8385A] to-[#6D28D9] flex items-center justify-center">
+                        <div className="w-full h-full bg-gradient-to-br from-[#DD0426] to-[#8E1B34] flex items-center justify-center">
                           <UserCircle className="w-3.5 h-3.5 text-white" />
                         </div>
                       )}
                     </button>
                     <button
                       onClick={logout}
-                      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-[#888895] hover:text-[#F0F0F5] hover:bg-white/[0.04] transition-all"
+                      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all"
                     >
                       <SignOut size={16} weight="bold" />
                       Logout
@@ -154,14 +157,14 @@ function Navbar({ onSearchOpen }) {
                   <>
                     <Link
                       to="/login"
-                      className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-[#888895] hover:text-[#F0F0F5] hover:bg-white/[0.04] transition-all"
+                      className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all"
                     >
                       <SignIn size={16} weight="bold" />
                       Login
                     </Link>
                     <Link
                       to="/signup"
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-bold text-white bg-gradient-to-r from-[#E8385A] to-[#6D28D9] hover:opacity-90 transition-opacity shadow-[0_2px_12px_rgba(232,56,90,0.3)]"
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-bold text-white bg-gradient-to-r from-[#DD0426] to-[#A10A24] hover:opacity-90 transition-opacity shadow-[0_4px_12px_rgba(221,4,38,0.3)]"
                     >
                       <UserPlus size={16} weight="bold" />
                       Sign Up
@@ -173,7 +176,7 @@ function Navbar({ onSearchOpen }) {
 
             {/* Mobile menu toggle */}
             <button
-              className="md:hidden p-1.5 rounded-lg text-[#888895] hover:text-[#F0F0F5] hover:bg-white/[0.04] transition-all"
+              className="md:hidden p-1.5 rounded-lg text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all"
               onClick={() => setMobileOpen(v => !v)}
               aria-label="Toggle menu"
             >
@@ -185,50 +188,53 @@ function Navbar({ onSearchOpen }) {
         {/* Mobile dropdown */}
         <AnimatePresence>
           {mobileOpen && (
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="md:hidden border-t border-[#1E2535] overflow-hidden"
+              className="md:hidden border-t border-[#AAAAAA]/10 overflow-hidden"
             >
               <div className="max-w-screen-xl mx-auto px-4 py-3 space-y-1">
                 {/* Mobile search */}
                 <button
                   onClick={() => { setMobileOpen(false); onSearchOpen(); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#888895] hover:text-[#F0F0F5] hover:bg-white/[0.04] transition-all text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all text-left"
                 >
                   <MagnifyingGlass size={18} weight="bold" />
                   Search anime...
                 </button>
 
-                {NAV_LINKS.map(({ label, to, icon: Icon }) => (
-                  <Link
-                    key={to}
-                    to={to}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      isActive(to) ? 'text-[#E8385A] bg-[#E8385A]/8' : 'text-[#8892A4] hover:text-[#EDF0F7] hover:bg-white/[0.04]'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {label}
-                  </Link>
-                ))}
+                {NAV_LINKS.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                        isActive(link.to) ? 'text-[#DD0426] bg-[#DD0426]/8' : 'text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {link.label}
+                    </Link>
+                  );
+                })}
 
-                <div className="pt-2 border-t border-[#1E2535]">
+                <div className="pt-2 border-t border-[#AAAAAA]/10">
                   {!loadingAuth && !isAuthenticated ? (
                     <div className="flex gap-2 pt-1">
-                      <Link to="/login"  className="flex-1 text-center py-2 rounded-xl text-sm font-medium text-[#8892A4] hover:text-[#EDF0F7] hover:bg-white/[0.04] transition-all">Login</Link>
-                      <Link to="/signup" className="flex-1 text-center py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#E8385A] to-[#6D28D9]">Sign Up</Link>
+                      <Link to="/login"  className="flex-1 text-center py-2 rounded-xl text-sm font-medium text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all">Login</Link>
+                      <Link to="/signup" className="flex-1 text-center py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#DD0426] to-[#8E1B34]">Sign Up</Link>
                     </div>
                   ) : !loadingAuth && isAuthenticated ? (
-                    <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#8892A4] hover:text-[#EDF0F7] hover:bg-white/[0.04] transition-all mt-1">
+                    <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all mt-1">
                       <SignOut size={18} weight="bold" /> Logout
                     </button>
                   ) : null}
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
       </nav>

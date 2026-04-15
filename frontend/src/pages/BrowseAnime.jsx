@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { getAllAnime, getSortedAnime } from '../api';
+import { getSortedAnime } from '../api';
 import { Link }       from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   SortAscending, SortDescending,
   FilmSlate, CalendarBlank, Star, Funnel
@@ -26,11 +26,9 @@ const SkeletonCard = () => (
 
 /* ─── Anime card — fixed image + text panel ─── */
 const AnimeCard = ({ anime, index }) => {
-  const year   = anime.releaseDate ? new Date(anime.releaseDate).getFullYear() : null;
-  const genres = anime.genres?.map(g => g.name) || [];
 
   return (
-    <motion.div
+    <Motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25, delay: Math.min(index * 0.025, 0.4) }}
@@ -57,15 +55,15 @@ const AnimeCard = ({ anime, index }) => {
         </div>
         
         <div className="ss-anime-card__body">
-          <p className="font-display font-black text-[13px] text-[#F0F0F5] line-clamp-1 group-hover:text-[#E8385A] transition-colors tracking-tight">
+          <p className="font-display font-black text-[13px] text-[#F5EBE0] line-clamp-1 group-hover:text-[#DD0426] transition-colors tracking-tight">
             {anime.animeName}
           </p>
-          <p className="text-[11px] text-[#3A3A4A] font-medium">
+          <p className="text-[11px] text-[#AAAAAA] font-medium">
             Sub | Dub
           </p>
         </div>
       </Link>
-    </motion.div>
+    </Motion.div>
   );
 };
 
@@ -111,8 +109,8 @@ function BrowseAnimePage() {
 
   if (error) return (
     <div className="py-32 text-center">
-      <p className="font-display font-bold text-xl mb-1" style={{ color: '#F0F0F5' }}>Failed to load</p>
-      <p className="text-sm" style={{ color: '#888895' }}>{error}</p>
+      <p className="font-display font-bold text-xl mb-1" style={{ color: '#F5EBE0' }}>Failed to load</p>
+      <p className="text-sm" style={{ color: '#AAAAAA' }}>{error}</p>
     </div>
   );
 
@@ -122,17 +120,17 @@ function BrowseAnimePage() {
       {/* Header — compact, no wasted space */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-display font-black" style={{ color: '#F0F0F5', fontSize: 'clamp(1.5rem,3vw,2rem)', letterSpacing: '-0.02em' }}>
+          <h1 className="font-display font-black" style={{ color: '#F5EBE0', fontSize: 'clamp(1.5rem,3vw,2rem)', letterSpacing: '-0.02em' }}>
             Library
           </h1>
-          <p style={{ color: '#3A3A4A', fontSize: '11px', fontFamily: 'Space Grotesk', marginTop: '4px' }}>
+          <p style={{ color: '#AAAAAA', fontSize: '11px', fontFamily: 'Space Grotesk', marginTop: '4px' }}>
             {animeList.length.toLocaleString()} titles · page {currentPage}/{total}
           </p>
         </div>
 
         {/* Sort controls — right side, compact */}
         <div className="flex items-center gap-2">
-          <Funnel size={14} weight="bold" style={{ color: '#3A3A4A' }} />
+          <Funnel size={14} weight="bold" style={{ color: '#AAAAAA' }} />
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
@@ -148,13 +146,13 @@ function BrowseAnimePage() {
             style={{
               padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontFamily: 'Space Grotesk',
               fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
-              background: sortOrder === 'asc' ? 'rgba(232,56,90,0.1)' : 'rgba(109,40,217,0.1)',
-              border: `1px solid ${sortOrder === 'asc' ? 'rgba(232,56,90,0.25)' : 'rgba(109,40,217,0.25)'}`,
-              color: sortOrder === 'asc' ? '#E8385A' : '#8B5CF6',
+              background: sortOrder === 'asc' ? 'rgba(221,4,38,0.1)' : 'rgba(186,175,184,0.05)',
+              border: `1px solid ${sortOrder === 'asc' ? 'rgba(221,4,38,0.25)' : 'rgba(186,175,184,0.15)'}`,
+              color: sortOrder === 'asc' ? '#DD0426' : '#AAAAAA',
             }}
           >
             <AnimatePresence mode="wait">
-              <motion.div
+              <Motion.div
                 key={sortOrder}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -166,7 +164,7 @@ function BrowseAnimePage() {
                   ? <><SortAscending size={13} weight="bold" /> Asc</>
                   : <><SortDescending size={13} weight="bold" /> Desc</>
                 }
-              </motion.div>
+              </Motion.div>
             </AnimatePresence>
           </button>
         </div>
@@ -174,7 +172,7 @@ function BrowseAnimePage() {
 
       {/* Grid — 4 cols, larger image cards */}
       {animeList.length === 0 ? (
-        <div className="py-32 text-center" style={{ color: '#3A3A4A', fontFamily: 'Space Grotesk', fontSize: '13px' }}>
+        <div className="py-32 text-center" style={{ color: '#AAAAAA', fontFamily: 'Space Grotesk', fontSize: '13px' }}>
           No anime found in the library.
         </div>
       ) : (
@@ -190,22 +188,22 @@ function BrowseAnimePage() {
                 onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
                 className="w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-25"
-                style={{ border: '1px solid #222228', background: '#131316', color: '#888895' }}
+                style={{ border: '1px solid #2A2A2A', background: '#1A1A1A', color: '#AAAAAA' }}
               >
                 <CaretLeft size={16} weight="bold" />
               </button>
 
               {pages().map((p, i) =>
                 p === '…' ? (
-                  <span key={`e${i}`} className="w-8 text-center" style={{ color: '#3A3A4A', fontSize: '13px' }}>···</span>
+                  <span key={`e${i}`} className="w-8 text-center" style={{ color: '#AAAAAA', fontSize: '13px' }}>···</span>
                 ) : (
                   <button
                     key={p}
                     onClick={() => setCurrentPage(p)}
                     className="w-8 h-8 rounded-lg text-xs font-semibold transition-all"
                     style={currentPage === p
-                      ? { background: '#E8385A', color: '#fff', boxShadow: '0 0 14px rgba(232,56,90,0.35)', border: '1px solid transparent' }
-                      : { border: '1px solid #222228', background: '#131316', color: '#3A3A4A' }
+                      ? { background: '#DD0426', color: '#fff', boxShadow: '0 0 14px rgba(221,4,38,0.35)', border: '1px solid transparent' }
+                      : { border: '1px solid rgba(170, 170, 170, 0.15)', background: '#0D0D0D', color: '#AAAAAA' }
                     }
                   >
                     {p}
@@ -217,7 +215,7 @@ function BrowseAnimePage() {
                 onClick={() => setCurrentPage(p => Math.min(p + 1, total))}
                 disabled={currentPage === total}
                 className="w-8 h-8 rounded-lg flex items-center justify-center transition-all disabled:opacity-25"
-                style={{ border: '1px solid #222228', background: '#131316', color: '#888895' }}
+                style={{ border: '1px solid #2A2A2A', background: '#1A1A1A', color: '#AAAAAA' }}
               >
                 <CaretRight size={16} weight="bold" />
               </button>

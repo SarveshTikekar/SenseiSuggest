@@ -201,3 +201,6 @@ cython_debug/
 /backend/core/json
 
 /backend/core/add_json.txt
+
+# For codex
+.codex

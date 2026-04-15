@@ -48,8 +48,8 @@ function AnimatedRoutes({ onSearchOpen }) {
           <Route path="*"                        element={
             <div className="flex items-center justify-center min-h-[50vh] text-center px-4">
               <div>
-                <p className="font-display font-bold text-5xl text-[#1E2535] mb-4">404</p>
-                <p className="text-[#8892A4] text-lg">This page doesn't exist.</p>
+                <p className="font-display font-bold text-5xl text-[#2A2A2A] mb-4">404</p>
+                <p className="text-[#AAAAAA] text-lg">This page doesn't exist.</p>
               </div>
             </div>
           } />
@@ -65,7 +65,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="flex flex-col min-h-screen" style={{ background: '#06080F' }}>
+        <div className="flex flex-col min-h-screen" style={{ background: '#120D13' }}>
           <Navbar onSearchOpen={() => setSearchOpen(true)} />
           <main style={{ flex: 1 }}>
             <AnimatedRoutes onSearchOpen={() => setSearchOpen(true)} />

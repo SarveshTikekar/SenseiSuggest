@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   MagnifyingGlass,
   X,
@@ -82,7 +82,7 @@ function SearchModal({ open, onClose }) {
       {open && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <Motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -94,7 +94,7 @@ function SearchModal({ open, onClose }) {
 
           {/* Modal */}
           <div className="fixed inset-0 z-[70] flex items-start justify-center pt-[12vh] px-4 pointer-events-none">
-            <motion.div
+            <Motion.div
               key="modal"
               initial={{ opacity: 0, y: -16, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -104,13 +104,13 @@ function SearchModal({ open, onClose }) {
             >
               <div
                 className="rounded-2xl overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.85)]"
-                style={{ background: '#131316', border: '1px solid #222228' }}
+                style={{ background: '#0D0D0D', border: '1px solid rgba(170, 170, 170, 0.15)' }}
               >
                 {/* Input row */}
-                <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#222228]">
+                <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/[0.06]">
                   {loading
-                    ? <CircleNotch size={18} weight="bold" className="text-[#E8385A] animate-spin flex-shrink-0" />
-                    : <MagnifyingGlass size={18} weight="bold" className="text-[#3A3A4A] flex-shrink-0" />
+                    ? <CircleNotch size={18} weight="bold" className="text-[#DD0426] animate-spin flex-shrink-0" />
+                    : <MagnifyingGlass size={18} weight="bold" className="text-[#AAAAAA] flex-shrink-0" />
                   }
                   <input
                     ref={inputRef}
@@ -118,15 +118,15 @@ function SearchModal({ open, onClose }) {
                     value={query}
                     onChange={e => setQuery(e.target.value)}
                     placeholder="Search anime titles..."
-                    className="flex-1 bg-transparent border-none outline-none text-[#EDF0F7] text-sm placeholder:text-[#3D4A5C] font-sans"
+                    className="flex-1 bg-transparent border-none outline-none text-[#F5EBE0] text-sm placeholder:text-[#9A8C98] font-sans"
                   />
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {query && (
-                      <button onClick={() => setQuery('')} className="text-[#3A3A4A] hover:text-[#888895] transition-colors">
+                      <button onClick={() => setQuery('')} className="text-[#AAAAAA] hover:text-[#F5EBE0] transition-colors">
                         <X size={16} weight="bold" />
                       </button>
                     )}
-                    <kbd className="hidden sm:flex items-center px-1.5 py-0.5 rounded border border-[#222228] text-[#3A3A4A] text-[10px] font-mono">
+                    <kbd className="hidden sm:flex items-center px-1.5 py-0.5 rounded border border-white/[0.08] text-[#AAAAAA] text-[10px] font-mono">
                       ESC
                     </kbd>
                   </div>
@@ -137,17 +137,17 @@ function SearchModal({ open, onClose }) {
                   {/* Recent searches */}
                   {showRecent && (
                     <div className="py-2">
-                      <p className="px-4 py-2 text-[#3D4A5C] text-[10px] font-mono uppercase tracking-widest">Recent</p>
+                      <p className="px-4 py-2 text-[#9A8C98] text-[10px] font-mono uppercase tracking-widest">Recent</p>
                       {recent.map(name => (
                         <Link
                           key={name}
                           to={`/anime/details/${encodeURIComponent(name)}`}
                           onClick={onClose}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#161B27] transition-colors group"
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.04] transition-colors group"
                         >
-                          <Clock size={14} weight="bold" className="text-[#3A3A4A]" />
-                          <span className="flex-1 text-[#888895] text-sm group-hover:text-[#F0F0F5] transition-colors truncate">{name}</span>
-                          <ArrowRight size={14} weight="bold" className="text-[#E8385A] opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0" />
+                          <Clock size={14} weight="bold" className="text-[#AAAAAA] opacity-60" />
+                          <span className="flex-1 text-[#AAAAAA] text-sm group-hover:text-[#F5EBE0] transition-colors truncate">{name}</span>
+                          <ArrowRight size={14} weight="bold" className="text-[#DD0426] opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0" />
                         </Link>
                       ))}
                     </div>
@@ -156,16 +156,16 @@ function SearchModal({ open, onClose }) {
                   {/* Live results */}
                   {showResults && (
                     <div className="py-2">
-                      <p className="px-4 py-2 text-[#3D4A5C] text-[10px] font-mono uppercase tracking-widest">Results</p>
+                      <p className="px-4 py-2 text-[#9A8C98] text-[10px] font-mono uppercase tracking-widest">Results</p>
                       {results.map(anime => (
                         <Link
                           key={anime.animeId}
                           to={`/anime/details/${encodeURIComponent(anime.animeName)}`}
                           onClick={() => handleSelect(anime)}
-                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#161B27] transition-colors group"
+                          className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.04] transition-colors group"
                         >
                           {/* Tiny thumbnail */}
-                          <div className="w-8 h-10 rounded-md overflow-hidden flex-shrink-0 bg-[#161B27]">
+                          <div className="w-8 h-10 rounded-md overflow-hidden flex-shrink-0 bg-white/[0.04]">
                             <img
                               src={anime.image_url_base_anime || ''}
                               alt=""
@@ -174,12 +174,12 @@ function SearchModal({ open, onClose }) {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[#F0F0F5] text-sm font-medium truncate group-hover:text-[#E8385A] transition-colors">{anime.animeName}</p>
+                            <p className="text-[#F5EBE0] text-sm font-medium truncate group-hover:text-[#DD0426] transition-colors">{anime.animeName}</p>
                             {anime.releaseDate && (
-                              <p className="text-[#3A3A4A] text-xs font-mono">{new Date(anime.releaseDate).getFullYear()}</p>
+                              <p className="text-[#AAAAAA] opacity-60 text-xs font-mono">{new Date(anime.releaseDate).getFullYear()}</p>
                             )}
                           </div>
-                          <ArrowRight size={14} weight="bold" className="text-[#E8385A] opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0 flex-shrink-0" />
+                          <ArrowRight size={14} weight="bold" className="text-[#DD0426] opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0 flex-shrink-0" />
                         </Link>
                       ))}
                     </div>
@@ -188,25 +188,25 @@ function SearchModal({ open, onClose }) {
                   {/* No results */}
                   {showEmpty && (
                     <div className="px-4 py-10 text-center">
-                      <p className="text-[#3D4A5C] text-sm font-sans">No results for "<span className="text-[#8892A4]">{query}</span>"</p>
+                      <p className="text-[#9A8C98] text-sm font-sans">No results for "<span className="text-[#AAAAAA]">{query}</span>"</p>
                     </div>
                   )}
 
                   {/* Idle hint */}
                   {!query && !showRecent && (
                     <div className="px-4 py-10 text-center">
-                      <p className="text-[#3D4A5C] text-sm font-sans">Start typing to search the library...</p>
+                      <p className="text-[#9A8C98] text-sm font-sans">Start typing to search the library...</p>
                     </div>
                   )}
                 </div>
 
                 {/* Footer hint */}
-                <div className="px-4 py-2.5 border-t border-[#222228] flex items-center justify-between">
-                  <span className="text-[#3A3A4A] text-[10px] font-mono">↑↓ navigate · Enter select</span>
-                  <span className="text-[#3A3A4A] text-[10px] font-mono select-none">Sensei v2.0</span>
+                <div className="px-4 py-2.5 border-t border-white/[0.06] flex items-center justify-between">
+                  <span className="text-[#AAAAAA] opacity-60 text-[10px] font-mono">↑↓ navigate · Enter select</span>
+                  <span className="text-[#AAAAAA] opacity-60 text-[10px] font-mono select-none">Sensei v2.0</span>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
         </>
       )}

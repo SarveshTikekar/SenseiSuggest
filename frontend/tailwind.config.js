@@ -8,52 +8,50 @@ export default {
     extend: {
       colors: {
         /* ================================================================
-           SENSEI SUGGEST — "EDITORIAL DARK" PALETTE  (v3, anti-AI-cliché)
-           Philosophy: ONE brand accent (crimson), warm-neutral base.
-           No pink/violet/cyan trio. Think anime box-art, not AI generator.
+           SENSEI SUGGEST — CRIMSON/CHARCOAL/CREAM SYSTEM
+           Base palette: #DD0426, #2A1F2D, #F5EBE0
            ================================================================ */
 
-        // Backgrounds — slightly warmer than cold blue-black
-        'ss-bg':       '#0C0C0E',  // Near-black, faint warm undertone
-        'ss-surface':  '#131316',  // Card surfaces
-        'ss-elevated': '#1A1A20',  // Elevated layers, modals
-        'ss-border':   '#222228',  // All borders
+        // Backgrounds
+        'ss-bg':       '#120D13',
+        'ss-surface':  '#181119',
+        'ss-elevated': '#22182A',
+        'ss-border':   '#3B2A3E',
 
-        // Neutrals — warm white, not clinical cold
-        'ss-text':  '#F0F0F5',  // Primary body text
-        'ss-muted': '#888895',  // Secondary / labels
-        'ss-faint': '#3A3A4A',  // Disabled / placeholder
+        // Neutrals
+        'ss-text':  '#F5EBE0',
+        'ss-muted': '#BBAFB8',
+        'ss-faint': '#8D7F8B',
 
-        // ── Single brand accent: Anime Crimson ──
-        // Inspired by: Demon Slayer's red, Attack on Titan palette, anime magazine headers
-        'ss-red':     '#E8385A',  // Primary CTA, links, active states
-        'ss-red-dim': '#B82D48',  // Hover, pressed
+        // Brand accent
+        'ss-red':     '#DD0426',
+        'ss-red-dim': '#A10A24',
 
-        // Supporting — used sparingly in gradients / charts only
-        'ss-violet': '#6D28D9',  // CTA gradient end
-        'ss-amber':  '#D97706',  // Star ratings
+        // Supporting
+        'ss-maroon': '#8E1B34',
+        'ss-amber':  '#D97706',
 
         /* ── Legacy Aliases (keeps old pages from breaking) ── */
-        'kawaii-bg':          '#0C0C0E',
-        'kawaii-card':        '#131316',
-        'kawaii-text-light':  '#F0F0F5',
-        'kawaii-text-dark':   '#F0F0F5',
-        'kawaii-text-muted':  '#888895',
-        'kawaii-accent':      '#E8385A',
-        'kawaii-accent-dark': '#B82D48',
-        'kawaii-secondary':   '#22D3EE',  // kept for chart compat
-        'kawaii-tertiary':    '#6D28D9',
-        'kawaii-border':      '#222228',
+        'kawaii-bg':          '#120D13',
+        'kawaii-card':        '#181119',
+        'kawaii-text-light':  '#F5EBE0',
+        'kawaii-text-dark':   '#F5EBE0',
+        'kawaii-text-muted':  '#BBAFB8',
+        'kawaii-accent':      '#DD0426',
+        'kawaii-accent-dark': '#A10A24',
+        'kawaii-secondary':   '#8E1B34',
+        'kawaii-tertiary':    '#A64C5D',
+        'kawaii-border':      '#3B2A3E',
         'kawaii-error':       '#EF4444',
-        'kawaii-mint':        '#22D3EE',
-        'anime-bg':           '#0C0C0E',
-        'anime-card':         '#131316',
-        'anime-sub-card':     '#1A1A20',
-        'anime-text-light':   '#F0F0F5',
-        'anime-text-dark':    '#F0F0F5',
-        'anime-accent':       '#E8385A',
-        'anime-accent-dark':  '#B82D48',
-        'anime-border':       '#222228',
+        'kawaii-mint':        '#A64C5D',
+        'anime-bg':           '#120D13',
+        'anime-card':         '#181119',
+        'anime-sub-card':     '#22182A',
+        'anime-text-light':   '#F5EBE0',
+        'anime-text-dark':    '#F5EBE0',
+        'anime-accent':       '#DD0426',
+        'anime-accent-dark':  '#A10A24',
+        'anime-border':       '#3B2A3E',
         'anime-error':        '#EF4444',
       },
       fontFamily: {
@@ -65,14 +63,14 @@ export default {
       boxShadow: {
         'ss-card': '0 4px 24px rgba(0,0,0,0.6)',
         'ss-lift': '0 20px 60px rgba(0,0,0,0.7)',
-        'ss-glow': '0 0 20px rgba(232,56,90,0.3)',
+        'ss-glow': '0 0 20px rgba(221,4,38,0.3)',
         // Legacy
-        'kawaii-glow': '0 0 18px rgba(232,56,90,0.3)',
+        'kawaii-glow': '0 0 18px rgba(221,4,38,0.3)',
         'kawaii-soft': '0 10px 30px rgba(0,0,0,0.6)',
-        'anime-glow':  '0 0 14px rgba(232,56,90,0.3)',
+        'anime-glow':  '0 0 14px rgba(221,4,38,0.3)',
       },
       backgroundImage: {
-        'ss-red-gradient': 'linear-gradient(135deg, #E8385A, #6D28D9)',
+        'ss-red-gradient': 'linear-gradient(135deg, #DD0426, #A10A24)',
       },
       animation: {
         'float':      'float 4s ease-in-out infinite',

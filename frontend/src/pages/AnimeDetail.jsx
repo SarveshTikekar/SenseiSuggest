@@ -5,7 +5,7 @@ import {
   addTowatchedList, addTowatchingList, removeFromWatched, removeFromWatching
 } from '../api';
 import { useAuth } from '../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   Star,
   Eye,
@@ -31,7 +31,7 @@ const getEmbedUrl = (url) => {
 
 /* ── Loading skeleton ── */
 const SkeletonDetail = () => (
-  <div className="min-h-screen" style={{ background: '#0C0C0E' }}>
+  <div className="min-h-screen" style={{ background: '#0D0D0D' }}>
     {/* Hero area */}
     <div className="relative h-[420px] overflow-hidden">
       <div className="absolute inset-0 ss-skeleton opacity-40" />
@@ -61,7 +61,7 @@ const RatingStars = ({ score }) => {
           key={i}
           size={14}
           weight={i < filled ? "fill" : "regular"}
-          className={i < filled ? 'text-[#D97706]' : 'text-[#3A3A4A]'}
+          className={i < filled ? 'text-[#D97706]' : 'text-[#AAAAAA]'}
         />
       ))}
     </div>
@@ -69,14 +69,15 @@ const RatingStars = ({ score }) => {
 };
 
 /* ── Metadata row item ── */
-const MetaItem = ({ icon: Icon, label, value }) => {
+const MetaItem = (props) => {
+  const { icon: Icon, label, value } = props;
   if (!value) return null;
   return (
     <div className="flex items-start gap-2.5">
-      <Icon size={14} weight="bold" className="text-[#3A3A4A] mt-0.5 flex-shrink-0" />
+      <Icon size={14} weight="bold" className="text-[#AAAAAA] opacity-60 mt-0.5 flex-shrink-0" />
       <div>
-        <p className="text-[#3A3A4A] text-[10px] font-mono uppercase tracking-wider leading-none mb-0.5">{label}</p>
-        <p className="text-[#F0F0F5] text-sm font-medium leading-tight">{value}</p>
+        <p className="text-[#AAAAAA] opacity-60 text-[10px] font-mono uppercase tracking-wider leading-none mb-0.5">{label}</p>
+        <p className="text-[#F5EBE0] text-sm font-medium leading-tight">{value}</p>
       </div>
     </div>
   );
@@ -160,16 +161,16 @@ function AnimeDetailPage() {
   if (loading) return <SkeletonDetail />;
   if (error)   return (
     <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-4">
-      <WarningCircle size={40} weight="duotone" className="text-[#3A3A4A] mb-3" />
-      <p className="text-[#F0F0F5] font-display font-bold text-xl mb-1">Something went wrong</p>
-      <p className="text-[#888895] text-sm mb-5">{error}</p>
-      <Link to="/all-anime" className="ss-btn-ghost px-4 py-2 rounded-xl text-sm">
+      <WarningCircle size={40} weight="duotone" className="text-[#AAAAAA] mb-3" />
+      <p className="text-[#F5EBE0] font-display font-bold text-xl mb-1">Something went wrong</p>
+      <p className="text-[#AAAAAA] text-sm mb-5">{error}</p>
+      <Link to="/all-anime" className="ss-btn-ghost px-4 py-2 rounded-xl text-sm" style={{ borderColor: 'rgba(186,175,184,0.15)', color: '#F5EBE0' }}>
         ← Back to Browse
       </Link>
     </div>
   );
   if (!anime) return (
-    <div className="py-32 text-center text-[#888895]">Anime not found.</div>
+    <div className="py-32 text-center text-[#AAAAAA]">Anime not found.</div>
   );
 
   const trailerUrl = getEmbedUrl(anime.trailer_url_base_anime);
@@ -197,12 +198,12 @@ function AnimeDetailPage() {
           <div
             className="absolute inset-0"
             style={{
-              background: 'linear-gradient(to bottom, #0C0C0E 0%, transparent 30%, transparent 70%, #0C0C0E 100%)',
+              background: 'linear-gradient(to bottom, #0D0D0D 0%, transparent 30%, transparent 70%, #0D0D0D 100%)',
             }}
           />
           {/* Side vignette */}
           <div className="absolute inset-0"
-            style={{ background: 'linear-gradient(to right, #0C0C0E 0%, transparent 20%, transparent 80%, #0C0C0E 100%)' }}
+            style={{ background: 'linear-gradient(to right, #0D0D0D 0%, transparent 20%, transparent 80%, #0D0D0D 100%)' }}
           />
         </div>
 
@@ -212,7 +213,7 @@ function AnimeDetailPage() {
           {/* Back button */}
           <Link
             to="/all-anime"
-            className="inline-flex items-center gap-1.5 text-[#3A3A4A] hover:text-[#888895] text-xs font-mono mb-8 transition-colors"
+            className="inline-flex items-center gap-1.5 text-[#AAAAAA] hover:text-[#F5EBE0] text-xs font-mono mb-8 transition-colors"
           >
             <CaretLeft size={14} weight="bold" /> Browse
           </Link>
@@ -221,11 +222,11 @@ function AnimeDetailPage() {
 
             {/* ── Poster column ── */}
             <div className="flex-shrink-0 w-full lg:w-80 xl:w-96">
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="relative rounded-xl overflow-hidden border border-[#222228] shadow-[0_20px_60px_rgba(0,0,0,0.7)]"
+                className="relative rounded-xl overflow-hidden border border-[#AAAAAA]/20 shadow-[0_24px_80px_rgba(0,0,0,0.6)]"
                 style={{ aspectRatio: '16/9' }}
               >
                 {poster ? (
@@ -245,8 +246,8 @@ function AnimeDetailPage() {
                     />
                   </div>
                 ) : (
-                  <div className="w-full h-full bg-[#1A1A20] flex items-center justify-center">
-                    <FilmSlate size={40} weight="duotone" className="text-[#3A3A4A]" />
+                  <div className="w-full h-full bg-[#0F0F0F] flex items-center justify-center">
+                    <FilmSlate size={40} weight="duotone" className="text-[#AAAAAA]" />
                   </div>
                 )}
 
@@ -254,10 +255,10 @@ function AnimeDetailPage() {
                 {anime.rating && (
                   <div
                     className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2 py-1 rounded-lg"
-                    style={{ background: 'rgba(12,12,14,0.85)', border: '1px solid #222228' }}
+                    style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(186,175,184,0.2)' }}
                   >
                     <Star size={12} weight="fill" className="text-[#D97706]" />
-                    <span className="text-[#F0F0F5] text-xs font-mono font-semibold">{anime.rating.toFixed(1)}</span>
+                    <span className="text-[#F5EBE0] text-xs font-mono font-semibold">{anime.rating.toFixed(1)}</span>
                   </div>
                 )}
 
@@ -267,20 +268,20 @@ function AnimeDetailPage() {
                     className="absolute bottom-2.5 left-2.5 right-2.5 py-1.5 text-center rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider"
                     style={{
                       background: animeStatus === 'watching'
-                        ? 'rgba(12,12,14,0.9)'
-                        : 'rgba(232,56,90,0.15)',
-                      border: `1px solid ${animeStatus === 'watching' ? '#222228' : 'rgba(232,56,90,0.3)'}`,
-                      color: animeStatus === 'watching' ? '#888895' : '#E8385A',
+                        ? 'rgba(0,0,0,0.7)'
+                        : 'rgba(221,4,38,0.15)',
+                      border: `1px solid ${animeStatus === 'watching' ? 'rgba(186,175,184,0.15)' : 'rgba(221,4,38,0.3)'}`,
+                      color: animeStatus === 'watching' ? '#AAAAAA' : '#DD0426',
                     }}
                   >
                     {animeStatus === 'watching' ? '▶ Watching' : '✓ Completed'}
                   </div>
                 )}
-              </motion.div>
+              </Motion.div>
             </div>
 
             {/* ── Info column ── */}
-            <motion.div
+            <Motion.div
               className="flex-1 min-w-0 pt-0 lg:pt-12"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -288,14 +289,14 @@ function AnimeDetailPage() {
             >
               {/* Title */}
               <h1
-                className="font-display font-black text-[#F0F0F5] leading-tight mb-2"
+                className="font-display font-black text-[#F5EBE0] leading-tight mb-2"
                 style={{ fontSize: 'clamp(1.6rem, 4vw, 2.8rem)', letterSpacing: '-0.02em' }}
               >
                 {anime.animeName}
               </h1>
 
               {anime.studio && (
-                <p className="text-[#888895] text-sm font-sans mb-4">{anime.studio}</p>
+                <p className="text-[#AAAAAA] text-sm font-sans mb-4">{anime.studio}</p>
               )}
 
               {/* Genre tags */}
@@ -306,9 +307,9 @@ function AnimeDetailPage() {
                       key={g}
                       className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold"
                       style={{
-                        background: 'rgba(232,56,90,0.08)',
-                        border: '1px solid rgba(232,56,90,0.18)',
-                        color: '#E8385A',
+                        background: 'rgba(221,4,38,0.08)',
+                        border: '1px solid rgba(221,4,38,0.18)',
+                        color: '#DD0426',
                       }}
                     >
                       {g}
@@ -321,12 +322,12 @@ function AnimeDetailPage() {
               {anime.rating && (
                 <div className="flex items-center gap-2 mb-5">
                   <RatingStars score={anime.rating} />
-                  <span className="text-[#888895] text-xs font-mono">{anime.rating.toFixed(1)} / 10</span>
+                  <span className="text-[#AAAAAA] text-xs font-mono">{anime.rating.toFixed(1)} / 10</span>
                 </div>
               )}
 
               {/* Metadata */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 mb-7 pb-7 border-b border-[#222228]">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4 mb-7 pb-7 border-b border-[#AAAAAA]/10">
                 <MetaItem icon={CalendarBlank} label="Released" value={
                   anime.releaseDate
                     ? new Date(anime.releaseDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long' })
@@ -350,7 +351,7 @@ function AnimeDetailPage() {
 
               {/* Action buttons */}
               <AnimatePresence mode="wait">
-                <motion.div
+                <Motion.div
                   key={animeStatus}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -363,7 +364,7 @@ function AnimeDetailPage() {
                       onClick={() => handleList('watching')}
                       disabled={processing}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50"
-                      style={{ background: 'rgba(232,56,90,0.1)', border: '1px solid rgba(232,56,90,0.25)', color: '#E8385A' }}
+                      style={{ background: 'rgba(221,4,38,0.1)', border: '1px solid rgba(221,4,38,0.25)', color: '#DD0426' }}
                     >
                       <Eye size={16} weight="bold" /> Add to Watching
                     </button>
@@ -388,7 +389,7 @@ function AnimeDetailPage() {
                       onClick={() => handleRemove('watching')}
                       disabled={processing}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid #222228', color: '#888895' }}
+                      style={{ background: 'rgba(186,175,184,0.05)', border: '1px solid rgba(186,175,184,0.15)', color: '#AAAAAA' }}
                     >
                       <MinusCircle size={16} weight="bold" /> Drop
                     </button>
@@ -399,7 +400,7 @@ function AnimeDetailPage() {
                       onClick={() => handleList('watching')}
                       disabled={processing}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50"
-                      style={{ background: 'rgba(232,56,90,0.1)', border: '1px solid rgba(232,56,90,0.25)', color: '#E8385A' }}
+                      style={{ background: 'rgba(221,4,38,0.1)', border: '1px solid rgba(221,4,38,0.25)', color: '#DD0426' }}
                     >
                       <Eye size={16} weight="bold" /> Rewatch
                     </button>
@@ -407,12 +408,12 @@ function AnimeDetailPage() {
                       onClick={() => handleRemove('watched')}
                       disabled={processing}
                       className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid #222228', color: '#888895' }}
+                      style={{ background: 'rgba(186,175,184,0.05)', border: '1px solid rgba(186,175,184,0.15)', color: '#AAAAAA' }}
                     >
                       <MinusCircle size={16} weight="bold" /> Remove
                     </button>
                   </>}
-                </motion.div>
+                </Motion.div>
               </AnimatePresence>
 
               {listMsg && (
@@ -420,7 +421,7 @@ function AnimeDetailPage() {
                   {listMsg}
                 </p>
               )}
-            </motion.div>
+            </Motion.div>
           </div>
         </div>
       </div>
@@ -436,11 +437,11 @@ function AnimeDetailPage() {
 
             {/* Synopsis */}
             <section>
-              <h2 className="font-display font-bold text-[#F0F0F5] text-base mb-3 flex items-center gap-2">
-                <span className="w-0.5 h-4 rounded-full bg-[#E8385A] inline-block" />
+              <h2 className="font-display font-bold text-[#F5EBE0] text-base mb-3 flex items-center gap-2">
+                <span className="w-0.5 h-4 rounded-full bg-[#DD0426] inline-block" />
                 Synopsis
               </h2>
-              <p className="text-[#888895] text-[14px] leading-[1.8] font-sans">
+              <p className="text-[#AAAAAA] text-[14px] leading-[1.8] font-sans">
                 {anime.description || 'No synopsis is available for this title.'}
               </p>
             </section>
@@ -448,13 +449,13 @@ function AnimeDetailPage() {
             {/* Trailer */}
             {trailerUrl && (
               <section>
-                <h2 className="font-display font-bold text-[#F0F0F5] text-base mb-3 flex items-center gap-2">
-                  <span className="w-0.5 h-4 rounded-full bg-[#E8385A] inline-block" />
-                  <PlayCircle size={18} weight="bold" className="text-[#E8385A]" />
+                <h2 className="font-display font-bold text-[#F5EBE0] text-base mb-3 flex items-center gap-2">
+                  <span className="w-0.5 h-4 rounded-full bg-[#DD0426] inline-block" />
+                  <PlayCircle size={18} weight="bold" className="text-[#DD0426]" />
                   Trailer
                 </h2>
                 <div
-                  className="relative w-full rounded-xl overflow-hidden border border-[#222228]"
+                  className="relative w-full rounded-xl overflow-hidden border border-[#AAAAAA]/15"
                   style={{ paddingBottom: '56.25%' }}
                 >
                   <iframe
@@ -477,15 +478,15 @@ function AnimeDetailPage() {
             {genres.length > 0 && (
               <div
                 className="rounded-xl p-5"
-                style={{ background: '#131316', border: '1px solid #222228' }}
+                style={{ background: 'rgba(186,175,184,0.03)', border: '1px solid rgba(186,175,184,0.15)' }}
               >
-                <h3 className="text-[#3A3A4A] text-[10px] font-mono uppercase tracking-widest mb-3">Genres</h3>
+                <h3 className="text-[#AAAAAA] opacity-60 text-[10px] font-mono uppercase tracking-widest mb-3">Genres</h3>
                 <div className="flex flex-wrap gap-1.5">
                   {genres.map(g => (
                     <span
                       key={g}
                       className="px-2 py-0.5 rounded text-[11px] font-mono"
-                      style={{ background: '#1A1A20', border: '1px solid #222228', color: '#888895' }}
+                      style={{ background: 'rgba(186,175,184,0.05)', border: '1px solid rgba(186,175,184,0.1)', color: '#AAAAAA' }}
                     >
                       {g}
                     </span>
@@ -497,9 +498,9 @@ function AnimeDetailPage() {
             {/* Rate This Anime */}
             <div
               className="rounded-xl p-5"
-              style={{ background: '#131316', border: '1px solid #222228' }}
+              style={{ background: 'rgba(186,175,184,0.03)', border: '1px solid rgba(186,175,184,0.15)' }}
             >
-              <h3 className="text-[#3A3A4A] text-[10px] font-mono uppercase tracking-widest mb-4">Your Rating</h3>
+              <h3 className="text-[#AAAAAA] opacity-60 text-[10px] font-mono uppercase tracking-widest mb-4">Your Rating</h3>
 
               {ratingMsg.text && (
                 <div
@@ -525,9 +526,9 @@ function AnimeDetailPage() {
                         onClick={() => setRating(String(val))}
                         className="flex-1 py-2 rounded-lg text-xs font-mono transition-all"
                         style={{
-                          background: parseInt(rating) >= val ? 'rgba(232,56,90,0.15)' : '#1A1A20',
-                          border: `1px solid ${parseInt(rating) >= val ? 'rgba(232,56,90,0.3)' : '#222228'}`,
-                          color: parseInt(rating) >= val ? '#E8385A' : '#3A3A4A',
+                          background: parseInt(rating) >= val ? 'rgba(221,4,38,0.15)' : 'rgba(186,175,184,0.05)',
+                          border: `1px solid ${parseInt(rating) >= val ? 'rgba(221,4,38,0.3)' : 'rgba(186,175,184,0.15)'}`,
+                          color: parseInt(rating) >= val ? '#DD0426' : '#AAAAAA',
                         }}
                       >
                         {val}
@@ -541,7 +542,7 @@ function AnimeDetailPage() {
                       value={rating}
                       onChange={e => setRating(e.target.value)}
                       placeholder="1 – 10"
-                      className="flex-1 bg-[#1A1A20] border border-[#222228] rounded-xl px-3 py-2.5 text-[#F0F0F5] text-sm text-center font-mono outline-none focus:border-[rgba(232,56,90,0.4)] transition-colors"
+                      className="flex-1 bg-black/10 border border-white/10 rounded-xl px-3 py-2.5 text-[#F5EBE0] text-sm text-center font-mono outline-none focus:border-[rgba(221,4,38,0.4)] transition-colors"
                     />
                     <button type="submit" className="ss-btn-primary px-4 py-2.5 rounded-xl text-sm flex-1">
                       Submit
@@ -549,8 +550,8 @@ function AnimeDetailPage() {
                   </div>
                 </form>
               ) : (
-                <p className="text-[#3A3A4A] text-sm font-sans">
-                  <Link to="/login" className="text-[#E8385A] hover:underline">Log in</Link> to rate this anime.
+                <p className="text-[#AAAAAA] text-sm font-sans">
+                  <Link to="/login" className="text-[#DD0426] hover:underline">Log in</Link> to rate this anime.
                 </p>
               )}
             </div>
@@ -558,9 +559,9 @@ function AnimeDetailPage() {
             {/* Info card */}
             <div
               className="rounded-xl p-5"
-              style={{ background: '#131316', border: '1px solid #222228' }}
+              style={{ background: 'rgba(186,175,184,0.03)', border: '1px solid rgba(186,175,184,0.15)' }}
             >
-              <h3 className="text-[#3A3A4A] text-[10px] font-mono uppercase tracking-widest mb-4">Info</h3>
+              <h3 className="text-[#AAAAAA] opacity-60 text-[10px] font-mono uppercase tracking-widest mb-4">Info</h3>
               <div className="space-y-3.5">
                 <MetaItem icon={CalendarBlank} label="Released" value={
                   anime.releaseDate
