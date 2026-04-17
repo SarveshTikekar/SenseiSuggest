@@ -83,7 +83,7 @@ class AnimeGet(BaseModel):
     is_adult_rated: bool = False
     is_running: bool = True
     releaseDate: datetime
-    description: Optional[str] = Field(None, max_length=500)
+    description: Optional[str] = Field(None)
     image_url_base_anime: Optional[str] = None
     trailer_url_base_anime: Optional[str] = None
     studio: Optional[str] = Field(None, max_length=255)
