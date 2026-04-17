@@ -12,7 +12,8 @@ import {
   Play,
   WarningCircle,
   Lightning,
-  Medal
+  Medal,
+  BookmarksSimple
 } from '@phosphor-icons/react';
 
 const containerVariants = {
@@ -29,10 +30,12 @@ const itemVariants = {
 };
 
 const getOtakuRank = (count) => {
-  if (count >= 50) return { name: "Sensei", color: "text-[#DD0426]", bg: "bg-[#DD0426]/10" };
-  if (count >= 25) return { name: "Pro", color: "text-[#BE233F]", bg: "bg-[#BE233F]/10" };
-  if (count >= 10) return { name: "Enthusiast", color: "text-[#A64C5D]", bg: "bg-[#A64C5D]/10" };
-  return { name: "Watcher", color: "text-[#10B981]", bg: "bg-[#10B981]/10" };
+  if (count >= 100) return { name: "SHŌGUN", kanji: "将軍", color: "text-[#D97706]", bg: "bg-[#D97706]/10", border: "border-[#D97706]/40", desc: "Supreme Commander" };
+  if (count >= 50)  return { name: "DAIMYŌ", kanji: "大名", color: "text-[#DD0426]", bg: "bg-[#DD0426]/10", border: "border-[#DD0426]/40", desc: "Great Lord" };
+  if (count >= 25)  return { name: "HATAMOTO", kanji: "旗本", color: "text-[#BE233F]", bg: "bg-[#BE233F]/10", border: "border-[#BE233F]/40", desc: "Elite Retainer" };
+  if (count >= 10)  return { name: "SAMURAI", kanji: "侍", color: "text-[#F5EBE0]", bg: "bg-white/5", border: "border-white/20", desc: "Honorable Warrior" };
+  if (count >= 1)   return { name: "ASHIGARU", kanji: "足軽", color: "text-[#AAAAAA]", bg: "bg-white/5", border: "border-white/10", desc: "Foot Soldier" };
+  return { name: "RŌNIN", kanji: "浪人", color: "text-[#666666]", bg: "bg-transparent", border: "border-dashed border-white/10", desc: "Wandering soul" };
 };
 
 const SkeletonProfile = () => (
@@ -107,7 +110,15 @@ function UserProfilePage() {
   const profilePicSrc = userProfile.profilePicture || `https://ui-avatars.com/api/?name=${userProfile.userName}&background=FF2E93&color=fff&size=200`;
   const watchedCount = userProfile.anime_watched_count || 0;
   const rank = getOtakuRank(watchedCount);
-  const nextRankCount = watchedCount >= 50 ? 100 : (watchedCount >= 25 ? 50 : (watchedCount >= 10 ? 25 : 10));
+  const getNextThreshold = (c) => {
+    if (c >= 100) return c + 50; 
+    if (c >= 50)  return 100;
+    if (c >= 25)  return 50;
+    if (c >= 10)  return 25;
+    if (c >= 1)   return 10;
+    return 1;
+  };
+  const nextRankCount = getNextThreshold(watchedCount);
   const progressPercent = Math.min((watchedCount / nextRankCount) * 100, 100);
 
   const AnimeCard = ({ anime }) => (
@@ -168,9 +179,10 @@ function UserProfilePage() {
                    <h2 className="text-3xl md:text-4xl font-display font-black text-[#F5EBE0] tracking-tight leading-none">
                       {userProfile.userName}
                    </h2>
-                   <div className={`px-4 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${rank.bg} ${rank.color} border-[#2A2A2A]`}>
-                      {rank.name} CLASS
-                   </div>
+                    <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${rank.bg} ${rank.color} ${rank.border} flex items-center gap-2.5 backdrop-blur-sm shadow-xl`}>
+                       <span className="text-sm opacity-60 font-serif">{rank.kanji}</span>
+                       <span className="border-l border-white/10 pl-2.5">{rank.name} CLASS</span>
+                    </div>
                 </div>
                 <p className="text-[#AAAAAA] text-[13px] font-mono flex items-center justify-center md:justify-start gap-2 opacity-80">
                    <UserCircle size={14} weight="bold" className="text-[#AAAAAA]" />
@@ -180,8 +192,8 @@ function UserProfilePage() {
                 {/* Leveling System */}
                 <div className="mt-4 pt-4 border-t border-white/10 w-full max-w-sm mx-auto md:mx-0">
                    <div className="flex justify-between items-end mb-2">
-                       <span className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">Next Class: {nextRankCount} Items</span>
-                       <span className="text-[10px] font-mono font-bold text-[#DD0426]">{progressPercent.toFixed(0)}%</span>
+                       <span className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">Ascension: {nextRankCount} Items</span>
+                       <span className="text-[10px] font-mono font-bold text-[#DD0426]">{Math.floor(progressPercent)}%</span>
                    </div>
                    <div className="h-1.5 w-full bg-black/20 rounded-full border border-white/10 shadow-inner overflow-hidden">
                        <Motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} transition={{ duration: 1.5, ease: "easeOut" }} className="h-full bg-gradient-to-r from-[#DD0426] to-[#A10A24] rounded-full" />
@@ -190,8 +202,7 @@ function UserProfilePage() {
              </div>
           </Motion.div>
 
-          {/* Stats Section: Compact Grid */}
-          <Motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <Motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-6">
              <div className="bg-white/[0.03] p-5 rounded-2xl border border-white/10 shadow-sm flex items-center gap-4 group hover:border-[#DD0426]/40 transition-colors backdrop-blur-md">
                  <div className="p-3 bg-white/[0.03] rounded-xl text-[#AAAAAA] group-hover:text-[#DD0426] transition-colors">
                     <ClockCounterClockwise size={20} weight="bold" />
@@ -219,6 +230,15 @@ function UserProfilePage() {
                     <p className="text-2xl font-display font-black text-[#F5EBE0] mt-1">LVL {Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}</p>
                  </div>
              </div>
+             <div className="bg-white/[0.03] p-5 rounded-2xl border border-white/10 shadow-sm flex items-center gap-4 group hover:border-[#DD0426]/40 transition-colors backdrop-blur-md">
+                 <div className="p-3 bg-white/[0.03] rounded-xl text-[#AAAAAA] group-hover:text-[#DD0426] transition-colors">
+                    <BookmarksSimple size={20} weight="bold" />
+                 </div>
+                 <div>
+                    <p className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">Saved</p>
+                    <p className="text-2xl font-display font-black text-[#F5EBE0] mt-1">{userProfile.anime_bookmarked_count || 0}</p>
+                 </div>
+             </div>
           </Motion.div>
 
           {/* Library Section */}
@@ -241,6 +261,28 @@ function UserProfilePage() {
               ) : (
                 <div className="border border-dashed border-white/10 rounded-2xl p-12 text-center text-[#AAAAAA] text-[13px] font-sans">
                   No active tracking. Start your discovery in the library.
+                </div>
+              )}
+            </Motion.div>
+
+            {/* Bookmarked Section */}
+            <Motion.div variants={itemVariants}>
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
+                 <h3 className="text-lg font-display font-black text-[#F5EBE0] tracking-tight flex items-center gap-3">
+                   <BookmarksSimple size={20} weight="bold" className="text-[#D97706]" /> Saved for Later
+                 </h3>
+                 <span className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">{userProfile.bookmarkedAnime?.length || 0} Units</span>
+              </div>
+              
+              {userProfile.bookmarkedAnime && userProfile.bookmarkedAnime.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                  {userProfile.bookmarkedAnime.map((anime) => (
+                    <AnimeCard key={anime.animeId} anime={anime} />
+                  ))}
+                </div>
+              ) : (
+                <div className="border border-dashed border-white/10 rounded-2xl p-12 text-center text-[#AAAAAA] text-[13px] font-sans">
+                   No saved titles yet.
                 </div>
               )}
             </Motion.div>

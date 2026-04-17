@@ -212,6 +212,30 @@ export const addTowatchingList = async(animeListUpdate) => {
   });
 }
 
+export const addToBookmarkList = async(bookmarkData) => {
+
+  return fetchData(`${API_BASE_URL}/add_as_bookmarked`, {
+
+    method: 'PATCH',
+    body: JSON.stringify(bookmarkData),
+    headers: {
+      "Content-Type": "application/json",
+    }
+  })
+}
+
+export const removeFromBookmarkList = async(bookmarkData) => {
+
+  return fetchData(`${API_BASE_URL}/remove_as_bookmarked`, {
+
+    method: 'PATCH',
+    body: JSON.stringify(bookmarkData),
+    headers: {
+      "Content-Type": "application/json",
+    }
+  })
+}
+
 export const removeFromWatched = async(animeListUpdate) => {
 
   return fetchData(`${API_BASE_URL}/remove-from-watched-list/`, {

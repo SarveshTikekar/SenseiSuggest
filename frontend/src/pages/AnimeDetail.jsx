@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   getAnimeDetails, rateAnime, getUserProfile,
-  addTowatchedList, addTowatchingList, removeFromWatched, removeFromWatching
+  addTowatchedList, addTowatchingList, removeFromWatched, removeFromWatching,
+  addToBookmarkList, removeFromBookmarkList
 } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +18,8 @@ import {
   Clock,
   FilmSlate,
   Users,
-  WarningCircle
+  WarningCircle,
+  BookmarksSimple
 } from '@phosphor-icons/react';
 
 /* ── Trailer URL normaliser ── */
@@ -96,6 +98,7 @@ function AnimeDetailPage() {
   const [rating, setRating]         = useState('');
   const [ratingMsg, setRatingMsg]   = useState({ type: '', text: '' });
   const [imgError, setImgError]     = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   /* Fetch anime */
   useEffect(() => {
@@ -109,12 +112,18 @@ function AnimeDetailPage() {
 
   /* Fetch watchlist status */
   useEffect(() => {
-    if (!userId || !anime?.animeId) { setStatus('none'); return; }
+    if (!userId || !anime?.animeId) { setStatus('none'); setIsBookmarked(false); return; }
     getUserProfile(userId).then(res => {
-      const { watchedAnime = [], watchingAnime = [] } = res.UserProfile || {};
-      if (watchedAnime.includes(anime.animeId))       setStatus('watched');
-      else if (watchingAnime.includes(anime.animeId)) setStatus('watching');
-      else                                             setStatus('none');
+      const { watchedAnime = [], watchingAnime = [], bookmarkedAnime = [] } = res.UserProfile || {};
+      
+      // Check watchlist status
+      if (watchedAnime.some(a => a.animeId === anime.animeId))       setStatus('watched');
+      else if (watchingAnime.some(a => a.animeId === anime.animeId)) setStatus('watching');
+      else                                                            setStatus('none');
+      
+      // Check bookmark status
+      const bookmarked = bookmarkedAnime.some(a => a.animeId === anime.animeId);
+      setIsBookmarked(bookmarked);
     }).catch(() => {});
   }, [userId, anime?.animeId]);
 
@@ -140,6 +149,26 @@ function AnimeDetailPage() {
       setListMsg('Removed from list.');
     } catch (e) { setListMsg(`Error: ${e.message}`); }
     finally { setProcessing(false); }
+  };
+
+  const handleToggleBookmark = async () => {
+    if (!userId) { setListMsg('Log in to bookmark anime.'); return; }
+    setProcessing(true);
+    try {
+      if (isBookmarked) {
+        await removeFromBookmarkList({ userId, animeId: anime.animeId });
+        setIsBookmarked(false);
+        setListMsg('Removed from bookmarks.');
+      } else {
+        await addToBookmarkList({ userId, animeId: anime.animeId });
+        setIsBookmarked(true);
+        setListMsg('Added to bookmarks ✓');
+      }
+    } catch (e) {
+      setListMsg(`Error: ${e.message}`);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleRate = async (e) => {
@@ -413,6 +442,23 @@ function AnimeDetailPage() {
                       <MinusCircle size={16} weight="bold" /> Remove
                     </button>
                   </>}
+
+                  {/* Bookmark Button */}
+                  <Motion.button
+                    whileTap={{ scale: 0.92 }}
+                    whileHover={{ scale: 1.05 }}
+                    onClick={handleToggleBookmark}
+                    disabled={processing}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all disabled:opacity-50"
+                    style={{ 
+                        background: isBookmarked ? 'rgba(255, 255, 255, 0.1)' : 'transparent', 
+                        border: `1px solid ${isBookmarked ? 'rgba(255, 255, 255, 0.3)' : 'rgba(186,175,184,0.25)'}`, 
+                        color: isBookmarked ? '#F5EBE0' : '#AAAAAA' 
+                    }}
+                  >
+                    <BookmarksSimple size={18} weight={isBookmarked ? "fill" : "bold"} className={isBookmarked ? "text-[#D97706]" : ""} />
+                    {isBookmarked ? 'Bookmarked' : 'Bookmark'}
+                  </Motion.button>
                 </Motion.div>
               </AnimatePresence>
 

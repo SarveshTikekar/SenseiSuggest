@@ -117,6 +117,7 @@ class UserInfo(BaseModel):
     userName: str
     watchedAnime: List[AnimeListForUser]
     watchingAnime: List[AnimeListForUser]
+    bookmarkedAnime: List[AnimeListForUser] = Field([])
     anime_watched_count: int = 0
     anime_watching_count: int = 0
 
@@ -204,6 +205,7 @@ class UserProfile(BaseModel):
     profilePicture: Optional[str] = None
     watchedAnime: List[AnimesForUserProfile] = Field([])
     watchingAnime: List[AnimesForUserProfile] = Field([])
+    bookmarkedAnime: List[AnimesForUserProfile] = Field([])
 
     @computed_field
     @property
@@ -214,6 +216,17 @@ class UserProfile(BaseModel):
     @property
     def anime_watching_count(self) -> int:
         return len(self.watchingAnime)
+
+    @computed_field
+    @property
+    def anime_bookmarked_count(self) -> int:
+        return len(self.bookmarkedAnime)
     
 
     model_config = ConfigDict(from_attributes=True)
+
+
+""" Object for Bookmarking an anime """
+class BookmarkAnime(BaseModel):
+    userId: int = Field(...)
+    animeId: int = Field(...)

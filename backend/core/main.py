@@ -49,7 +49,7 @@ def root():
 #Return user info
 @app.get("/user/{user_id}", response_model=UserInfo, status_code=status.HTTP_200_OK)
 async def get_user_info(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
-    response = await supabase.table("users").select("*, user_watched_anime(animeId, anime(*)), user_watching_anime(animeId, anime(*))").eq("userId", user_id).execute()
+    response = await supabase.table("users").select("*, user_watched_anime(animeId, anime(*)), user_watching_anime(animeId, anime(*)), user_bookmarked_anime(animeId, anime(*))").eq("userId", user_id).execute()
     data = response.data
 
     if not data:
@@ -58,11 +58,13 @@ async def get_user_info(user_id: int, supabase: AsyncClient = Depends(get_supaba
     user_data = data[0]
     watched_anime_list = [item["anime"] for item in user_data.get("user_watched_anime", []) if item.get("anime")]
     watching_anime_list = [item["anime"] for item in user_data.get("user_watching_anime", []) if item.get("anime")]
+    bookmarked_anime_list = [item["anime"] for item in user_data.get("user_bookmarked_anime", []) if item.get("anime")]
 
     userInfobj = UserInfo(
         userName=user_data.get("userName"),
         watchedAnime=watched_anime_list,  
         watchingAnime=watching_anime_list, 
+        bookmarkedAnime=bookmarked_anime_list,
         anime_watched_count=len(watched_anime_list), 
         anime_watching_count=len(watching_anime_list),
     )
@@ -425,6 +427,39 @@ async def add_to_watching_list(animeListUpdate: AnimeListUpdate, supabase: Async
     await sync_user_stats(animeListUpdate.userId, supabase)
     return {'message': "Anime added successfully to watching List"}
 
+@app.patch("/add_as_bookmarked", status_code=status.HTTP_200_OK)
+async def add_as_bookmarked(bookmarkData: BookmarkAnime, supabase: AsyncClient = Depends(get_supabase)):
+
+    """ Check if anime is already bookmarked by the user """
+    check_if_bookmarked = await supabase.table("user_bookmarked_anime").select("*").eq("userId", bookmarkData.userId).eq("animeId", bookmarkData.animeId).execute()
+
+    if check_if_bookmarked.data:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Anime already bookmarked")
+    
+    """ If not bookmarked then add it as a bookmark """
+    try:
+        await supabase.table("user_bookmarked_anime").insert({"userId": bookmarkData.userId, "animeId": bookmarkData.animeId}).execute()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be bookmarked due to error: {e}")
+    
+    return {"message": "Anime bookmarked successfully"}
+
+@app.patch("/remove_as_bookmarked", status_code=status.HTTP_200_OK)
+async def remove_as_bookmarked(bookmarkData: BookmarkAnime, supabase: AsyncClient = Depends(get_supabase)):
+
+    """" Check if anime is bookmarked by the user """
+    check_if_bookmarked = await supabase.table("user_bookmarked_anime").select("*").eq("userId", bookmarkData.userId).eq("animeId", bookmarkData.animeId).execute()
+
+    if not check_if_bookmarked.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Anime not bookmarked yet")
+    
+    try:
+        await supabase.table("user_bookmarked_anime").delete().eq("userId", bookmarkData.userId).eq("animeId", bookmarkData.animeId).execute()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be removed from bookmarks due to error: {e}")
+    
+    return {"message": "Anime removed from bookmarks successfully"}
+
 
 @app.patch("/remove-from-watched-list/", status_code=status.HTTP_200_OK)
 async def remove_from_watched_list(animeListUpdate: AnimeListUpdate, supabase: AsyncClient = Depends(get_supabase)):
@@ -483,7 +518,7 @@ async def sync_user_stats(user_id: int, supabase: AsyncClient):
 @app.get('/profile/{user_id}', status_code=status.HTTP_200_OK)
 async def user_profile(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
 
-    response = await supabase.table("users").select("*, user_watched_anime(animeId, anime(*)), user_watching_anime(animeId, anime(*))").eq("userId", user_id).execute()
+    response = await supabase.table("users").select("*, user_watched_anime(animeId, anime(*)), user_watching_anime(animeId, anime(*)), user_bookmarked_anime(animeId, anime(*))").eq("userId", user_id).execute()
     data = response.data
 
     if not data:
@@ -507,6 +542,14 @@ async def user_profile(user_id: int, supabase: AsyncClient = Depends(get_supabas
         ) for item in result.get("user_watching_anime", []) if item.get("anime")
     ]
 
+    bookmarkedList = [
+        AnimesForUserProfile(
+            animeId=item["anime"]["animeId"],
+            animeName=item["anime"]["animeName"],
+            image_url_base_anime=item["anime"].get("image_url_base_anime"),
+        ) for item in result.get("user_bookmarked_anime", []) if item.get("anime")
+    ]
+
     userProfileObj = UserProfile(
         userId = result["userId"],
         userName = result["userName"],
@@ -514,6 +557,7 @@ async def user_profile(user_id: int, supabase: AsyncClient = Depends(get_supabas
         profilePicture=result.get("profilePicture", ""),
         watchedAnime=watchedList,
         watchingAnime=watchingList,
+        bookmarkedAnime=bookmarkedList,
     )
 
     return {"UserProfile": userProfileObj, "message": "User profile fetched successfully"}
