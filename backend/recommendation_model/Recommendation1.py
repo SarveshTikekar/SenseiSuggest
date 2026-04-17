@@ -61,5 +61,3 @@ def collaborative_recommender(user_id, ratings_df, anime_df, number_of_recommend
     top_n_recommended_anime_ids = recommendations_sorted.head(number_of_recommendations).index.tolist()
 
     return top_n_recommended_anime_ids
-
-

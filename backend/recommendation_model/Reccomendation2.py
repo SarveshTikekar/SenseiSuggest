@@ -29,7 +29,7 @@ def association_recommender(user_id, users_df, anime_df, number_of_recommendatio
         
     transactions_df = pd.DataFrame(encoded_rows, columns=all_anime_ids).fillna(False)
 
-    frequent_itemsets = apriori(transactions_df, min_support=0.4)
+    frequent_itemsets = apriori(transactions_df, min_support=0.1)
 
     if not frequent_itemsets:
         print(f"No item sets found")

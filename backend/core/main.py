@@ -45,39 +45,8 @@ ADMIN_ID = os.environ.get("ADMIN_ID")
 @app.get("/")
 def root():
     return {"message": "Welcome to Anime Recommendation system by Sarvesh. Pls login or sign up if ur a new user"}
-
-#Return user info
-@app.get("/user/{user_id}", response_model=UserInfo, status_code=status.HTTP_200_OK)
-async def get_user_info(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
-    response = await supabase.table("users").select("*, user_watched_anime(animeId, anime(*)), user_watching_anime(animeId, anime(*)), user_bookmarked_anime(animeId, anime(*))").eq("userId", user_id).execute()
-    data = response.data
-
-    if not data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id: {user_id} does not exist")
-    
-    user_data = data[0]
-    watched_anime_list = [item["anime"] for item in user_data.get("user_watched_anime", []) if item.get("anime")]
-    watching_anime_list = [item["anime"] for item in user_data.get("user_watching_anime", []) if item.get("anime")]
-    bookmarked_anime_list = [item["anime"] for item in user_data.get("user_bookmarked_anime", []) if item.get("anime")]
-
-    userInfobj = UserInfo(
-        userName=user_data.get("userName"),
-        watchedAnime=watched_anime_list,  
-        watchingAnime=watching_anime_list, 
-        bookmarkedAnime=bookmarked_anime_list,
-        anime_watched_count=len(watched_anime_list), 
-        anime_watching_count=len(watching_anime_list),
-    )
-
-    return userInfobj
     
 """ Anime APIs are declared here """
-
-#Return the newest 5 animes as default
-@app.get("/newest-5-anime")
-async def get_top_5(supabase: AsyncClient = Depends(get_supabase)):
-    response = await supabase.table("anime").select("*").order("releaseDate", desc=True).limit(5).execute()
-    return response.data
 
 #Return the newest n animes as default
 @app.get("/anime/newest/{count}")
@@ -106,7 +75,7 @@ async def get_top_rated(supabase: AsyncClient = Depends(get_supabase)) -> dict:
             anime_stats[a_id] = {"anime": anime, "total": 0, "positive": 0}
         
         anime_stats[a_id]["total"] += 1
-        if r["score"] > 5:
+        if r["score"] >= 6:
             anime_stats[a_id]["positive"] += 1
             
     best_ratio = -1
@@ -121,7 +90,6 @@ async def get_top_rated(supabase: AsyncClient = Depends(get_supabase)) -> dict:
     if not best_anime:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Anime not found")
     
-
     dict = {
         "animeName" : best_anime["animeName"],
         "releaseDate": best_anime["releaseDate"],
@@ -573,4 +541,3 @@ async def search_anime(query: str, supabase: AsyncClient = Depends(get_supabase)
     
     anime_ids = [item["animeId"] for item in response.data if item.get("animeId")]
     return anime_ids
-
