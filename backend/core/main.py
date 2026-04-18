@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, HTTPException, Depends, status
+from fastapi import FastAPI, Query, HTTPException, Depends, status, UploadFile, File, Form  
 from fastapi.middleware.cors import CORSMiddleware
 from .database import get_supabase
 from supabase import AsyncClient
@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 import os
 import json
 from backend.recommendation_model.main_ml_model import main_recommendation_model
+import uuid
+from datetime import datetime, timezone
 
 #Testing if application is working
 app = FastAPI(
@@ -411,6 +413,102 @@ async def add_as_bookmarked(bookmarkData: BookmarkAnime, supabase: AsyncClient =
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Anime couldn't be bookmarked due to error: {e}")
     
     return {"message": "Anime bookmarked successfully"}
+
+
+@app.post("/scrapbook/add", status_code=status.HTTP_201_CREATED)
+async def add_to_scrapbook(
+    userId: int = Form(...),
+    animeId: int = Form(...),
+    description: str = Form(None),
+    image: UploadFile = File(...),
+    supabase: AsyncClient = Depends(get_supabase)
+):
+    # 6-image limit check
+    existing_count = await supabase.table("anime_scrapbook") \
+        .select("id", count="exact") \
+        .eq("userId", userId) \
+        .eq("animeId", animeId) \
+        .execute()
+    
+    if existing_count.count and existing_count.count >= 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail="Scrapbook limit reached! You can only have 6 images per anime."
+        )
+
+    uuId = uuid.uuid4()
+    file_extension = image.filename.split(".")[-1]
+    storage_path = f"user_{userId}/{animeId}/{uuId}.{file_extension}"
+    file_content = await image.read()
+
+    # Upload to Storage
+    await supabase.storage.from_("anime_scrapbook").upload(
+        path=storage_path,
+        file=file_content,
+        file_options={"content_type": image.content_type},
+    )
+
+    public_url = await supabase.storage.from_("anime_scrapbook").get_public_url(storage_path)
+
+    try:
+        # Create and validate the entry using the Pydantic model
+        scrapbook_entry = ScrapBookResponse(
+            id=uuId,
+            userId=userId,
+            animeId=animeId,
+            screenshotUrl=public_url,
+            storagePath=storage_path,
+            screenshotDescription=description,
+            created_at=datetime.now(timezone.utc)
+        )
+        
+        # Insert validated data into DB
+        await supabase.table("anime_scrapbook").insert(scrapbook_entry.model_dump(mode='json')).execute()
+    except Exception as e:
+        await supabase.storage.from_("anime_scrapbook").remove([storage_path])
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Database error: {e}")
+    
+    return {"message": "Scrapbook entry added successfully", "id": uuId} 
+
+
+@app.delete("/scrapbook/remove/{scrapbook_id}", status_code=status.HTTP_200_OK)
+async def remove_from_scrapbook(
+    scrapbook_id: uuid.UUID,
+    userId: int,
+    animeId: int,
+    supabase: AsyncClient = Depends(get_supabase)
+):
+    check_entry = await supabase.table("anime_scrapbook") \
+        .select("storagePath") \
+        .eq("id", scrapbook_id) \
+        .eq("userId", userId) \
+        .eq("animeId", animeId) \
+        .execute()
+
+    if not check_entry.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Scrapbook entry not found")
+    
+    storage_path = check_entry.data[0]["storagePath"]
+
+    try:
+        await supabase.storage.from_("anime_scrapbook").remove([storage_path])
+        await supabase.table("anime_scrapbook").delete().eq("id", scrapbook_id).execute()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error during removal: {e}")
+    
+    return {"message": "Scrapbook entry removed successfully"}
+
+@app.get('/scrapbook/{user_id}')
+async def get_scrapbook(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
+
+    try:
+        
+        response = await supabase.table("anime_scrapbook").select("id, userId, animeId, anime(animeName), screenshotUrl, screenshotDescription, created_at").eq("userId", user_id).execute()
+
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Error fetching scrapbook: {e}")
+
+    return {"message": f"Scrapbook entries fetched successfully for user {user_id}", "data": response.data}
 
 @app.patch("/remove_as_bookmarked", status_code=status.HTTP_200_OK)
 async def remove_as_bookmarked(bookmarkData: BookmarkAnime, supabase: AsyncClient = Depends(get_supabase)):

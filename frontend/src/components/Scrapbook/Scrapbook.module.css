@@ -1,0 +1,338 @@
+/* Scrapbook.module.css — Shogun's War-Journal Aesthetic */
+
+.scrapbookContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  perspective: 1500px;
+  background-color: #0d0d0d; /* Pitch Charcoal background for contrast */
+  background-image: 
+    linear-gradient(45deg, rgba(221, 4, 38, 0.05) 0%, transparent 70%),
+    url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+  overflow: hidden;
+  padding: 40px 0;
+}
+
+.parchmentBase {
+  background-color: #dccfb2; 
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(139, 69, 19, 0.1) 0%, transparent 100%),
+    url('https://www.transparenttextures.com/patterns/paper-fibers.png'),
+    url('https://www.transparenttextures.com/patterns/pinstriped-suit.png'); /* Adds subtle tea-stain/texture grain */
+  box-shadow: 
+    inset 0 0 120px rgba(139, 69, 19, 0.25),
+    0 10px 30px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+/* Aggressive Burnt Edge Effect */
+.burntEdges {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 2;
+  border: 30px solid transparent;
+  border-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3e%3cpath d='M0 0 Q 5 10 0 20 Q 10 30 0 40 Q 5 50 0 60 Q 10 70 0 80 Q 5 90 0 100' fill='none' stroke='%231a1a1a' stroke-width='6'/%3e%3c/svg%3e") 30 stretch;
+  filter: blur(3px) contrast(1.5);
+  opacity: 0.9;
+}
+
+.scrapbookCover {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background-color: #111;
+  background-image: 
+    radial-gradient(circle at top left, rgba(221, 4, 38, 0.1) 0%, transparent 40%),
+    url('https://www.transparenttextures.com/patterns/black-leather.png');
+  color: #dccfb2;
+  border: 1px solid #333;
+  box-shadow: 
+    inset 0 0 50px rgba(0,0,0,0.9),
+    5px 0 0 #dccfb2, /* Simulated book edges */
+    10px 0 0 #1a1a1a,
+    15px 0 0 #dccfb2,
+    20px 0 0 #1a1a1a;
+}
+
+.coverFrame {
+  border: 2px solid #333;
+  padding: 60px 40px;
+  position: relative;
+  background: rgba(0,0,0,0.3);
+  width: 80%;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Metal Corners for the Cover */
+.corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 4px solid #dd0426;
+  opacity: 0.6;
+}
+.cornerTL { top: -5px; left: -5px; border-right: none; border-bottom: none; }
+.cornerTR { top: -5px; right: -5px; border-left: none; border-bottom: none; }
+.cornerBL { bottom: -5px; left: -5px; border-right: none; border-top: none; }
+.cornerBR { bottom: -5px; right: -5px; border-left: none; border-top: none; }
+
+.coverTitle {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #dd0426;
+  text-shadow: 2px 2px 0px rgba(0,0,0,1), 0 0 30px rgba(221, 4, 38, 0.4);
+  margin-bottom: 5px;
+}
+
+.ownerName {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #F5EBE0;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 25px rgba(245, 235, 224, 0.4);
+  line-height: 1.1;
+  text-align: center;
+}
+
+.brandFooter {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #dd0426;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 15px rgba(221, 4, 38, 0.3);
+  width: 100%;
+  white-space: nowrap;
+}
+
+.brandFooter span {
+  font-size: 0.8rem;
+  vertical-align: super;
+}
+
+.userRank {
+  font-family: 'Space Grotesk', monospace;
+  font-size: 0.7rem;
+  color: #F5EBE0;
+  opacity: 0.4;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  margin-top: 5px;
+}
+
+/* Red Wax Seal (Hanko) */
+.waxSeal {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background: #a10a24;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-weight: bold;
+  font-size: 1rem;
+  box-shadow: 
+    3px 3px 10px rgba(0,0,0,0.5),
+    inset -2px -2px 5px rgba(0,0,0,0.4),
+    inset 2px 2px 5px rgba(255,255,255,0.1);
+  border: 2px solid #8b0000;
+  transform: rotate(15deg);
+  z-index: 20;
+}
+
+/* 3D Physical Spine Overlay */
+.physicalSpine {
+  position: absolute;
+  top: 60px;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.spiralRing {
+  width: 38px;
+  height: 10px;
+  background: #1a1a1a;
+  background-image: linear-gradient(180deg, 
+    rgba(255,255,255,0.05) 0%, 
+    transparent 50%, 
+    rgba(0,0,0,0.3) 100%
+  );
+  border-radius: 20px;
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.02);
+  margin: 12px 0;
+  position: relative;
+  opacity: 0.9;
+}
+
+/* Add a subtle highlight to make it look round/synthetic */
+.spiralRing::before {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  filter: blur(0.5px);
+}
+
+.waxSeal::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 50%;
+}
+
+.kanjiVertical {
+  writing-mode: vertical-rl;
+  font-size: 2.2rem;
+  margin: 30px 0;
+  color: #dccfb2;
+  opacity: 0.4;
+  font-family: serif;
+}
+
+.scrapbookPage {
+  min-height: 400px;
+  padding: 50px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 50px;
+}
+
+.photoFrameWrapper {
+  perspective: 2000px;
+  width: 100%;
+  aspect-ratio: 3/2;
+  cursor: pointer;
+}
+
+.photoFrameInner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.photoFront, .photoBack {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  background: #e8ddc7;
+  padding: 14px;
+  box-shadow: 
+    2px 5px 20px rgba(0,0,0,0.4),
+    inset 0 0 40px rgba(139, 69, 19, 0.05);
+  border-radius: 2px;
+}
+
+.photoBack {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 30px;
+  background-image: url('https://www.transparenttextures.com/patterns/graphy-very-light.png');
+}
+
+.fullImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: sepia(0.15) contrast(1.1) brightness(0.95);
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.calligraphyText {
+  font-family: 'Dancing Script', cursive;
+  font-size: 1.8rem;
+  color: #1a1a1a;
+  line-height: 1.4;
+  padding: 0 10px;
+}
+
+.createdAtDate {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  font-family: 'Space Grotesk', monospace;
+  font-size: 0.7rem;
+  color: rgba(0,0,0,0.4);
+  transform: rotate(-2deg);
+  padding: 4px 8px;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: rgba(0,0,0,0.02);
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(221, 4, 38, 0.3);
+  border-radius: 10px;
+}
+
+.washiTape {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1deg);
+  width: 90px;
+  height: 28px;
+  background: rgba(221, 4, 38, 0.5);
+  backdrop-filter: blur(3px);
+  border-left: 2px solid rgba(255,255,255,0.1);
+  border-right: 2px solid rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
+.emptySlot {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 2px dashed rgba(221, 4, 38, 0.3);
+  box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+  .scrapbookPage { grid-template-columns: 1fr; padding: 25px; }
+  .coverTitle { font-size: 2.5rem; }
+}

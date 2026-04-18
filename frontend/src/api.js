@@ -284,3 +284,29 @@ export const updateWatchList = async (userId, animeId, status) => {
     }),
   });
 };
+
+// --- Scrapbook APIs ---
+export const getUserScrapbook = async (userId) => {
+  return fetchData(`${API_BASE_URL}/scrapbook/${userId}`);
+};
+
+export const uploadScrapbookImage = async (formData) => {
+  // Do NOT set Content-Type header manually when using FormData
+  // The browser will set it automatically with the correct boundary
+  const response = await fetch(`${API_BASE_URL}/scrapbook/add`, {
+    method: 'POST',
+    body: formData,
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Upload failed');
+  }
+  return response.json();
+};
+
+export const deleteScrapbookImage = async (scrapbookId, userId, animeId) => {
+  return fetchData(`${API_BASE_URL}/scrapbook/remove/${scrapbookId}?userId=${userId}&animeId=${animeId}`, {
+    method: 'DELETE',
+  });
+};

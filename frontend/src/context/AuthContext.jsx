@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
   // This 'login' function in AuthContext now only updates state
   // It expects to be called *after* a successful API login
-  const login = (id, username) => { // It's fine for it to take id and username
+  const login = (id) => { // It's fine for it to take id and username
     // No API calls here
     localStorage.setItem('userId', id);
     // You might want to store the token here if not done in LoginPage
@@ -34,10 +34,10 @@ export const AuthProvider = ({ children }) => {
   // The 'register' function in AuthContext should also only update state
   // For simplicity, we'll keep it as a placeholder, as the actual API call
   // will happen in SignupPage.jsx
-  const register = (id, username) => {
+  const register = (id) => {
     // This function might not be strictly needed if registration doesn't auto-login
     // or if you handle post-registration logic directly in SignupPage
-    console.log("AuthContext register called, user:", id, username);
+    console.log("AuthContext register called, user:", id);
   };
 
   const logout = () => {

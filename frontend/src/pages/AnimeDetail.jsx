@@ -3,8 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import {
   getAnimeDetails, rateAnime, getUserProfile,
   addTowatchedList, addTowatchingList, removeFromWatched, removeFromWatching,
-  addToBookmarkList, removeFromBookmarkList
+  addToBookmarkList, removeFromBookmarkList,
+  getUserScrapbook, uploadScrapbookImage, deleteScrapbookImage
 } from '../api';
+import ScrapbookGrid from '../components/Scrapbook/ScrapbookGrid';
 import { useAuth } from '../context/AuthContext';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
@@ -100,6 +102,10 @@ function AnimeDetailPage() {
   const [imgError, setImgError]     = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
+  // Scrapbook State
+  const [scrapbookPhotos, setScrapbookPhotos] = useState([]);
+  const [scrapbookLoading, setScrapbookLoading] = useState(false);
+
   /* Fetch anime */
   useEffect(() => {
     if (!animeName) return;
@@ -125,6 +131,14 @@ function AnimeDetailPage() {
       const bookmarked = bookmarkedAnime.some(a => a.animeId === anime.animeId);
       setIsBookmarked(bookmarked);
     }).catch(() => {});
+
+    // Fetch Scrapbook Photos
+    getUserScrapbook(userId).then(res => {
+      if (res && res.data) {
+        setScrapbookPhotos(res.data.filter(p => p.animeId === anime.animeId));
+      }
+    }).catch(e => console.error("Scrapbook fetch error:", e));
+
   }, [userId, anime?.animeId]);
 
   const handleList = async (type) => {
@@ -183,6 +197,42 @@ function AnimeDetailPage() {
       setRating('');
     } catch (e) {
       setRatingMsg({ type: 'error', text: e.message || 'Failed to submit.' });
+    }
+  };
+
+  const handleScrapbookUpload = async (file) => {
+    if (!userId || !anime?.animeId) return;
+    
+    const description = window.prompt("Enter a short caption for this scene (max 180 chars):") || "";
+    
+    const formData = new FormData();
+    formData.append('userId', userId);
+    formData.append('animeId', anime.animeId);
+    formData.append('description', description.substring(0, 180));
+    formData.append('image', file);
+
+    setScrapbookLoading(true);
+    try {
+      await uploadScrapbookImage(formData);
+      const fetched = await getUserScrapbook(userId);
+      setScrapbookPhotos(fetched.data.filter(p => p.animeId === anime.animeId));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setScrapbookLoading(false);
+    }
+  };
+
+  const handleScrapbookRemove = async (photoId) => {
+    if (!window.confirm("Delete this scene from your scrapbook?")) return;
+    setScrapbookLoading(true);
+    try {
+      await deleteScrapbookImage(photoId, userId, anime.animeId);
+      setScrapbookPhotos(prev => prev.filter(p => p.id !== photoId));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setScrapbookLoading(false);
     }
   };
 
@@ -630,6 +680,20 @@ function AnimeDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* ══════════════════════════════════════════════════
+          SCRAPBOOK GRID (Bottom of page)
+          ══════════════════════════════════════════════════ */}
+      {userId && animeStatus !== 'none' && (
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 pb-20">
+          <ScrapbookGrid 
+            photos={scrapbookPhotos} 
+            onUpload={handleScrapbookUpload} 
+            onRemove={handleScrapbookRemove} 
+            loading={scrapbookLoading} 
+          />
+        </div>
+      )}
     </div>
   );
 }

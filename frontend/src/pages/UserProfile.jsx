@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getUserProfile } from '../api';
+import { getUserProfile, getUserScrapbook } from '../api';
+import ScrapbookBook from '../components/Scrapbook/ScrapbookBook';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   Star,
@@ -79,6 +80,7 @@ function UserProfilePage() {
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [scrapbookEntries, setScrapbookEntries] = useState([]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -91,6 +93,16 @@ function UserProfilePage() {
         setError(err.message || 'Failed to fetch user profile.');
       } finally {
         setLoading(false);
+      }
+      
+      // Fetch Scrapbook
+      try {
+        const scrapRes = await getUserScrapbook(userId);
+        if (scrapRes && scrapRes.data) {
+          setScrapbookEntries(scrapRes.data);
+        }
+      } catch (e) {
+        console.error("Scrapbook fetch error:", e);
       }
     };
     if (userId) fetchUserProfile();
@@ -308,6 +320,23 @@ function UserProfilePage() {
                 </div>
               )}
             </Motion.div>
+
+            {/* Scrapbook Section */}
+            <Motion.div variants={itemVariants}>
+              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4 mt-16">
+                 <h3 className="text-lg font-display font-black text-[#F5EBE0] tracking-tight flex items-center gap-3">
+                   <span className="text-[#dd0426]">📖</span> Scrapbook Memories
+                 </h3>
+                 <span className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">{scrapbookEntries.length} Shots</span>
+              </div>
+              
+              <ScrapbookBook 
+                entries={scrapbookEntries} 
+                username={userProfile.userName} 
+                rank={getOtakuRank(userProfile.anime_watched_count || 0).name}
+              />
+            </Motion.div>
+
           </div>
 
         </Motion.div>

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, EmailStr, HttpUrl, ConfigDict, field_validator, model_validator,computed_field
 from typing import List, Optional
 from datetime import datetime
+import uuid
 
 #Database Tables
 class LocationTable(BaseModel):
@@ -230,3 +231,22 @@ class UserProfile(BaseModel):
 class BookmarkAnime(BaseModel):
     userId: int = Field(...)
     animeId: int = Field(...)
+
+""" Object for Adding a scrapbook entry """
+class ScrapBookEntry(BaseModel):
+    userId: int = Field(...)
+    animeId: int = Field(...)
+    screenshotUrl: Optional[str] = None
+    screenshotDescription: Optional[str] = Field(None, max_length=180)
+    storagePath: Optional[str] = None
+
+class ScrapBookResponse(ScrapBookEntry):
+    id: uuid.UUID
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+class ScrapBookRemove(BaseModel):
+    userId: int = Field(...)
+    animeId: int = Field(...)
+    scrapbookEntryId: uuid.UUID
+    model_config = ConfigDict(from_attributes=True)

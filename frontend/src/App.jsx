@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion as Motion } from 'framer-motion';
 
 import Footer    from './components/Footer';
 import Navbar    from './components/Navbar';
@@ -28,7 +28,7 @@ function AnimatedRoutes({ onSearchOpen }) {
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
+      <Motion.div
         key={location.pathname}
         variants={pageVariants}
         initial="initial"
@@ -54,7 +54,7 @@ function AnimatedRoutes({ onSearchOpen }) {
             </div>
           } />
         </Routes>
-      </motion.div>
+      </Motion.div>
     </AnimatePresence>
   );
 }
