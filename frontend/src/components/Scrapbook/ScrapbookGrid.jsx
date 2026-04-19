@@ -133,7 +133,7 @@ const ScrapbookGrid = ({ photos = [], onUpload, onRemove, loading }) => {
            <h3 className="font-display text-3xl text-[#dd0426] tracking-widest uppercase">
              Cinematic Memories
            </h3>
-           <p className="text-[#8b4513] font-hand text-[1.2rem] mt-2 opacity-80">
+           <p className="text-[#8b4513] mt-2 opacity-80" style={{ fontFamily: "'Tangerine', cursive", fontSize: '2.0rem', lineHeight: '1' }}>
              Capture and preserve your favorite scenes.
            </p>
         </div>

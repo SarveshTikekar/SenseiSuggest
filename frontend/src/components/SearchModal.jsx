@@ -203,7 +203,6 @@ function SearchModal({ open, onClose }) {
                 {/* Footer hint */}
                 <div className="px-4 py-2.5 border-t border-white/[0.06] flex items-center justify-between">
                   <span className="text-[#AAAAAA] opacity-60 text-[10px] font-accent uppercase tracking-widest">↑↓ navigate · Enter select</span>
-                  <span className="text-[#AAAAAA] opacity-60 text-[10px] font-accent uppercase tracking-widest select-none">Sensei v2.0</span>
                 </div>
               </div>
             </Motion.div>

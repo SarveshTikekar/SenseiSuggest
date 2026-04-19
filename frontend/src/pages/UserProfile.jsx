@@ -361,10 +361,10 @@ function UserProfilePage() {
                 
                 <div className="grid grid-cols-2 gap-6">
                    {[
-                     { label: 'Victory Records', value: userProfile.anime_watched_count || 0, icon: <Trophy />, color: 'text-[#DD0426]' },
-                     { label: 'Active Missions', value: userProfile.anime_watching_count || 0, icon: <Play />, color: 'text-[#F5EBE0]' },
-                     { label: 'Strategic Intel', value: userProfile.anime_bookmarked_count || 0, icon: <BookmarksSimple />, color: 'text-[#D97706]' },
-                     { label: 'Tactical Seniority', value: `LVL ${Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}`, icon: <Medal />, color: 'text-[#AAAAAA]' }
+                     { label: 'Victory Records (Watched)', value: userProfile.anime_watched_count || 0, icon: <Trophy />, color: 'text-[#DD0426]' },
+                     { label: 'Active Missions (Watching)', value: userProfile.anime_watching_count || 0, icon: <Play />, color: 'text-[#F5EBE0]' },
+                     { label: 'Strategic Intel (Saved)', value: userProfile.anime_bookmarked_count || 0, icon: <BookmarksSimple />, color: 'text-[#D97706]' },
+                     { label: 'Tactical Seniority (Rank)', value: `LVL ${Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}`, icon: <Medal />, color: 'text-[#AAAAAA]' }
                    ].map((stat, i) => (
                      <div key={i} className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all group">
                         <div className={`mb-4 ${stat.color} opacity-40 group-hover:opacity-100 transition-opacity`}>

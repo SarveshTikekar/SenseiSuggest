@@ -552,6 +552,7 @@ async def remove_from_scrapbook(
     return {"message": "Scrapbook entry removed successfully"}
 
 # --- SCRAPBOOK ENDPOINTS ---
+@app.get("/scrapbook/{user_id}", status_code=status.HTTP_200_OK)
 async def get_scrapbook(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
 
     try:
