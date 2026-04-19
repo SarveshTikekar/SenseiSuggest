@@ -81,4 +81,4 @@ def process_data(ratings_df, anime_df, users_df, locations_df, genres_df, season
     print(f'Final preprocessed data shape is \n {merged_df.shape}')
     print(f"{merged_df.columns.tolist()[:20]}")
 
-    return merged_df, anime_df, users_df, genres_df, seasons_df
+    return merged_df, anime_df, users_with_locations_df, genres_df, seasons_df

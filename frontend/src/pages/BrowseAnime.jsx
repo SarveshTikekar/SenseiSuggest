@@ -55,7 +55,7 @@ const AnimeCard = ({ anime, index }) => {
         </div>
         
         <div className="ss-anime-card__body">
-          <p className="font-display font-black text-[13px] text-[#F5EBE0] line-clamp-1 group-hover:text-[#DD0426] transition-colors tracking-tight">
+          <p className="font-accent text-[12px] text-[#F5EBE0] line-clamp-1 group-hover:text-[#DD0426] transition-colors tracking-wide uppercase">
             {anime.animeName}
           </p>
           <p className="text-[11px] text-[#AAAAAA] font-medium">
@@ -120,10 +120,10 @@ function BrowseAnimePage() {
       {/* Header — compact, no wasted space */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-display font-black" style={{ color: '#F5EBE0', fontSize: 'clamp(1.5rem,3vw,2rem)', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', color: '#F5EBE0', fontSize: 'clamp(1.5rem,3vw,2.5rem)', letterSpacing: '0.02em' }}>
             Library
           </h1>
-          <p style={{ color: '#AAAAAA', fontSize: '11px', fontFamily: 'Space Grotesk', marginTop: '4px' }}>
+          <p style={{ color: '#AAAAAA', fontSize: '11px', fontFamily: 'var(--font-accent)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             {animeList.length.toLocaleString()} titles · page {currentPage}/{total}
           </p>
         </div>
@@ -134,7 +134,7 @@ function BrowseAnimePage() {
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
-            style={{ fontSize: '12px', fontFamily: 'Space Grotesk', minWidth: '130px', padding: '6px 28px 6px 10px' }}
+            style={{ fontSize: '12px', fontFamily: 'var(--font-accent)', minWidth: '130px', padding: '6px 28px 6px 10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
           >
             <option value="animeName">By Name</option>
             <option value="releaseDate">By Date</option>
@@ -144,8 +144,8 @@ function BrowseAnimePage() {
             onClick={() => setSortOrder(p => p === 'asc' ? 'desc' : 'asc')}
             className="flex items-center gap-1.5 transition-all"
             style={{
-              padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontFamily: 'Space Grotesk',
-              fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+              padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontFamily: 'var(--font-accent)',
+              fontWeight: 400, letterSpacing: '0.05em', textTransform: 'uppercase',
               background: sortOrder === 'asc' ? 'rgba(221,4,38,0.1)' : 'rgba(186,175,184,0.05)',
               border: `1px solid ${sortOrder === 'asc' ? 'rgba(221,4,38,0.25)' : 'rgba(186,175,184,0.15)'}`,
               color: sortOrder === 'asc' ? '#DD0426' : '#AAAAAA',
@@ -172,7 +172,7 @@ function BrowseAnimePage() {
 
       {/* Grid — 4 cols, larger image cards */}
       {animeList.length === 0 ? (
-        <div className="py-32 text-center" style={{ color: '#AAAAAA', fontFamily: 'Space Grotesk', fontSize: '13px' }}>
+        <div className="py-32 text-center" style={{ color: '#AAAAAA', fontFamily: 'var(--font-accent)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           No anime found in the library.
         </div>
       ) : (

@@ -43,15 +43,12 @@ def association_recommender(user_id, users_df, anime_df, number_of_recommendatio
 
     # Sort rules: higher confidence first
     rules = pd.DataFrame(rules_list).sort_values(by=['confidence'], ascending=False)
-    #Get list of anime watched by the required user
-    user_watched_animes = users_df[users_df['userId'] == user_id]['watchedAnime']
+    # Get list of anime watched by the required user
+    user_watched_series = users_df[users_df['userId'] == user_id]['watchedAnime']
+    user_watched_animes_list = user_watched_series.iloc[0] if not user_watched_series.empty else []
 
-    if user_watched_animes.empty:
-        print(f"User with {user_id} has not watched any animes yet")
-        return []
-
-    #Frozen set so that list is immutable    
-    user_watched_animes = frozenset(user_watched_animes)
+    # Frozen set so that list is immutable    
+    user_watched_animes = frozenset(user_watched_animes_list)
 
     #Initialize a empty set to get the recommended ids
     recommended_animeIds = set()

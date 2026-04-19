@@ -48,8 +48,8 @@ function LoginPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#DD0426] to-[#A10A24] mb-6 shadow-[0_8px_30px_rgba(221,4,38,0.2)]">
             <TelevisionSimple size={32} weight="bold" className="text-white" />
           </div>
-          <h2 className="text-3xl font-display font-black text-[#F5EBE0] tracking-tight mb-2">Welcome Back.</h2>
-          <p className="text-[#AAAAAA] text-sm font-sans">Continue your anime journey with Sensei.</p>
+          <h2 className="text-4xl font-display text-[#F5EBE0] tracking-tight mb-2">Welcome Back.</h2>
+          <p className="text-[#AAAAAA] text-[1.4rem] font-hand">Continue your anime journey with Sensei.</p>
         </div>
 
         <form 
@@ -60,14 +60,14 @@ function LoginPage() {
             <Motion.p 
               initial={{ opacity: 0, x: -10 }} 
               animate={{ opacity: 1, x: 0 }} 
-              className="bg-[#EF4444]/[0.08] text-[#EF4444] border border-[#EF4444]/[0.15] rounded-xl p-3.5 mb-6 text-center text-xs font-mono"
+              className="bg-[#EF4444]/[0.08] text-[#EF4444] border border-[#EF4444]/[0.15] rounded-xl p-3.5 mb-6 text-center text-[10px] font-accent uppercase tracking-widest"
             >
               {error}
             </Motion.p>
           )}
 
           <div className="mb-5">
-            <label htmlFor="usernameOrEmail" className="block text-[#F5EBE0] text-xs font-mono uppercase tracking-widest mb-2.5 ml-1">
+            <label htmlFor="usernameOrEmail" className="block text-[#F5EBE0] text-[10px] font-accent uppercase tracking-widest mb-3 ml-1">
               Identify Yourself
             </label>
             <div className="relative group">
@@ -80,14 +80,14 @@ function LoginPage() {
                 value={usernameOrEmail}
                 onChange={(e) => setUsernameOrEmail(e.target.value)}
                 required
-                className="pl-12 appearance-none border border-white/10 rounded-xl w-full py-3 px-4 bg-black/20 text-[#F5EBE0] leading-tight outline-none focus:border-[#DD0426]/40 transition-all placeholder-[#AAAAAA]/50 text-sm font-sans"
+                className="pl-12 appearance-none border border-white/10 rounded-xl w-full py-3.5 px-4 bg-black/20 text-[#F5EBE0] leading-tight outline-none focus:border-[#DD0426]/40 transition-all placeholder-[#AAAAAA]/50 text-sm font-accent uppercase tracking-widest"
                 placeholder="Username or Email"
               />
             </div>
           </div>
 
           <div className="mb-8">
-            <label htmlFor="password" className="block text-[#F5EBE0] text-xs font-mono uppercase tracking-widest mb-2.5 ml-1">
+            <label htmlFor="password" className="block text-[#F5EBE0] text-[10px] font-accent uppercase tracking-widest mb-3 ml-1">
               Secret Key
             </label>
             <div className="relative group">
@@ -100,7 +100,7 @@ function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pl-12 appearance-none border border-white/10 rounded-xl w-full py-3 px-4 bg-black/20 text-[#F5EBE0] leading-tight outline-none focus:border-[#DD0426]/40 transition-all placeholder-[#AAAAAA]/50 text-sm font-sans"
+                className="pl-12 appearance-none border border-white/10 rounded-xl w-full py-3.5 px-4 bg-black/20 text-[#F5EBE0] leading-tight outline-none focus:border-[#DD0426]/40 transition-all placeholder-[#AAAAAA]/50 text-sm font-accent uppercase tracking-widest"
                 placeholder="••••••••"
               />
             </div>
@@ -108,7 +108,7 @@ function LoginPage() {
 
           <button
             type="submit"
-            className="ss-btn-primary w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 group disabled:opacity-50"
+            className="ss-btn-primary w-full py-4 rounded-xl font-accent uppercase tracking-widest flex items-center justify-center gap-2 group disabled:opacity-50"
             disabled={loading}
           >
             {loading ? (
@@ -122,8 +122,8 @@ function LoginPage() {
           </button>
         </form>
 
-        <p className="text-center text-[#8D7F8B] text-[13px] mt-8 font-sans">
-          New to the library? <Link to="/signup" className="text-[#DD0426] hover:text-[#F5EBE0] font-semibold transition-colors">Create account</Link>
+        <p className="text-center text-[#8D7F8B] text-[1.2rem] mt-8 font-hand">
+          New to the library? <Link to="/signup" className="text-[#DD0426] hover:text-[#F5EBE0] font-accent uppercase tracking-widest text-[11px] ml-2 transition-colors">Create account</Link>
         </p>
       </Motion.div>
     </div>

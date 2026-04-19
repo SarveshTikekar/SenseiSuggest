@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkle, 
@@ -69,6 +70,9 @@ const SkeletonItem = () => (
 const RecommendationPage = () => {
   const { userId } = useAuth(); 
   const [recommendedAnimeDetails, setRecommendedAnimeDetails] = useState([]);
+  const [categorizedRecoms, setCategorizedRecoms] = useState({});
+  const [categoryTitles, setCategoryTitles] = useState({});
+  const [isColdStart, setIsColdStart] = useState(false);
   const [ratingDistribution, setRatingDistribution] = useState([]);
   const [genrePopularity, setGenrePopularity] = useState([]);
   const [mostPopularAnime, setMostPopularAnime] = useState(null);
@@ -85,25 +89,24 @@ const RecommendationPage = () => {
       const response = await getRecommendations(userId); 
       
       const recommendationsData = response.recommendations || [];
-      
-      const fallbackReasons = [
-        "Matches your unique taste profile",
-        "Trending among fans with similar interests",
-        "A hidden gem found by the Sensei",
-        "Matches your favorite genres",
-        "Popular community choice"
-      ];
+      const categorized = response.categorized || {};
+      const titles = response.category_titles || {};
+      setIsColdStart(response.is_cold_start || false);
 
-      const enrichedRecommendations = recommendationsData.filter(Boolean).map((anime, idx) => ({
+      const enrich = (list) => list.filter(Boolean).map((anime) => ({
         ...anime,
         animeId: anime.animeId || anime.animeid,
-        sensei_reason: anime.sensei_reason || fallbackReasons[idx % fallbackReasons.length],
-        recommendation_source: anime.recommendation_source || (idx === 0 ? "Top Pick" : "AI Discovery"),
         display_genres: Array.isArray(anime.genres) ? anime.genres : 
                         (anime.anime_genres?.map(g => g.genres?.name).filter(Boolean) || [])
       }));
 
-      setRecommendedAnimeDetails(enrichedRecommendations); 
+      setRecommendedAnimeDetails(enrich(recommendationsData)); 
+      setCategorizedRecoms({
+        primary: enrich(categorized.primary || []),
+        contextual: enrich(categorized.contextual || []),
+        discovery: enrich(categorized.discovery || [])
+      });
+      setCategoryTitles(titles);
 
       const rawRatingsDistrib = response.ratings_distribution || {};
       const processedRatingDistribution = Array.from({ length: 10 }, (_, i) => i + 1).map(score => ({
@@ -166,7 +169,6 @@ const RecommendationPage = () => {
   }
 
   const topPick = recommendedAnimeDetails[0];
-  const otherPicks = recommendedAnimeDetails.slice(1);
 
   return (
     <div className="max-w-[1640px] mx-auto px-4 sm:px-6 lg:px-8 py-12 font-inter selection:bg-anime-accent selection:text-white">
@@ -199,7 +201,6 @@ const RecommendationPage = () => {
         </div>
       ) : (
         <AnimatePresence>
-          {/* Sensei's Choice - Hero Spotlight */}
           {topPick && (
             <Motion.div 
               initial={{ opacity: 0, scale: 0.98 }}
@@ -207,9 +208,7 @@ const RecommendationPage = () => {
               className="relative rounded-[2.5rem] overflow-hidden border border-white/10 bg-[#0D0D0D] shadow-[0_40px_100px_rgba(0,0,0,0.6)] mb-24 group"
             >
               <div className="flex flex-col lg:flex-row items-stretch">
-                {/* Hero Image */}
                 <div className="w-full lg:w-1/2 h-[400px] lg:h-[640px] relative overflow-hidden bg-[#1A1A1A]">
-                  {/* Blurred Backdrop */}
                   <img 
                     src={topPick.image_url_base_anime} 
                     alt="" 
@@ -223,23 +222,28 @@ const RecommendationPage = () => {
                       onError={(e) => { e.target.src=`https://placehold.co/800x1200/2A1F2D/BBAFB8?text=Post-Image` }}
                     />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#0D0D0D]/40 z-20" />
-                  <div className="absolute top-8 left-8 flex gap-3">
-                    <span className="bg-[#DD0426] text-white px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl flex items-center gap-2">
-                      <Trophy size={14} weight="bold" /> Top Selection
+                  <div className="absolute top-8 left-8 flex gap-3 z-30">
+                    <span className="bg-[#DD0426] text-white px-5 py-1.5 rounded-full text-[10px] font-accent uppercase tracking-widest shadow-xl flex items-center gap-2">
+                      <Trophy size={14} weight="bold" /> {isColdStart ? "Global Apex" : "Top Selection"}
                     </span>
+                    {isColdStart && (
+                      <span className="bg-white/10 backdrop-blur-md text-white px-5 py-1.5 rounded-full text-[10px] font-accent uppercase tracking-widest shadow-xl border border-white/10">
+                        New User Special
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 <div className="w-full lg:w-1/2 p-10 lg:p-20 flex flex-col justify-center">
-                  <div className="inline-flex items-center gap-2 text-[#DD0426] font-mono text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-                    <Lightning size={16} weight="bold" /> Compatibility High
+                  <div className="inline-flex items-center gap-2 text-[#DD0426] font-accent text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+                    <Lightning size={16} weight="bold" /> {isColdStart ? "High Viral Potential" : "Compatibility High"}
                   </div>
                   
                   <h2 className="text-4xl lg:text-5xl font-display font-black text-[#F5EBE0] mb-4 leading-tight">
                     {topPick.animeName}
                   </h2>
                   
-                  <div className="flex flex-wrap gap-2 mb-8 lowercase font-mono pb-8 border-b border-white/10">
+                  <div className="flex flex-wrap gap-2 mb-8 lowercase font-accent pb-8 border-b border-white/10">
                     {topPick.display_genres.map((genre, i) => (
                       <span key={i} className="text-[#AAAAAA] text-[11px] px-2 py-0.5 border border-white/10 rounded">
                         #{genre.replace(/\s+/g, '') || genre}
@@ -248,17 +252,19 @@ const RecommendationPage = () => {
                   </div>
 
                   <div className="bg-white/5 border border-white/10 p-6 rounded-2xl mb-10 shadow-inner">
-                    <h4 className="text-[#AAAAAA] opacity-60 font-mono text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <Info size={14} weight="bold" /> Neural Logic
+                    <h4 className="text-[#AAAAAA] opacity-60 font-accent text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <Info size={14} weight="bold" /> {isColdStart ? "Discovery Logic" : "Neural Logic"}
                     </h4>
-                    <p className="text-[#F5EBE0] text-sm font-sans leading-relaxed">
-                      {topPick.sensei_reason}
+                    <p className="text-[#F5EBE0] text-[1.4rem] font-hand leading-relaxed">
+                      {isColdStart 
+                        ? "As a new initiate, the Sensei recommends this masterpiece which has defined the current era of animation."
+                        : topPick.sensei_reason}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-8 text-[#AAAAAA] text-[11px] mb-12 uppercase tracking-widest font-mono">
-                     <span className="flex items-center gap-2"><CalendarBlank size={16} weight="bold" className="text-[#8D7F8B]" /> {topPick.releaseDate ? new Date(topPick.releaseDate).getFullYear() : 'Classic'}</span>
-                     <span className="flex items-center gap-2"><Browsers size={16} weight="bold" className="text-[#8D7F8B]" /> {topPick.genre_count || topPick.display_genres.length} Nodes</span>
+                  <div className="flex items-center gap-8 text-[#AAAAAA] text-[11px] mb-12 uppercase tracking-widest font-accent">
+                     <span className="flex items-center gap-2"><CalendarBlank size={16} weight="bold" className="text-[#DD0426]" /> {topPick.releaseDate ? new Date(topPick.releaseDate).getFullYear() : 'Classic'}</span>
+                     <span className="flex items-center gap-2"><Browsers size={16} weight="bold" className="text-[#DD0426]" /> {topPick.genre_count || topPick.display_genres.length} Nodes</span>
                   </div>
 
                   <div className="flex items-center gap-4">
@@ -280,75 +286,81 @@ const RecommendationPage = () => {
             </Motion.div>
           )}
 
-          <section className="mb-24">
-            <div className="flex items-center justify-between mb-10 border-b border-white/10 pb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-[#DD0426]/10 flex items-center justify-center">
-                  <TrendUp size={24} weight="bold" className="text-[#DD0426]" />
+          {Object.entries(categorizedRecoms).map(([key, list]) => (
+            list.length > 0 && (
+              <section key={key} className="mb-24">
+                <div className="flex items-center justify-between mb-10 border-b border-white/10 pb-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-[#DD0426]/10 flex items-center justify-center">
+                      {key === 'primary' ? <TrendUp size={24} weight="bold" className="text-[#DD0426]" /> :
+                       key === 'contextual' ? <Sparkle size={24} weight="bold" className="text-[#DD0426]" /> :
+                       <Trophy size={24} weight="bold" className="text-[#DD0426]" />}
+                    </div>
+                    <h3 className="text-3xl font-display text-[#F5EBE0] tracking-tight">
+                      {categoryTitles[key] || "Discovery Hub"}
+                    </h3>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-display font-black text-[#F5EBE0] tracking-tight">Handpicked Records</h3>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-              {otherPicks.map((anime, idx) => (
-                <Motion.div 
-                  key={anime.animeId || idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * idx }}
-                  className="ss-anime-card group"
-                >
-                  <div className="ss-anime-card__img-container">
-                    {/* Blurred Backdrop */}
-                    <img 
-                      src={anime.image_url_base_anime} 
-                      className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none"
-                      alt=""
-                      aria-hidden
-                    />
-                    <img 
-                      src={anime.image_url_base_anime} 
-                      className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
-                      alt={anime.animeName}
-                      onError={(e) => { e.target.src=`https://placehold.co/400x200/2A1F2D/BBAFB8?text=Missing+Intel` }}
-                    />
-                    <div className="absolute top-2 right-2 z-20">
-                       <span className="bg-[#DD0426] px-2 py-0.5 rounded text-[8px] font-black text-white uppercase tracking-tighter border border-white/10 shadow-lg">
-                         REC
-                       </span>
-                    </div>
-                  </div>
-
-                  <div className="ss-anime-card__body">
-                    <h4 className="text-[13px] font-display font-black text-[#F5EBE0] mb-1 leading-tight group-hover:text-[#DD0426] transition-colors line-clamp-1 truncate">
-                      {anime.animeName}
-                    </h4>
-                    
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] text-[#AAAAAA] font-medium leading-none">
-                        Sub | Dub
-                      </p>
-                      {anime.rating && (
-                        <div className="flex items-center gap-1 opacity-60">
-                           <Star size={10} weight="fill" className="text-[#D97706]" />
-                           <span className="text-[10px] text-[#AAAAAA] font-bold">{anime.rating.toFixed(1)}</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                  {list.map((anime, idx) => (
+                    <Motion.div 
+                      key={anime.animeId || `${key}-${idx}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.05 * idx }}
+                      className="ss-anime-card group"
+                    >
+                      <div className="ss-anime-card__img-container">
+                        <img 
+                          src={anime.image_url_base_anime} 
+                          className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none"
+                          alt=""
+                          aria-hidden
+                        />
+                        <img 
+                          src={anime.image_url_base_anime} 
+                          className="relative z-10 w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
+                          alt={anime.animeName}
+                          onError={(e) => { e.target.src=`https://placehold.co/400x200/2A1F2D/BBAFB8?text=Missing+Intel` }}
+                        />
+                        <div className="absolute top-2 right-2 z-20">
+                           <span className="bg-[#DD0426] px-2 py-0.5 rounded text-[8px] font-accent text-white uppercase tracking-tighter border border-white/10 shadow-lg">
+                             {isColdStart ? "TREND" : "MATCH"}
+                           </span>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </Motion.div>
-              ))}
-            </div>
-          </section>
+                      </div>
 
-          {/* Analytics Visualizers */}
+                      <div className="ss-anime-card__body">
+                        <h4 className="text-[12px] font-accent text-[#F5EBE0] mb-1 leading-tight group-hover:text-[#DD0426] transition-colors line-clamp-1 truncate uppercase">
+                          {anime.animeName}
+                        </h4>
+                        
+                        <div className="flex items-center justify-between">
+                          <p className="text-[10px] text-[#AAAAAA] font-accent leading-none uppercase">
+                            Sub | Dub
+                          </p>
+                          {anime.rating && (
+                            <div className="flex items-center gap-1 opacity-60">
+                               <span className="text-[10px] text-[#AAAAAA] font-accent uppercase tracking-tighter">SCORE</span>
+                               <span className="text-[10px] text-[#AAAAAA] font-bold">{anime.rating.toFixed(1)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </Motion.div>
+                  ))}
+                </div>
+              </section>
+            )
+          ))}
+
           <section className="mt-32">
              <div className="flex items-center gap-6 mb-16 justify-center">
                 <div className="h-[1px] flex-grow max-w-[100px] bg-white/10"></div>
                 <div className="flex items-center gap-4 text-center">
                    <ChartIcon size={32} weight="bold" className="text-[#DD0426]" />
-                   <h3 className="text-3xl font-display font-black text-[#F5EBE0] tracking-tight">Intelligence <span className="text-[#DD0426]">Analysis.</span></h3>
+                   <h3 className="text-4xl font-display text-[#F5EBE0] tracking-tight">Intelligence <span className="text-[#DD0426]">Analysis.</span></h3>
                 </div>
                 <div className="h-[1px] flex-grow max-w-[100px] bg-white/10"></div>
              </div>
@@ -363,10 +375,10 @@ const RecommendationPage = () => {
                        <Lightning size={160} weight="bold" className="text-[#F5EBE0]" />
                     </div>
                     <div className="flex justify-between items-center mb-8">
-                       <h4 className="text-xl font-display font-black text-[#F5EBE0] flex items-center gap-3">
+                       <h4 className="text-2xl font-display text-[#F5EBE0] flex items-center gap-3">
                           <Sparkle size={20} weight="bold" className="text-yellow-400" /> Global Genre Popularity
                        </h4>
-                       <span className="text-[10px] font-mono text-[#8D7F8B] uppercase tracking-[0.3em]">Realtime Cluster Analysis</span>
+                       <span className="text-[10px] font-accent text-[#8D7F8B] uppercase tracking-[0.3em]">Realtime Cluster Analysis</span>
                     </div>
 
                    <ResponsiveContainer width="100%" height={350}>
@@ -406,14 +418,14 @@ const RecommendationPage = () => {
                    initial={{ opacity: 0, x: 30 }}
                    className="lg:col-span-4 bg-[#1A1A1A] p-10 rounded-3xl border border-[#2A2A2A] shadow-2xl flex flex-col"
                 >
-                   <h4 className="text-xl font-display font-black text-[#F5EBE0] mb-10 flex items-center gap-3">
+                   <h4 className="text-2xl font-display text-[#F5EBE0] mb-10 flex items-center gap-3">
                       <Clock size={20} weight="bold" className="text-[#DD0426]" /> Density Map
                    </h4>
                    
                    <div className="flex-grow space-y-8">
                       {ratingDistribution.slice().reverse().slice(0, 5).map((r, idx) => (
                          <div key={idx} className="space-y-3">
-                           <div className="flex justify-between text-xs font-black uppercase tracking-widest text-anime-text-light px-1">
+                           <div className="flex justify-between text-[10px] font-accent uppercase tracking-widest text-anime-text-light px-1">
                               <span>Rating {r.score}</span>
                               <span className="text-[#DD0426]">{Math.round((r.count / (Math.max(...ratingDistribution.map(rd => rd.count)) || 1)) * 100)}%</span>
                            </div>
@@ -430,8 +442,8 @@ const RecommendationPage = () => {
                    </div>
                    
                    <div className="mt-8 p-6 bg-[#DD0426]/5 rounded-3xl border border-[#DD0426]/10">
-                      <p className="text-[10px] text-[#DD0426] font-black uppercase tracking-[0.2em] mb-2">Algorithm Verdict</p>
-                      <p className="text-xs text-[#AAAAAA] leading-relaxed font-sans opacity-95">The global user base is currently favoriting high-complexity narratives with 8+ scores.</p>
+                      <p className="text-[10px] text-[#DD0426] font-accent uppercase tracking-[0.2em] mb-2">Algorithm Verdict</p>
+                      <p className="text-[1.2rem] text-[#AAAAAA] leading-relaxed font-hand opacity-95">The global user base is currently favoriting high-complexity narratives with 8+ scores.</p>
                    </div>
                 </Motion.div>
              </div>
@@ -440,7 +452,7 @@ const RecommendationPage = () => {
           {/* Hall of Fame - Most Popular overall */}
           <section className="mt-40 mb-32 text-center relative px-4">
              <div className="inline-block px-10 py-3 bg-white/[0.03] border border-white/10 rounded-full mb-16 backdrop-blur-3xl">
-                <span className="flex items-center gap-4 text-[10px] font-mono font-black uppercase tracking-[0.4em] text-[#AAAAAA]">
+                <span className="flex items-center gap-4 text-[10px] font-accent uppercase tracking-[0.4em] text-[#AAAAAA]">
                    <CaretRight size={16} weight="bold" className="text-[#DD0426] animate-pulse" /> Legendary Picks <CaretRight size={16} weight="bold" className="text-[#DD0426] animate-pulse" />
                 </span>
              </div>
@@ -457,26 +469,26 @@ const RecommendationPage = () => {
                       </div>
                       <div className="text-center md:text-left flex-grow">
                          <div className="flex flex-col md:flex-row items-center gap-6 mb-6 justify-center md:justify-start">
-                            <h4 className="text-4xl lg:text-5xl font-display font-black text-[#F5EBE0] tracking-tight">{mostPopularAnime.animeName}</h4>
-                            <div className="bg-[#DD0426]/10 text-[#DD0426] px-5 py-1.5 rounded-lg text-[10px] font-mono font-black tracking-widest border border-[#DD0426]/20 uppercase">
+                            <h4 className="text-4xl lg:text-6xl font-display text-[#F5EBE0] tracking-tight">{mostPopularAnime.animeName}</h4>
+                            <div className="bg-[#DD0426]/10 text-[#DD0426] px-5 py-1.5 rounded-lg text-[10px] font-accent tracking-widest border border-[#DD0426]/20 uppercase">
                                HALL OF FAME
                             </div>
                          </div>
-                         <p className="text-[#AAAAAA] text-lg mb-10 leading-relaxed font-sans italic opacity-80">
+                         <p className="text-[#AAAAAA] text-[1.4rem] mb-10 leading-relaxed font-hand italic opacity-80">
                             The pinnacle of global narrative benchmarks. Consistently ranked at the apex.
                          </p>
                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                             <div className="p-6 bg-black/20 rounded-2xl border border-white/10">
-                               <p className="text-[10px] text-[#AAAAAA] opacity-60 font-black uppercase tracking-widest mb-2">Positivity</p>
-                               <p className="text-3xl font-display font-black text-[#F5EBE0]">{Math.round(mostPopularAnime["Positivity Percentage"] || 0)}%</p>
+                               <p className="text-[10px] text-[#AAAAAA] opacity-60 font-accent uppercase tracking-widest mb-2">Positivity</p>
+                               <p className="text-3xl font-display text-[#F5EBE0]">{Math.round(mostPopularAnime["Positivity Percentage"] || 0)}%</p>
                             </div>
                             <div className="p-6 bg-black/20 rounded-2xl border border-white/10">
-                               <p className="text-[10px] text-[#AAAAAA] opacity-60 font-black uppercase tracking-widest mb-2">Records</p>
-                               <p className="text-3xl font-display font-black text-[#F5EBE0]">{mostPopularAnime.releaseDate ? new Date(mostPopularAnime.releaseDate).getFullYear() : '2024'}</p>
+                               <p className="text-[10px] text-[#AAAAAA] opacity-60 font-accent uppercase tracking-widest mb-2">Records</p>
+                               <p className="text-3xl font-display text-[#F5EBE0]">{mostPopularAnime.releaseDate ? new Date(mostPopularAnime.releaseDate).getFullYear() : '2024'}</p>
                             </div>
                             <div className="p-6 bg-[#DD0426] rounded-2xl shadow-[0_10px_30px_rgba(221,4,38,0.3)] border border-white/10 text-white">
-                               <p className="text-[10px] font-black uppercase tracking-widest mb-2 opacity-60">Status</p>
-                               <p className="text-3xl font-display font-black">Viral</p>
+                               <p className="text-[10px] font-accent uppercase tracking-widest mb-2 opacity-60">Status</p>
+                               <p className="text-3xl font-display text-[#F5EBE0]">Viral</p>
                             </div>
                          </div>
                       </div>

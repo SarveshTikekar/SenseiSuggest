@@ -109,10 +109,10 @@ const UploadSlot = ({ onUpload, disabled }) => {
       {/* Made the Upload UI highly visible */}
       <div className="flex flex-col items-center justify-center p-4 bg-black/5 rounded-[2px] w-full h-full border border-dashed border-[#dd0426]/40 hover:bg-[#dd0426]/10 transition-colors">
         <Plus size={40} className="text-[#dd0426] mb-3" weight="bold" />
-        <p className="text-center text-sm font-bold uppercase tracking-widest text-[#dd0426]">
+        <p className="text-center text-sm font-accent uppercase tracking-widest text-[#dd0426]">
           {disabled ? "Scrapbook Full" : "Click or Drag to Upload"}
         </p>
-        <p className="text-center text-[10px] mt-2 opacity-60 font-mono text-black">
+        <p className="text-center text-[10px] mt-2 opacity-60 font-accent uppercase tracking-widest text-black">
           Limit 6 per anime • Supports WebP/JPG/PNG
         </p>
       </div>
@@ -130,10 +130,10 @@ const ScrapbookGrid = ({ photos = [], onUpload, onRemove, loading }) => {
         <div className={styles.burntEdges}></div>
         
         <div className="p-8 text-center border-b border-[#dd0426]/20 mx-8">
-           <h3 className="font-display text-2xl font-black text-[#dd0426] tracking-widest uppercase">
+           <h3 className="font-display text-3xl text-[#dd0426] tracking-widest uppercase">
              Cinematic Memories
            </h3>
-           <p className="text-[#8b4513] font-mono text-sm mt-2 opacity-80">
+           <p className="text-[#8b4513] font-hand text-[1.2rem] mt-2 opacity-80">
              Capture and preserve your favorite scenes.
            </p>
         </div>

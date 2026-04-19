@@ -118,7 +118,7 @@ function SearchModal({ open, onClose }) {
                     value={query}
                     onChange={e => setQuery(e.target.value)}
                     placeholder="Search anime titles..."
-                    className="flex-1 bg-transparent border-none outline-none text-[#F5EBE0] text-sm placeholder:text-[#9A8C98] font-sans"
+                    className="flex-1 bg-transparent border-none outline-none text-[#F5EBE0] text-sm placeholder:text-[#9A8C98] font-accent uppercase tracking-widest"
                   />
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {query && (
@@ -126,7 +126,7 @@ function SearchModal({ open, onClose }) {
                         <X size={16} weight="bold" />
                       </button>
                     )}
-                    <kbd className="hidden sm:flex items-center px-1.5 py-0.5 rounded border border-white/[0.08] text-[#AAAAAA] text-[10px] font-mono">
+                    <kbd className="hidden sm:flex items-center px-1.5 py-0.5 rounded border border-white/[0.08] text-[#AAAAAA] text-[10px] font-accent">
                       ESC
                     </kbd>
                   </div>
@@ -137,7 +137,7 @@ function SearchModal({ open, onClose }) {
                   {/* Recent searches */}
                   {showRecent && (
                     <div className="py-2">
-                      <p className="px-4 py-2 text-[#9A8C98] text-[10px] font-mono uppercase tracking-widest">Recent</p>
+                      <p className="px-4 py-2 text-[#9A8C98] text-[10px] font-accent uppercase tracking-widest">Recent</p>
                       {recent.map(name => (
                         <Link
                           key={name}
@@ -146,7 +146,7 @@ function SearchModal({ open, onClose }) {
                           className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.04] transition-colors group"
                         >
                           <Clock size={14} weight="bold" className="text-[#AAAAAA] opacity-60" />
-                          <span className="flex-1 text-[#AAAAAA] text-sm group-hover:text-[#F5EBE0] transition-colors truncate">{name}</span>
+                          <span className="flex-1 text-[#AAAAAA] text-[13px] font-accent uppercase tracking-widest group-hover:text-[#F5EBE0] transition-colors truncate">{name}</span>
                           <ArrowRight size={14} weight="bold" className="text-[#DD0426] opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0" />
                         </Link>
                       ))}
@@ -156,7 +156,7 @@ function SearchModal({ open, onClose }) {
                   {/* Live results */}
                   {showResults && (
                     <div className="py-2">
-                      <p className="px-4 py-2 text-[#9A8C98] text-[10px] font-mono uppercase tracking-widest">Results</p>
+                      <p className="px-4 py-2 text-[#9A8C98] text-[10px] font-accent uppercase tracking-widest">Results</p>
                       {results.map(anime => (
                         <Link
                           key={anime.animeId}
@@ -174,9 +174,9 @@ function SearchModal({ open, onClose }) {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[#F5EBE0] text-sm font-medium truncate group-hover:text-[#DD0426] transition-colors">{anime.animeName}</p>
+                            <p className="text-[#F5EBE0] text-[13px] font-accent uppercase tracking-widest truncate group-hover:text-[#DD0426] transition-colors">{anime.animeName}</p>
                             {anime.releaseDate && (
-                              <p className="text-[#AAAAAA] opacity-60 text-xs font-mono">{new Date(anime.releaseDate).getFullYear()}</p>
+                              <p className="text-[#AAAAAA] opacity-60 text-[10px] font-accent">{new Date(anime.releaseDate).getFullYear()}</p>
                             )}
                           </div>
                           <ArrowRight size={14} weight="bold" className="text-[#DD0426] opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0 flex-shrink-0" />
@@ -188,22 +188,22 @@ function SearchModal({ open, onClose }) {
                   {/* No results */}
                   {showEmpty && (
                     <div className="px-4 py-10 text-center">
-                      <p className="text-[#9A8C98] text-sm font-sans">No results for "<span className="text-[#AAAAAA]">{query}</span>"</p>
+                      <p className="text-[#9A8C98] text-[1.2rem] font-hand">No results for "<span className="text-[#AAAAAA]">{query}</span>"</p>
                     </div>
                   )}
 
                   {/* Idle hint */}
                   {!query && !showRecent && (
                     <div className="px-4 py-10 text-center">
-                      <p className="text-[#9A8C98] text-sm font-sans">Start typing to search the library...</p>
+                      <p className="text-[#9A8C98] text-[1.2rem] font-hand">Start typing to search the library...</p>
                     </div>
                   )}
                 </div>
 
                 {/* Footer hint */}
                 <div className="px-4 py-2.5 border-t border-white/[0.06] flex items-center justify-between">
-                  <span className="text-[#AAAAAA] opacity-60 text-[10px] font-mono">↑↓ navigate · Enter select</span>
-                  <span className="text-[#AAAAAA] opacity-60 text-[10px] font-mono select-none">Sensei v2.0</span>
+                  <span className="text-[#AAAAAA] opacity-60 text-[10px] font-accent uppercase tracking-widest">↑↓ navigate · Enter select</span>
+                  <span className="text-[#AAAAAA] opacity-60 text-[10px] font-accent uppercase tracking-widest select-none">Sensei v2.0</span>
                 </div>
               </div>
             </Motion.div>

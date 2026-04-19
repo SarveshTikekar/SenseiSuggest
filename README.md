@@ -53,7 +53,7 @@ SenseiSuggest is built using modern, scalable, and high-performance technologies
 ### ⚙️ Backend Architecture
 *   **[FastAPI](https://fastapi.tiangolo.com/):** High-performance, asynchronous REST API framework powering the core endpoints.
 *   **[Supabase](https://supabase.com/):** Backend-as-a-Service providing a powerful PostgreSQL database, real-time subscriptions, and secure authentication.
-*   **Machine Learning Data Pipeline:** Utilizes **`pandas`**, **`numpy`**, **`scipy`**, and **`scikit-learn`** for processing datasets and generating recommendations.
+*   **Machine Learning Data Pipeline:** Utilizes a lightweight, Vercel-optimized engine built with **`pandas`** and **`numpy`** for custom, high-performance recommendation algorithms.
 
 <br/>
 

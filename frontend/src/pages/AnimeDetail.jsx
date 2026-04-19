@@ -80,7 +80,7 @@ const MetaItem = (props) => {
     <div className="flex items-start gap-2.5">
       <Icon size={14} weight="bold" className="text-[#AAAAAA] opacity-60 mt-0.5 flex-shrink-0" />
       <div>
-        <p className="text-[#AAAAAA] opacity-60 text-[10px] font-mono uppercase tracking-wider leading-none mb-0.5">{label}</p>
+        <p className="text-[#AAAAAA] opacity-60 text-[10px] font-accent uppercase tracking-widest leading-none mb-1">{label}</p>
         <p className="text-[#F5EBE0] text-sm font-medium leading-tight">{value}</p>
       </div>
     </div>
@@ -596,11 +596,11 @@ function AnimeDetailPage() {
               className="rounded-xl p-5"
               style={{ background: 'rgba(186,175,184,0.03)', border: '1px solid rgba(186,175,184,0.15)' }}
             >
-              <h3 className="text-[#AAAAAA] opacity-60 text-[10px] font-mono uppercase tracking-widest mb-4">Your Rating</h3>
+              <h3 className="text-[#AAAAAA] opacity-60 text-[10px] font-accent uppercase tracking-widest mb-4">Your Rating</h3>
 
               {ratingMsg.text && (
                 <div
-                  className="mb-3 px-3 py-2 rounded-lg text-xs font-mono"
+                  className="mb-3 px-3 py-2 rounded-lg text-xs font-accent"
                   style={{
                     background: ratingMsg.type === 'success' ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
                     border: `1px solid ${ratingMsg.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
@@ -620,7 +620,7 @@ function AnimeDetailPage() {
                         key={val}
                         type="button"
                         onClick={() => setRating(String(val))}
-                        className="flex-1 py-2 rounded-lg text-xs font-mono transition-all"
+                        className="flex-1 py-2 rounded-lg text-xs font-accent transition-all"
                         style={{
                           background: parseInt(rating) >= val ? 'rgba(221,4,38,0.15)' : 'rgba(186,175,184,0.05)',
                           border: `1px solid ${parseInt(rating) >= val ? 'rgba(221,4,38,0.3)' : 'rgba(186,175,184,0.15)'}`,
@@ -638,7 +638,7 @@ function AnimeDetailPage() {
                       value={rating}
                       onChange={e => setRating(e.target.value)}
                       placeholder="1 – 10"
-                      className="flex-1 bg-black/10 border border-white/10 rounded-xl px-3 py-2.5 text-[#F5EBE0] text-sm text-center font-mono outline-none focus:border-[rgba(221,4,38,0.4)] transition-colors"
+                      className="flex-1 bg-black/10 border border-white/10 rounded-xl px-3 py-2.5 text-[#F5EBE0] text-sm text-center font-accent outline-none focus:border-[rgba(221,4,38,0.4)] transition-colors"
                     />
                     <button type="submit" className="ss-btn-primary px-4 py-2.5 rounded-xl text-sm flex-1">
                       Submit
@@ -646,7 +646,7 @@ function AnimeDetailPage() {
                   </div>
                 </form>
               ) : (
-                <p className="text-[#AAAAAA] text-sm font-sans">
+                <p className="text-[#AAAAAA] text-sm font-hand">
                   <Link to="/login" className="text-[#DD0426] hover:underline">Log in</Link> to rate this anime.
                 </p>
               )}

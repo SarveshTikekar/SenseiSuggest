@@ -1,3 +1,5 @@
+
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 async function fetchData(url, options = {}) {
@@ -180,6 +182,11 @@ export const getStates = async(countryName) => {
 export const getCountries = async() => {
 
   return fetchData(`${API_BASE_URL}/get_countries`);
+}
+
+export const getAnimeStats = async(user_id) => {
+
+  return fetchData(`${API_BASE_URL}/anime/stats/${user_id}`)
 }
 
 export const addTowatchedList = async(animeListUpdate) => {

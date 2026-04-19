@@ -160,8 +160,8 @@ function SignupPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#DD0426] to-[#A10A24] mb-6 shadow-[0_8px_30px_rgba(221,4,38,0.2)]">
             <UserPlus size={32} weight="bold" className="text-white" />
           </div>
-          <h2 className="text-3xl font-display font-black text-[#F5EBE0] tracking-tight mb-2">Join the Elite.</h2>
-          <p className="text-[#AAAAAA] text-sm font-sans">Start your personalized anime discovery.</p>
+          <h2 className="text-4xl font-display text-[#F5EBE0] tracking-tight mb-2">Join the Elite.</h2>
+          <p className="text-[#AAAAAA] text-[1.4rem] font-hand">Start your personalized anime discovery.</p>
         </div>
 
         <form 
@@ -169,12 +169,12 @@ function SignupPage() {
           className="ss-card p-8 md:p-10 border border-white/10 bg-white/[0.03] rounded-2xl shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-md"
         >
           {message && (
-            <Motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#22C55E]/[0.08] text-[#22C55E] border border-[#22C55E]/[0.15] rounded-xl p-3.5 mb-6 text-center text-xs font-mono">
+            <Motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#22C55E]/[0.08] text-[#22C55E] border border-[#22C55E]/[0.15] rounded-xl p-3.5 mb-6 text-center text-[10px] font-accent uppercase tracking-widest">
               {message}
             </Motion.p>
           )}
           {error && (
-            <Motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#EF4444]/[0.08] text-[#EF4444] border border-[#EF4444]/[0.15] rounded-xl p-3.5 mb-6 text-center text-xs font-mono">
+            <Motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#EF4444]/[0.08] text-[#EF4444] border border-[#EF4444]/[0.15] rounded-xl p-3.5 mb-6 text-center text-[10px] font-accent uppercase tracking-widest">
               {error}
             </Motion.p>
           )}
@@ -191,7 +191,7 @@ function SignupPage() {
             </div>
 
             <div className="pt-2">
-              <h3 className="text-[#F5EBE0] text-xs font-mono uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
+              <h3 className="text-[#F5EBE0] text-[10px] font-accent uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
                 <Globe size={14} weight="bold" className="text-[#DD0426]" />
                 Location Node
               </h3>
@@ -222,7 +222,7 @@ function SignupPage() {
             </div>
 
             <div className="pt-2">
-              <h3 className="text-[#F5EBE0] text-xs font-mono uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
+              <h3 className="text-[#F5EBE0] text-[10px] font-accent uppercase tracking-widest mb-4 ml-1 flex items-center gap-2">
                 <ShieldCheck size={14} weight="bold" className="text-[#DD0426]" />
                 Security Layer
               </h3>

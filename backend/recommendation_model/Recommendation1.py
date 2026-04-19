@@ -49,12 +49,13 @@ def collaborative_recommender(user_id, ratings_df, anime_df, number_of_recommend
     recommendation_scores = pd.Series(0.0, index=item_similarity_df.index)
 
     for rated_anime in user_rated_animes:
-        #We get similarity score column for all animes that the user has rated
-        similarities = item_similarity_df[rated_anime]
-        recommendation_scores = recommendation_scores.add(similarities, fill_value=0)
-
-    else:
-        print(f"Warning: Rated anime ID {rated_anime} by User {user_id} not found in similarity matrix.")
+        # Check if the rated anime is in the similarity matrix index
+        if rated_anime in item_similarity_df.index:
+            # We get similarity score column for all animes that the user has rated
+            similarities = item_similarity_df[rated_anime]
+            recommendation_scores = recommendation_scores.add(similarities, fill_value=0)
+        else:
+            print(f"Warning: Rated anime ID {rated_anime} by User {user_id} not found in similarity matrix.")
     
     recommendation_scores = recommendation_scores[~recommendation_scores.index.isin(user_rated_animes)]
     recommendations_sorted = recommendation_scores.sort_values(ascending=False)

@@ -50,6 +50,22 @@ def root():
     
 """ Anime APIs are declared here """
 
+# Returns anime stats for the user like number of watching, watched, bookmarked and total animes
+@app.get('/anime/stats/{user_id}', status_code=status.HTTP_200_OK)
+async def get_anime_stats(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
+
+    res_watched = await supabase.table('user_watched_anime').select('animeId', count='exact').eq('userId', user_id).execute()
+    res_bookmarked = await supabase.table('user_bookmarked_anime').select('animeId', count='exact').eq('userId', user_id).execute()
+    res_watching = await supabase.table('user_watching_anime').select('animeId', count='exact').eq('userId', user_id).execute()
+    res_total = await supabase.table('anime').select('animeId', count='exact').execute()
+
+    return {
+        "watched": res_watched.count or 0,
+        "bookmarked": res_bookmarked.count or 0,
+        "watching": res_watching.count or 0,
+        "total": res_total.count or 0
+    }
+
 #Return the newest n animes as default
 @app.get("/anime/newest/{count}")
 async def get_topn(count: int, supabase: AsyncClient = Depends(get_supabase)):
@@ -219,72 +235,109 @@ async def login(credentials: userLogin, supabase: AsyncClient = Depends(get_supa
 @app.get("/get_recommendations/{user_id}", status_code=status.HTTP_200_OK)
 async def recommendations(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
     
-    recommendation_list = main_recommendation_model(user_id)
-    animeSet = set()
-
-    for recommendation in recommendation_list:
-        for item in recommendation:
-            animeSet.add(item)
-
-    animeSet = list(animeSet)
+    recom_dict = main_recommendation_model(user_id)
     
-    if animeSet:
-        response = await supabase.table("anime").select("*").in_("animeId", animeSet).execute()
-        animeList = response.data
-    else:
-        animeList = []
+    # Helper to fetch detailed anime info for a list of IDs
+    async def get_detailed_anime(ids):
+        if not ids: return []
+        resp = await supabase.table("anime").select("*").in_("animeId", ids).execute()
+        # Maintain order of recommendation
+        id_map = {a["animeId"]: a for a in resp.data}
+        return [id_map[aid] for aid in ids if aid in id_map]
 
-    #For ratings distribution
+    categorized_results = {
+        "primary": await get_detailed_anime(recom_dict.get("primary", [])),
+        "contextual": await get_detailed_anime(recom_dict.get("contextual", [])),
+        "discovery": await get_detailed_anime(recom_dict.get("discovery", []))
+    }
+
+    # For backward compatibility and analytics
+    all_ids = set()
+    for ids in recom_dict.values():
+        all_ids.update(ids)
+    
+    full_anime_list = []
+    if all_ids:
+        resp = await supabase.table("anime").select("*").in_("animeId", list(all_ids)).execute()
+        full_anime_list = resp.data
+
+    # For ratings distribution
     rating_resp = await supabase.table("ratings").select("score").execute()
     ratings_distrib = {}
-    for r in rating_resp.data:
-        score = r["score"]
-        ratings_distrib[score] = ratings_distrib.get(score, 0) + 1
+    if rating_resp.data:
+        for r in rating_resp.data:
+            score = r["score"]
+            ratings_distrib[score] = ratings_distrib.get(score, 0) + 1
     ratings_distrib = dict(sorted(ratings_distrib.items()))
     
-    print()
-    # For genre_anime_distribution  (N+1 optimizations applied)
+    # For genre_anime_distribution
     genre_resp = await supabase.table("anime_genres").select("genres(name)").execute()
     genre_anime_distribution = {}
-    for item in genre_resp.data:
-        name = item["genres"]["name"]
-        genre_anime_distribution[name] = genre_anime_distribution.get(name, 0) + 1
+    if genre_resp.data:
+        for item in genre_resp.data:
+            if item.get("genres"):
+                name = item["genres"]["name"]
+                genre_anime_distribution[name] = genre_anime_distribution.get(name, 0) + 1
 
     genre_anime_distributionList = [{name: count} for name, count in genre_anime_distribution.items()]
     
     # most popular animes
     rt_resp = await supabase.table("ratings").select("score, anime(animeId, animeName, releaseDate, image_url_base_anime)").execute()
     anime_stats = {}
-    for r in rt_resp.data:
-        anime = r.get("anime")
-        if not anime: continue
-        a_id = anime["animeId"]
-        if a_id not in anime_stats:
-            anime_stats[a_id] = {"anime": anime, "total": 0, "positive": 0}
-        anime_stats[a_id]["total"] += 1
-        if r["score"] > 5:
-            anime_stats[a_id]["positive"] += 1
+    if rt_resp.data:
+        for r in rt_resp.data:
+            anime = r.get("anime")
+            if not anime: continue
+            a_id = anime["animeId"]
+            if a_id not in anime_stats:
+                anime_stats[a_id] = {"anime": anime, "total": 0, "positive": 0}
+            anime_stats[a_id]["total"] += 1
+            if r["score"] > 5:
+                anime_stats[a_id]["positive"] += 1
             
     best_ratio = -1
     best_anime = None
-    
     for a_id, stats in anime_stats.items():
         ratio = (stats["positive"] * 100.0) / stats["total"]
         if ratio > best_ratio:
             best_ratio = ratio
             best_anime = stats["anime"]
 
-    if best_anime is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Anime not found")
+    dict_res = {}
+    if best_anime:
+        dict_res = {
+            "animeName" : best_anime["animeName"],
+            "releaseDate": best_anime["releaseDate"],
+            "image_url_base_anime": best_anime["image_url_base_anime"],
+            "Positivity Percentage": best_ratio,
+        }
+
+    # Identify labels for categories based on cold start
+    is_cold_start = len(full_anime_list) < 5
     
-    dict_res = {
-        "animeName" : best_anime["animeName"],
-        "releaseDate": best_anime["releaseDate"],
-        "image_url_base_anime": best_anime["image_url_base_anime"],
-        "Positivity Percentage": best_ratio,
+    # Fetch user location for dynamic title
+    user_location = "your region"
+    user_resp = await supabase.table("users").select("locationId, locations(state, country)").eq("userId", user_id).execute()
+    if user_resp.data and user_resp.data[0].get("locations"):
+        loc = user_resp.data[0]["locations"]
+        user_location = loc.get("state") or loc.get("country") or "your region"
+
+    titles = {
+        "primary": "Trending in " + user_location if is_cold_start else "AI Personalized Picks",
+        "contextual": "New & Hot Releases" if is_cold_start else "Because you watched",
+        "discovery": "Global Hall of Fame" if is_cold_start else "Discovery Zone"
     }
 
-    return {"recommendations": animeList, "ratings_distribution": ratings_distrib, "Genre_anime_distrib": genre_anime_distributionList, "most_popular_anime": dict_res, "message": f"Great Recommendations are generated for {user_id}"}
+    return {
+        "recommendations": full_anime_list, 
+        "categorized": categorized_results,
+        "category_titles": titles,
+        "ratings_distribution": ratings_distrib, 
+        "Genre_anime_distrib": genre_anime_distributionList, 
+        "most_popular_anime": dict_res, 
+        "is_cold_start": is_cold_start,
+        "message": f"Great Recommendations generated for {user_id}"
+    }
 
 #For admin side APIs where ADMIN_ID is fetched from env to prevent unauthorized access
 @app.post("/add_season", status_code=status.HTTP_200_OK)
@@ -498,7 +551,7 @@ async def remove_from_scrapbook(
     
     return {"message": "Scrapbook entry removed successfully"}
 
-@app.get('/scrapbook/{user_id}')
+# --- SCRAPBOOK ENDPOINTS ---
 async def get_scrapbook(user_id: int, supabase: AsyncClient = Depends(get_supabase)):
 
     try:

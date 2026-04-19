@@ -17,17 +17,18 @@ import {
 
 const WordMark = () => (
   <span
-    className="font-display font-black select-none"
+    className="select-none"
     style={{
-      fontSize: '20px',
-      letterSpacing: '-0.04em',
+      fontFamily: 'var(--font-display)',
+      fontSize: '22px',
+      letterSpacing: '0.05em',
       background: 'linear-gradient(135deg, #DD0426 0%, #F5EBE0 100%)',
       WebkitBackgroundClip: 'text',
       WebkitTextFillColor: 'transparent',
       backgroundClip: 'text',
     }}
   >
-    SS.
+    SenseiSuggest
   </span>
 );
 
@@ -72,7 +73,7 @@ function Navbar({ onSearchOpen }) {
         }`}
         style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       >
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+        <div className="max-w-full px-6 sm:px-10 h-14 flex items-center justify-between gap-4">
 
           {/* logo */}
           <Link to="/" className="flex items-center gap-1 group flex-shrink-0">
@@ -87,7 +88,7 @@ function Navbar({ onSearchOpen }) {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                  className={`relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-accent uppercase tracking-widest transition-all duration-200 ${
                     isActive(link.to)
                       ? 'text-[#DD0426] bg-[#DD0426]/8'
                       : 'text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04]'
@@ -112,11 +113,11 @@ function Navbar({ onSearchOpen }) {
             {/* Q10-B: Cmd+K trigger */}
             <button
               onClick={onSearchOpen}
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#AAAAAA]/5 border border-[#AAAAAA]/10 text-[#AAAAAA] hover:text-[#F5EBE0] hover:border-[#AAAAAA]/30 transition-all text-[12px] font-mono group"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#AAAAAA]/5 border border-[#AAAAAA]/10 text-[#AAAAAA] hover:text-[#F5EBE0] hover:border-[#AAAAAA]/30 transition-all text-[11px] font-accent uppercase tracking-widest group"
             >
               <MagnifyingGlass size={14} weight="bold" />
               <span>Search</span>
-              <kbd className="hidden lg:flex items-center gap-0.5 ml-1">
+              <kbd className="hidden lg:flex items-center gap-0.5 ml-1 font-sans">
                 <span className="px-1 py-0.5 rounded bg-black/20 border border-[#AAAAAA]/10 text-[10px]">⌘</span>
                 <span className="px-1 py-0.5 rounded bg-black/20 border border-[#AAAAAA]/10 text-[10px]">K</span>
               </kbd>
@@ -147,7 +148,7 @@ function Navbar({ onSearchOpen }) {
                     </button>
                     <button
                       onClick={logout}
-                      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all"
+                      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-accent uppercase tracking-widest text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all"
                     >
                       <SignOut size={16} weight="bold" />
                       Logout
@@ -157,14 +158,14 @@ function Navbar({ onSearchOpen }) {
                   <>
                     <Link
                       to="/login"
-                      className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all"
+                      className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[11px] font-accent uppercase tracking-widest text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all"
                     >
                       <SignIn size={16} weight="bold" />
                       Login
                     </Link>
                     <Link
                       to="/signup"
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-bold text-white bg-gradient-to-r from-[#DD0426] to-[#A10A24] hover:opacity-90 transition-opacity shadow-[0_4px_12px_rgba(221,4,38,0.3)]"
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[11px] font-accent uppercase tracking-widest text-white bg-gradient-to-r from-[#DD0426] to-[#A10A24] hover:opacity-90 transition-opacity shadow-[0_4px_12px_rgba(221,4,38,0.3)]"
                     >
                       <UserPlus size={16} weight="bold" />
                       Sign Up
@@ -199,7 +200,7 @@ function Navbar({ onSearchOpen }) {
                 {/* Mobile search */}
                 <button
                   onClick={() => { setMobileOpen(false); onSearchOpen(); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[11px] font-accent uppercase tracking-widest text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all text-left"
                 >
                   <MagnifyingGlass size={18} weight="bold" />
                   Search anime...
@@ -211,7 +212,7 @@ function Navbar({ onSearchOpen }) {
                     <Link
                       key={link.to}
                       to={link.to}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[11px] font-accent uppercase tracking-widest transition-all ${
                         isActive(link.to) ? 'text-[#DD0426] bg-[#DD0426]/8' : 'text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04]'
                       }`}
                     >
@@ -224,11 +225,11 @@ function Navbar({ onSearchOpen }) {
                 <div className="pt-2 border-t border-[#AAAAAA]/10">
                   {!loadingAuth && !isAuthenticated ? (
                     <div className="flex gap-2 pt-1">
-                      <Link to="/login"  className="flex-1 text-center py-2 rounded-xl text-sm font-medium text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all">Login</Link>
-                      <Link to="/signup" className="flex-1 text-center py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#DD0426] to-[#8E1B34]">Sign Up</Link>
+                      <Link to="/login"  className="flex-1 text-center py-2 rounded-xl text-[11px] font-accent uppercase tracking-widest text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all">Login</Link>
+                      <Link to="/signup" className="flex-1 text-center py-2 rounded-xl text-[11px] font-accent uppercase tracking-widest text-white bg-gradient-to-r from-[#DD0426] to-[#A10A24]">Sign Up</Link>
                     </div>
                   ) : !loadingAuth && isAuthenticated ? (
-                    <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all mt-1">
+                    <button onClick={logout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[11px] font-accent uppercase tracking-widest text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all mt-1">
                       <SignOut size={18} weight="bold" /> Logout
                     </button>
                   ) : null}

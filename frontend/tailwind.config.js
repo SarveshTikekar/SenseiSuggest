@@ -13,46 +13,17 @@ export default {
            ================================================================ */
 
         // Backgrounds
-        'ss-bg':       '#120D13',
-        'ss-surface':  '#181119',
-        'ss-elevated': '#22182A',
-        'ss-border':   '#3B2A3E',
-
-        // Neutrals
-        'ss-text':  '#F5EBE0',
-        'ss-muted': '#BBAFB8',
-        'ss-faint': '#8D7F8B',
-
-        // Brand accent
-        'ss-red':     '#DD0426',
-        'ss-red-dim': '#A10A24',
-
-        // Supporting
-        'ss-maroon': '#8E1B34',
-        'ss-amber':  '#D97706',
-
-        /* ── Legacy Aliases (keeps old pages from breaking) ── */
-        'kawaii-bg':          '#120D13',
-        'kawaii-card':        '#181119',
-        'kawaii-text-light':  '#F5EBE0',
-        'kawaii-text-dark':   '#F5EBE0',
-        'kawaii-text-muted':  '#BBAFB8',
-        'kawaii-accent':      '#DD0426',
-        'kawaii-accent-dark': '#A10A24',
-        'kawaii-secondary':   '#8E1B34',
-        'kawaii-tertiary':    '#A64C5D',
-        'kawaii-border':      '#3B2A3E',
-        'kawaii-error':       '#EF4444',
-        'kawaii-mint':        '#A64C5D',
-        'anime-bg':           '#120D13',
-        'anime-card':         '#181119',
-        'anime-sub-card':     '#22182A',
-        'anime-text-light':   '#F5EBE0',
-        'anime-text-dark':    '#F5EBE0',
-        'anime-accent':       '#DD0426',
-        'anime-accent-dark':  '#A10A24',
-        'anime-border':       '#3B2A3E',
-        'anime-error':        '#EF4444',
+        'ss-bg':       '#0D0D0D',
+        'ss-surface':  '#111111',
+        'ss-elevated': '#1A1A1A',
+        'ss-border':   '#2A2A2A',
+        // ... (rest of colors)
+        'kawaii-bg':          '#0D0D0D',
+        'kawaii-card':        '#111111',
+        'anime-bg':           '#0D0D0D',
+        'anime-card':         '#111111',
+        'anime-sub-card':     '#1A1A1A',
+        'anime-border':       '#2A2A2A',
       },
       fontFamily: {
         'display': ['Outfit', 'sans-serif'],

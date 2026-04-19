@@ -34,7 +34,6 @@ function AnimatedRoutes({ onSearchOpen }) {
         initial="initial"
         animate="animate"
         exit="exit"
-        style={{ flex: 1 }}
       >
         <Routes location={location}>
           <Route path="/"                        element={<HomePage onSearchOpen={onSearchOpen} />} />
@@ -64,18 +63,15 @@ function App() {
 
   return (
     <Router>
-      <AuthProvider>
-        <div className="flex flex-col min-h-screen" style={{ background: '#120D13' }}>
-          <Navbar onSearchOpen={() => setSearchOpen(true)} />
-          <main style={{ flex: 1 }}>
-            <AnimatedRoutes onSearchOpen={() => setSearchOpen(true)} />
-          </main>
-          <Footer />
+      <div className="flex flex-col min-h-screen">
+        <Navbar onSearchOpen={() => setSearchOpen(true)} />
+        <main>
+          <AnimatedRoutes onSearchOpen={() => setSearchOpen(true)} />
+        </main>
+        <Footer />
 
-          {/* Global Cmd+K search modal */}
-          <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
-        </div>
-      </AuthProvider>
+        <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      </div>
     </Router>
   );
 }

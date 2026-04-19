@@ -21,19 +21,16 @@ def content_based_recommender(user_id, ratings_df, anime_df, number_of_recommend
 
     user_ratings = ratings_df[ratings_df['userId']==user_id]
  
-    if user_ratings is None:
-        print(f"User has not given any ratings yet")
-        return []
+    liked_anime_df = user_ratings[user_ratings['score'] > 6]
+    liked_anime_ids = liked_anime_df['animeId'].tolist() if not liked_anime_df.empty else []
 
-    liked_anime_ids = user_ratings[user_ratings['score'] > 6]
-
-    if liked_anime_ids is None:
+    if not liked_anime_ids:
         print(f"User has not rated any animes above 6 yet")
         return []
 
     existing_liked_anime_ids = [aid for aid in liked_anime_ids if aid in anime_genre_df.index]
 
-    if existing_liked_anime_ids is None:
+    if not existing_liked_anime_ids:
         print(f"None of the anime user rated are in the anime genre matrix")
         return []
 

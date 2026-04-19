@@ -1,5 +1,5 @@
 /* SenseiSuggest — Global Styles */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Dancing+Script:wght@400;700&family=Caveat:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Eagle+Lake&family=Oldenburg&family=Patrick+Hand&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -15,6 +15,12 @@
     --ss-cream:    245, 235, 224; /* Cream primary text (#F5EBE0) */
     --ss-muted:    170, 170, 170; /* Neutral Gray (#AAAAAA) */
     --ss-deepRed:  161, 10, 36;   /* Darker Crimson accent */
+    
+    /* Font Variables */
+    --font-display: 'Eagle Lake', cursive;
+    --font-accent:  'Oldenburg', cursive;
+    --font-hand:    'Patrick Hand', cursive;
+    --font-body:    'Inter', sans-serif;
   }
 
   html {
@@ -22,30 +28,35 @@
   }
 
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     background-color: #0D0D0D;
     color: #F5EBE0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    min-height: 100vh;
-    /* Clean atmosphere gradient using brand colors */
-    background-image:
-      radial-gradient(ellipse 800px 600px at 50% -20%, rgba(221,4,38,0.03), transparent),
-      radial-gradient(ellipse 600px 500px at 80% 120%, rgba(170,170,170,0.01), transparent);
-    background-attachment: fixed;
+    margin: 0;
+    overflow-x: hidden;
   }
 
-  h1, h2, h3, h4 {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
+  h1, h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
     color: #F5EBE0;
-    letter-spacing: -0.01em; /* Q3-B: loosened from -0.02em */
+    letter-spacing: 0.02em;
   }
 
-  h5, h6 {
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
+  h3, h4, h5, h6 {
+    font-family: var(--font-accent);
+    font-weight: 400;
     color: #F5EBE0;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  p {
+    font-family: var(--font-hand);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #AAAAAA;
   }
 
   /* ── Scrollbar ── */
@@ -80,11 +91,16 @@
   /* ── Selection highlight ── */
   ::selection { background: rgba(var(--ss-red), 0.28); color: #fff; }
 
-  /* ── Space Grotesk label utility ── */
+  /* ── Font Utilities ── */
+  .font-display { font-family: var(--font-display); }
+  .font-accent  { font-family: var(--font-accent); }
+  .font-hand    { font-family: var(--font-hand); }
+
+  /* ── Label utility ── */
   .tech-label {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-accent);
     font-size: 0.6rem;
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: 0.18em;
     text-transform: uppercase;
   }
@@ -121,7 +137,7 @@
     aspect-ratio: 16 / 9;
     position: relative;
     overflow: hidden;
-    background: #22182A;
+    background: #0F0F0F;
     border-radius: 0.5rem; /* Subtle rounding as per screenshot */
     margin-bottom: 0.75rem;
   }
@@ -160,7 +176,7 @@
 
   /* ── Legacy classes (keeps non-Browse pages working) ── */
   .ss-card {
-    background: rgba(42, 31, 45, 0.7);
+    background: rgba(18, 18, 18, 0.8);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(170, 170, 170, 0.1);
     border-radius: 1rem;
@@ -181,19 +197,21 @@
   .ss-btn-primary {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     padding: 0.65rem 1.5rem;
     background: linear-gradient(135deg, #DD0426, #A10A24);
     color: #fff;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: 0.875rem;
+    font-family: var(--font-accent);
+    font-weight: 400;
+    font-size: 0.8rem;
     border-radius: 0.625rem;
     border: none;
     cursor: pointer;
     transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 4px 20px rgba(221,4,38,0.25);
-    letter-spacing: 0.01em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
   .ss-btn-primary:hover {
     opacity: 0.9;
@@ -206,17 +224,20 @@
   .ss-btn-ghost {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     padding: 0.65rem 1.5rem;
     background: rgba(255,255,255,0.04);
     color: #F5EBE0;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 600;
-    font-size: 0.875rem;
+    font-family: var(--font-accent);
+    font-weight: 400;
+    font-size: 0.8rem;
     border-radius: 0.625rem;
     border: 1px solid rgba(255,255,255,0.08);
     cursor: pointer;
     transition: background 0.2s ease, border-color 0.2s ease;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
   .ss-btn-ghost:hover {
     background: rgba(255,255,255,0.08);
@@ -233,9 +254,9 @@
 
   /* ── Accent badge / tag ── */
   .ss-tag {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-accent);
     font-size: 0.6rem;
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     padding: 0.2rem 0.6rem;
@@ -295,24 +316,16 @@
 /* ============================================================
    LAYOUT
    ============================================================ */
-#root, .App {
+#root {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
 main {
-  flex-grow: 1;
-  padding: 1.5rem 1rem;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
   position: relative;
   z-index: 10;
-}
-
-@media (min-width: 768px) {
-  main { padding: 2rem 2rem; }
-}
-
-@media (min-width: 1280px) {
-  main { padding: 2.5rem 3rem; }
 }

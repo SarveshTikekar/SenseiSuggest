@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getUserProfile, getUserScrapbook } from '../api';
+import { getUserProfile, getUserScrapbook, getAnimeStats } from '../api';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import ScrapbookBook from '../components/Scrapbook/ScrapbookBook';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
@@ -78,6 +79,7 @@ const SkeletonProfile = () => (
 function UserProfilePage() {
   const { userId } = useParams();
   const [userProfile, setUserProfile] = useState(null);
+  const [animeStats, setAnimeStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [scrapbookEntries, setScrapbookEntries] = useState([]);
@@ -87,8 +89,12 @@ function UserProfilePage() {
       try {
         setLoading(true);
         setError(''); 
-        const response = await getUserProfile(userId);
-        setUserProfile(response.UserProfile); 
+        const profileRes = await getUserProfile(userId);
+        setUserProfile(profileRes.UserProfile); 
+        
+        // Fetch Stats
+        const statsRes = await getAnimeStats(userId);
+        setAnimeStats(statsRes);
       } catch (err) {
         setError(err.message || 'Failed to fetch user profile.');
       } finally {
@@ -166,6 +172,48 @@ function UserProfilePage() {
     </Motion.div>
   );
 
+  const AnimeSection = ({ title, list, icon, color }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const displayList = isExpanded ? list : list.slice(0, 9);
+    const hasMore = list.length > 9;
+
+    return (
+      <div className="bg-[#0D0D0D] p-10 lg:p-14 border-white/5 border-b lg:border-b-0">
+        <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
+          <h3 className="text-3xl font-display text-[#F5EBE0] tracking-tight flex items-center gap-4 uppercase">
+            {React.cloneElement(icon, { size: 28, weight: "bold", className: color })} {title}
+          </h3>
+          <span className="text-[11px] font-accent text-[#AAAAAA] uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full">
+            {list.length} Units
+          </span>
+        </div>
+        
+        {list.length > 0 ? (
+          <div className="space-y-8">
+            <div className="grid grid-cols-3 gap-4">
+              {displayList.map((anime) => (
+                <AnimeCard key={anime.animeId} anime={anime} />
+              ))}
+            </div>
+            
+            {hasMore && (
+              <button 
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.3em] hover:bg-white/5 transition-colors"
+              >
+                {isExpanded ? "Collapse Archive" : `View All ${list.length} Records`}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-center p-12 space-y-4 border border-dashed border-white/10 rounded-3xl">
+             <p className="text-[#AAAAAA] text-lg font-hand">No entries found in this sector.</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="relative min-h-screen py-12 px-4 overflow-hidden font-sans">
       {/* Dynamic Background */}
@@ -173,170 +221,213 @@ function UserProfilePage() {
       <Motion.div animate={{ x: [0, 50, 0], opacity: [0.1, 0.2, 0.1] }} transition={{ duration: 12, repeat: Infinity }} className="absolute bottom-10 left-10 w-80 h-80 bg-kawaii-tertiary/20 blur-3xl rounded-full z-0 pointer-events-none" />
 
       <div className="container mx-auto relative z-10 max-w-[1640px] px-4 md:px-8">
-        <Motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
+        <Motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-12">
           
-          {/* Header Card: The ID Card Experience */}
-          <Motion.div variants={itemVariants} className="ss-card rounded-[2rem] p-6 md:p-8 border border-white/10 shadow-2xl flex flex-col md:flex-row gap-8 items-center bg-white/[0.03] backdrop-blur-md">
-             <div className="relative">
-                <div className="w-32 h-32 md:w-36 md:h-36 rounded-2xl overflow-hidden border-2 border-[#DD0426] shadow-[0_0_20px_rgba(221,4,38,0.3)]">
-                   <img src={profilePicSrc} alt={userProfile.userName} className="w-full h-full object-cover" />
-                </div>
-                <div className="absolute -bottom-2 -right-2 bg-[#0D0D0D] text-[#F5EBE0] font-black px-2 py-1 rounded-lg shadow-lg text-[10px] border border-[#DD0426]/40 uppercase tracking-widest">
-                   LVL {Math.floor(watchedCount / 5) + 1}
-                </div>
-             </div>
-             
-             <div className="flex-grow text-center md:text-left space-y-3">
-                <div className="flex flex-col md:flex-row items-center gap-3">
-                   <h2 className="text-3xl md:text-4xl font-display font-black text-[#F5EBE0] tracking-tight leading-none">
+          {/* 3-Column Header Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+            
+            {/* Col 1: ID Card */}
+            <Motion.div variants={itemVariants} className="ss-card rounded-[2.5rem] p-6 border border-white/10 shadow-2xl flex flex-col items-center bg-[#0D0D0D]/80 backdrop-blur-xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-[#DD0426]/5 blur-3xl rounded-full" />
+              
+              <div className="relative mb-4">
+                  <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#DD0426] shadow-[0_0_30px_rgba(221,4,38,0.2)]">
+                    <img src={profilePicSrc} alt={userProfile.userName} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute -bottom-2 -right-2 bg-[#DD0426] text-white font-accent px-3 py-1.5 rounded-lg shadow-2xl text-[10px] border border-white/20 uppercase tracking-widest">
+                    LVL {Math.floor(watchedCount / 5) + 1}
+                  </div>
+              </div>
+              
+              <div className="text-center space-y-4 w-full">
+                  <div className="space-y-1">
+                    <h2 className="text-3xl font-display font-black text-[#F5EBE0] tracking-tight uppercase">
                       {userProfile.userName}
-                   </h2>
-                    <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${rank.bg} ${rank.color} ${rank.border} flex items-center gap-2.5 backdrop-blur-sm shadow-xl`}>
-                       <span className="text-sm opacity-60 font-serif">{rank.kanji}</span>
-                       <span className="border-l border-white/10 pl-2.5">{rank.name} CLASS</span>
+                    </h2>
+                    <div className="inline-flex px-4 py-1 rounded-xl text-[9px] font-accent font-black uppercase tracking-[0.2em] border border-white/10 bg-white/5 text-[#AAAAAA] gap-2 items-center">
+                        <span className="text-base opacity-80 font-serif">{rank.kanji}</span>
+                        <span>{rank.name} CLASS</span>
                     </div>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-white/5 w-full">
+                    <div className="flex justify-between items-end mb-2">
+                        <span className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em]">Ascension</span>
+                        <span className="text-[10px] font-accent font-bold text-[#DD0426] tracking-widest">{watchedCount} / {nextRankCount}</span>
+                    </div>
+                    <div className="h-2 w-full bg-black/40 rounded-full border border-white/10 p-0.5 overflow-hidden">
+                        <Motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} transition={{ duration: 2 }} className="h-full bg-gradient-to-r from-[#DD0426] to-[#FF2E93] rounded-full" />
+                    </div>
+                  </div>
+              </div>
+            </Motion.div>
+
+            {/* Col 2: Semicircular Stats Chart */}
+            <Motion.div variants={itemVariants} className="ss-card rounded-[2.5rem] p-6 border border-white/10 bg-[#0D0D0D]/80 backdrop-blur-xl flex flex-col items-center justify-center relative overflow-hidden">
+               <div className="w-full h-40 relative">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Watched', value: animeStats?.watched || 0, color: '#DD0426' },
+                          { name: 'Watching', value: animeStats?.watching || 0, color: '#F5EBE0' },
+                          { name: 'Bookmarked', value: animeStats?.bookmarked || 0, color: '#D97706' },
+                          { name: 'Remaining', value: Math.max(0, (animeStats?.total || 1000) - (animeStats?.watched || 0) - (animeStats?.watching || 0)), color: 'rgba(255,255,255,0.05)' }
+                        ]}
+                        cx="50%"
+                        cy="100%"
+                        startAngle={180}
+                        endAngle={0}
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {[
+                          { name: 'Watched', color: '#DD0426' },
+                          { name: 'Watching', color: '#F5EBE0' },
+                          { name: 'Bookmarked', color: '#D97706' },
+                          { name: 'Remaining', color: 'rgba(255,255,255,0.05)' }
+                        ].map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '10px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center pb-1">
+                     <p className="text-xl font-display text-[#F5EBE0] leading-none">{animeStats?.watched || 0}</p>
+                     <p className="text-[8px] font-accent text-[#AAAAAA] uppercase tracking-widest">Records</p>
+                  </div>
+               </div>
+               <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-[7px] font-accent uppercase tracking-widest text-[#AAAAAA] opacity-60">
+                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#DD0426]"></span> Watched</span>
+                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#F5EBE0]"></span> Watching</span>
+                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span> Saved</span>
+               </div>
+            </Motion.div>
+
+            {/* Col 3: Battle Allies (Friends) */}
+            <Motion.div variants={itemVariants} className="ss-card rounded-[2.5rem] p-6 border border-white/10 bg-[#0D0D0D]/80 backdrop-blur-xl relative overflow-hidden group flex flex-col">
+               <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                  <h3 className="text-[11px] font-accent text-[#F5EBE0] uppercase tracking-[0.2em] flex items-center gap-2">
+                     <UserCircle size={16} className="text-[#DD0426]" weight="bold" /> Battle Allies
+                  </h3>
+                  <span className="text-[10px] font-accent text-[#AAAAAA] opacity-50">4 active</span>
+               </div>
+               
+               <div className="space-y-3 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+                  {userProfile.friends && userProfile.friends.length > 0 ? (
+                    userProfile.friends.map((friend, i) => (
+                      <div key={i} className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.02] border border-transparent hover:border-white/5 hover:bg-white/[0.04] transition-all cursor-pointer group/item">
+                         <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10">
+                            <img src={friend.img} alt="" className="w-full h-full object-cover grayscale group-hover/item:grayscale-0 transition-all" />
+                         </div>
+                         <div className="flex-grow min-w-0">
+                            <p className="text-[11px] font-accent text-[#F5EBE0] truncate group-hover/item:text-[#DD0426] transition-colors">{friend.name}</p>
+                            <p className="text-[8px] font-accent text-[#AAAAAA] uppercase tracking-tighter opacity-60">{friend.rank}</p>
+                         </div>
+                         <div className="w-1 h-1 rounded-full bg-[#DD0426] animate-pulse" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex-grow flex flex-col items-center justify-center text-center p-4 border border-dashed border-white/5 rounded-2xl opacity-40">
+                       <p className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-widest">No active allies found</p>
+                    </div>
+                  )}
+               </div>
+               
+               <button className="mt-4 w-full py-2 bg-white/5 rounded-xl text-[9px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em] hover:bg-[#DD0426]/10 hover:text-[#DD0426] transition-all border border-white/5">
+                  Recruit Allies
+               </button>
+            </Motion.div>
+
+          </div>
+
+
+          {/* Structured War-Journal Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-white/10 border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+             
+             {/* Cell 1: Combat Stats */}
+             <div className="bg-[#0D0D0D] p-10 lg:p-14 space-y-10">
+                <div className="flex items-center gap-4 mb-8">
+                   <div className="w-12 h-12 rounded-xl bg-[#DD0426]/10 flex items-center justify-center">
+                      <Lightning size={28} weight="bold" className="text-[#DD0426]" />
+                   </div>
+                   <h3 className="text-3xl font-display text-[#F5EBE0] tracking-tight uppercase">Combat Portfolio</h3>
                 </div>
-                <p className="text-[#AAAAAA] text-[13px] font-mono flex items-center justify-center md:justify-start gap-2 opacity-80">
-                   <UserCircle size={14} weight="bold" className="text-[#AAAAAA]" />
-                   {userProfile.email}
-                </p>
                 
-                {/* Leveling System */}
-                <div className="mt-4 pt-4 border-t border-white/10 w-full max-w-sm mx-auto md:mx-0">
-                   <div className="flex justify-between items-end mb-2">
-                       <span className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">Ascension: {nextRankCount} Items</span>
-                       <span className="text-[10px] font-mono font-bold text-[#DD0426]">{Math.floor(progressPercent)}%</span>
-                   </div>
-                   <div className="h-1.5 w-full bg-black/20 rounded-full border border-white/10 shadow-inner overflow-hidden">
-                       <Motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} transition={{ duration: 1.5, ease: "easeOut" }} className="h-full bg-gradient-to-r from-[#DD0426] to-[#A10A24] rounded-full" />
-                   </div>
+                <div className="grid grid-cols-2 gap-6">
+                   {[
+                     { label: 'Victory Records', value: userProfile.anime_watched_count || 0, icon: <Trophy />, color: 'text-[#DD0426]' },
+                     { label: 'Active Missions', value: userProfile.anime_watching_count || 0, icon: <Play />, color: 'text-[#F5EBE0]' },
+                     { label: 'Strategic Intel', value: userProfile.anime_bookmarked_count || 0, icon: <BookmarksSimple />, color: 'text-[#D97706]' },
+                     { label: 'Tactical Seniority', value: `LVL ${Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}`, icon: <Medal />, color: 'text-[#AAAAAA]' }
+                   ].map((stat, i) => (
+                     <div key={i} className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all group">
+                        <div className={`mb-4 ${stat.color} opacity-40 group-hover:opacity-100 transition-opacity`}>
+                           {React.cloneElement(stat.icon, { size: 24, weight: 'bold' })}
+                        </div>
+                        <p className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em] mb-1">{stat.label}</p>
+                        <p className="text-3xl font-display text-[#F5EBE0]">{stat.value}</p>
+                     </div>
+                   ))}
+                </div>
+
+                <div className="p-8 rounded-3xl bg-[#DD0426]/5 border border-[#DD0426]/20">
+                   <p className="font-hand text-xl text-[#F5EBE0]/80 leading-relaxed italic">
+                     "The path of the Shōgun is paved with thousands of stories. Each record added is a step closer to supreme enlightenment."
+                   </p>
                 </div>
              </div>
-          </Motion.div>
 
-          <Motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-             <div className="bg-white/[0.03] p-5 rounded-2xl border border-white/10 shadow-sm flex items-center gap-4 group hover:border-[#DD0426]/40 transition-colors backdrop-blur-md">
-                 <div className="p-3 bg-white/[0.03] rounded-xl text-[#AAAAAA] group-hover:text-[#DD0426] transition-colors">
-                    <ClockCounterClockwise size={20} weight="bold" />
-                 </div>
-                 <div>
-                    <p className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">Watched</p>
-                    <p className="text-2xl font-display font-black text-[#F5EBE0] mt-1">{userProfile.anime_watched_count || 0}</p>
-                 </div>
-             </div>
-             <div className="bg-white/[0.03] p-5 rounded-2xl border border-white/10 shadow-sm flex items-center gap-4 group hover:border-[#DD0426]/40 transition-colors backdrop-blur-md">
-                 <div className="p-3 bg-white/[0.03] rounded-xl text-[#AAAAAA] group-hover:text-[#DD0426] transition-colors">
-                    <Stack size={20} weight="bold" />
-                 </div>
-                 <div>
-                    <p className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">In-Progress</p>
-                    <p className="text-2xl font-display font-black text-[#F5EBE0] mt-1">{userProfile.anime_watching_count || 0}</p>
-                 </div>
-             </div>
-             <div className="bg-white/[0.03] p-5 rounded-2xl border border-white/10 shadow-sm flex items-center gap-4 group hover:border-[#DD0426]/40 transition-colors backdrop-blur-md">
-                 <div className="p-3 bg-white/[0.03] rounded-xl text-[#AAAAAA] group-hover:text-[#DD0426] transition-colors">
-                    <Lightning size={20} weight="bold" />
-                 </div>
-                 <div>
-                    <p className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">Seniority</p>
-                    <p className="text-2xl font-display font-black text-[#F5EBE0] mt-1">LVL {Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}</p>
-                 </div>
-             </div>
-             <div className="bg-white/[0.03] p-5 rounded-2xl border border-white/10 shadow-sm flex items-center gap-4 group hover:border-[#DD0426]/40 transition-colors backdrop-blur-md">
-                 <div className="p-3 bg-white/[0.03] rounded-xl text-[#AAAAAA] group-hover:text-[#DD0426] transition-colors">
-                    <BookmarksSimple size={20} weight="bold" />
-                 </div>
-                 <div>
-                    <p className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">Saved</p>
-                    <p className="text-2xl font-display font-black text-[#F5EBE0] mt-1">{userProfile.anime_bookmarked_count || 0}</p>
-                 </div>
-             </div>
-          </Motion.div>
+             <AnimeSection 
+                title="Watching Anime" 
+                list={userProfile.watchingAnime || []} 
+                icon={<Stack />} 
+                color="text-[#DD0426]" 
+             />
 
-          {/* Library Section */}
-          <div className="space-y-16 pt-8">
-            {/* Watching List */}
-            <Motion.div variants={itemVariants}>
-              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-                 <h3 className="text-lg font-display font-black text-[#F5EBE0] tracking-tight flex items-center gap-3">
-                   <Stack size={20} weight="bold" className="text-[#DD0426]" /> Currently Tracking
-                 </h3>
-                 <span className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">{userProfile.watchingAnime?.length || 0} Units</span>
-              </div>
-              
-              {userProfile.watchingAnime && userProfile.watchingAnime.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                  {userProfile.watchingAnime.map((anime) => (
-                    <AnimeCard key={anime.animeId} anime={anime} />
-                  ))}
-                </div>
-              ) : (
-                <div className="border border-dashed border-white/10 rounded-2xl p-12 text-center text-[#AAAAAA] text-[13px] font-sans">
-                  No active tracking. Start your discovery in the library.
-                </div>
-              )}
-            </Motion.div>
+             <AnimeSection 
+                title="Bookmarked Anime" 
+                list={userProfile.bookmarkedAnime || []} 
+                icon={<BookmarksSimple />} 
+                color="text-[#D97706]" 
+             />
 
-            {/* Bookmarked Section */}
-            <Motion.div variants={itemVariants}>
-              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-                 <h3 className="text-lg font-display font-black text-[#F5EBE0] tracking-tight flex items-center gap-3">
-                   <BookmarksSimple size={20} weight="bold" className="text-[#D97706]" /> Saved for Later
-                 </h3>
-                 <span className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">{userProfile.bookmarkedAnime?.length || 0} Units</span>
-              </div>
-              
-              {userProfile.bookmarkedAnime && userProfile.bookmarkedAnime.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                  {userProfile.bookmarkedAnime.map((anime) => (
-                    <AnimeCard key={anime.animeId} anime={anime} />
-                  ))}
-                </div>
-              ) : (
-                <div className="border border-dashed border-white/10 rounded-2xl p-12 text-center text-[#AAAAAA] text-[13px] font-sans">
-                   No saved titles yet.
-                </div>
-              )}
-            </Motion.div>
+             <AnimeSection 
+                title="Watched Anime" 
+                list={userProfile.watchedAnime || []} 
+                icon={<Trophy />} 
+                color="text-[#DD0426]" 
+             />
+          </div>
 
-            {/* Completed List */}
-            <Motion.div variants={itemVariants}>
-              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4">
-                 <h3 className="text-lg font-display font-black text-[#F5EBE0] tracking-tight flex items-center gap-3">
-                   <Trophy size={20} weight="bold" className="text-[#DD0426]" /> Hall of Records
-                 </h3>
-                 <span className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">{userProfile.watchedAnime?.length || 0} Units</span>
-              </div>
-              
-              {userProfile.watchedAnime && userProfile.watchedAnime.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                  {userProfile.watchedAnime.map((anime) => (
-                    <AnimeCard key={anime.animeId} anime={anime} />
-                  ))}
-                </div>
-              ) : (
-                <div className="border border-dashed border-white/10 rounded-2xl p-12 text-center text-[#AAAAAA] text-[13px] font-sans">
-                   No completed records found.
-                </div>
-              )}
-            </Motion.div>
-
-            {/* Scrapbook Section */}
-            <Motion.div variants={itemVariants}>
-              <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-4 mt-16">
-                 <h3 className="text-lg font-display font-black text-[#F5EBE0] tracking-tight flex items-center gap-3">
-                   <span className="text-[#dd0426]">📖</span> Scrapbook Memories
-                 </h3>
-                 <span className="text-[10px] font-mono text-[#AAAAAA] uppercase tracking-widest">{scrapbookEntries.length} Shots</span>
-              </div>
-              
+          {/* Scrapbook Section */}
+          <div className="pt-20">
+            <div className="flex flex-col items-center mb-16 space-y-4 text-center">
+               <div className="w-16 h-px bg-[#DD0426]" />
+               <h3 className="text-4xl md:text-5xl font-display font-black text-[#F5EBE0] tracking-tight uppercase">
+                 The Shōgun's Scrapbook
+               </h3>
+               <p className="font-hand text-2xl text-[#AAAAAA] max-w-2xl">
+                 A visual testament to your journey through the worlds of animation.
+               </p>
+               <div className="flex items-center gap-3 text-[10px] font-accent text-[#DD0426] uppercase tracking-[0.4em] pt-4">
+                  <span className="w-2 h-2 rounded-full bg-[#DD0426] animate-pulse" />
+                  {scrapbookEntries.length} Captured Moments
+               </div>
+            </div>
+            
+            <div className="max-w-screen-xl mx-auto">
               <ScrapbookBook 
                 entries={scrapbookEntries} 
                 username={userProfile.userName} 
                 rank={getOtakuRank(userProfile.anime_watched_count || 0).name}
               />
-            </Motion.div>
-
+            </div>
           </div>
 
         </Motion.div>
