@@ -270,42 +270,59 @@ function UserProfilePage() {
                       <Pie
                         data={[
                           { name: 'Watched', value: animeStats?.watched || 0, color: '#DD0426' },
-                          { name: 'Watching', value: animeStats?.watching || 0, color: '#F5EBE0' },
-                          { name: 'Bookmarked', value: animeStats?.bookmarked || 0, color: '#D97706' },
+                          { name: 'Watching', value: animeStats?.watching || 0, color: '#FFB302' },
+                          { name: 'Saved', value: animeStats?.bookmarked || 0, color: '#AAAAAA' },
                           { name: 'Remaining', value: Math.max(0, (animeStats?.total || 1000) - (animeStats?.watched || 0) - (animeStats?.watching || 0)), color: 'rgba(255,255,255,0.05)' }
                         ]}
                         cx="50%"
                         cy="100%"
                         startAngle={180}
                         endAngle={0}
-                        innerRadius={60}
-                        outerRadius={90}
-                        paddingAngle={2}
+                        innerRadius={65}
+                        outerRadius={95}
+                        paddingAngle={4}
                         dataKey="value"
+                        stroke="none"
                       >
                         {[
                           { name: 'Watched', color: '#DD0426' },
-                          { name: 'Watching', color: '#F5EBE0' },
-                          { name: 'Bookmarked', color: '#D97706' },
+                          { name: 'Watching', color: '#FFB302' },
+                          { name: 'Saved', color: '#AAAAAA' },
                           { name: 'Remaining', color: 'rgba(255,255,255,0.05)' }
                         ].map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={entry.color} 
+                            style={{ filter: entry.name !== 'Remaining' ? 'drop-shadow(0 0 8px rgba(221,4,38,0.2))' : 'none' }}
+                          />
                         ))}
                       </Pie>
                       <Tooltip 
-                        contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', fontSize: '10px' }}
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div className="bg-[#111] border border-white/10 rounded-xl p-3 shadow-2xl backdrop-blur-md">
+                                <p className="text-[10px] font-accent font-black uppercase tracking-widest mb-1 text-white/40">Archive Intel</p>
+                                <p className="text-sm font-display uppercase tracking-wider" style={{ color: payload[0].payload.color }}>
+                                  {payload[0].name}: {payload[0].value}
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-center pb-1">
-                     <p className="text-xl font-display text-[#F5EBE0] leading-none">{animeStats?.watched || 0}</p>
-                     <p className="text-[8px] font-accent text-[#AAAAAA] uppercase tracking-widest">Records</p>
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 text-center pb-2">
+                     <p className="text-3xl font-display font-black text-[#F5EBE0] leading-none mb-1">{animeStats?.watched || 0}</p>
+                     <p className="text-[9px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em] font-bold">Total Records</p>
                   </div>
                </div>
-               <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-[7px] font-accent uppercase tracking-widest text-[#AAAAAA] opacity-60">
-                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#DD0426]"></span> Watched</span>
-                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#F5EBE0]"></span> Watching</span>
-                  <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span> Saved</span>
+               <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-[8px] font-accent uppercase tracking-widest font-black">
+                  <span className="flex items-center gap-2 text-[#DD0426]"><span className="w-2 h-2 rounded-full bg-[#DD0426] shadow-[0_0_10px_rgba(221,4,38,0.5)]"></span> Watched</span>
+                  <span className="flex items-center gap-2 text-[#FFB302]"><span className="w-2 h-2 rounded-full bg-[#FFB302] shadow-[0_0_10px_rgba(255,179,2,0.5)]"></span> Watching</span>
+                  <span className="flex items-center gap-2 text-[#AAAAAA]"><span className="w-2 h-2 rounded-full bg-[#AAAAAA]"></span> Saved</span>
                </div>
             </Motion.div>
 

@@ -20,7 +20,7 @@ class SeasonsTable(BaseModel):
     animeId: int
     seasonNumber: int = Field(..., description="The sequential number of the season for that anime (e.g., 1, 2, 3)")
     seasonName: Optional[str] = Field(None, examples=["Demon Slayer: Kimetsu no Yaiba(Season 1)", "Dandadan season 2"])
-    seasonInfo : str = Field(None, max_length=255)
+    seasonInfo : str = Field(None, max_length=1024)
     seasonTrailer: Optional[HttpUrl]
     seasonImage : Optional[HttpUrl]
 
@@ -80,7 +80,7 @@ class AnimeGet(BaseModel):
     animeId: int
     animeName: str
     genres: List[str]
-    #seasons: List[SeasonsTable]
+    seasons: List[SeasonsTable]
     is_adult_rated: bool = False
     is_running: bool = True
     releaseDate: datetime

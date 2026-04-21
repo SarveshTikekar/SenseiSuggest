@@ -163,8 +163,12 @@ async def get_anime_info(anime_name: str, supabase: AsyncClient = Depends(get_su
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Anime {anime_name} not found")
 
     query_result = data[0]
+    print(query_result)
+
     genre_list = [g["genres"]["name"] for g in query_result.get("anime_genres", []) if g.get("genres")]
 
+    response = await supabase.table("seasons").select("*").eq("animeId", query_result.get("animeId")).order("seasonNumber").execute()
+    seasons_info = response.data
     animeGetObj = AnimeGet(
         animeId = query_result["animeId"],
         animeName = query_result["animeName"],
@@ -176,6 +180,7 @@ async def get_anime_info(anime_name: str, supabase: AsyncClient = Depends(get_su
         image_url_base_anime = query_result.get("image_url_base_anime"),
         trailer_url_base_anime = query_result.get("trailer_url_base_anime"),
         studio = query_result.get("studio"),
+        seasons=seasons_info
     )
 
     return animeGetObj

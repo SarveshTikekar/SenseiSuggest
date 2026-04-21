@@ -7,6 +7,7 @@ import {
   getUserScrapbook, uploadScrapbookImage, deleteScrapbookImage
 } from '../api';
 import ScrapbookGrid from '../components/Scrapbook/ScrapbookGrid';
+import SeasonTimeline from '../components/SeasonTimeline';
 import { useAuth } from '../context/AuthContext';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
@@ -679,6 +680,13 @@ function AnimeDetailPage() {
             </div>
           </div>
         </div>
+      
+      {/* ══════════════════════════════════════════════════
+          CHRONOLOGICAL SAGA JOURNEY (SNAKE TIMELINE)
+          ══════════════════════════════════════════════════ */}
+      {anime.seasons && anime.seasons.length > 0 && (
+        <SeasonTimeline seasons={anime.seasons} />
+      )}
       </div>
 
       {/* ══════════════════════════════════════════════════
