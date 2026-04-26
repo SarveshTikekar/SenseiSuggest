@@ -43,8 +43,11 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userName'); // Clear any extra bits
     setIsAuthenticated(false);
     setUserId(null);
+    // Force redirect to landing to clear any remaining sensitive UI states
+    window.location.href = '/';
   };
 
   return (

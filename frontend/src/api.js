@@ -317,3 +317,24 @@ export const deleteScrapbookImage = async (scrapbookId, userId, animeId) => {
     method: 'DELETE',
   });
 };
+
+// --- Social & Connection APIs ---
+export const initiateFriendRequest = async (requestData) => {
+  return fetchData(`${API_BASE_URL}/initiate-connection`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestData),
+  });
+};
+
+export const getPendingRequests = async (userId) => {
+  return fetchData(`${API_BASE_URL}/connections/pending/${userId}`);
+};
+
+export const processFriendRequest = async (processData) => {
+  return fetchData(`${API_BASE_URL}/process-connection`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(processData),
+  });
+};

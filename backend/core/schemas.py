@@ -56,6 +56,7 @@ class UsersTable(BaseModel):
     profilePicture: Optional[HttpUrl]
     watchedAnime: List[int] = Field([])
     watchingAnime: List[int] = Field([])
+    friends: List[int] = Field([])
     anime_watched_count: int = 0
     anime_watching_count: int = 0
     model_config = ConfigDict(from_attributes=True)
@@ -113,6 +114,7 @@ class UserDashBoard(BaseModel):
     anime_watched_count: int = 0
     anime_watching_count: int = 0
     model_config = ConfigDict(from_attributes=True)
+    friends: List[int] = Field([], description="Friends of the user")
 
 class UserInfo(BaseModel):
     userName: str
@@ -121,6 +123,7 @@ class UserInfo(BaseModel):
     bookmarkedAnime: List[AnimeListForUser] = Field([])
     anime_watched_count: int = 0
     anime_watching_count: int = 0
+    friends: List[int] = Field([], description="Friends of the user")
 
 #A rating created by the user
 class RatingCreateModel(BaseModel):
@@ -207,6 +210,7 @@ class UserProfile(BaseModel):
     watchedAnime: List[AnimesForUserProfile] = Field([])
     watchingAnime: List[AnimesForUserProfile] = Field([])
     bookmarkedAnime: List[AnimesForUserProfile] = Field([])
+    friends: List[int] = Field([])
 
     @computed_field
     @property
@@ -250,3 +254,10 @@ class ScrapBookRemove(BaseModel):
     animeId: int = Field(...)
     scrapbookEntryId: uuid.UUID
     model_config = ConfigDict(from_attributes=True)
+
+class FriendRequest(BaseModel):
+    sender_id: int = Field(...)
+    receiver_id: int = Field(...)
+
+class FriendRequestProcess(FriendRequest):
+    action: str = Field(..., pattern="^(ACCEPT|REJECT)$")

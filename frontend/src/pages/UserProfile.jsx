@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getUserProfile, getUserScrapbook, getAnimeStats } from '../api';
+import { getUserProfile, getUserScrapbook, getAnimeStats, getPendingRequests, processFriendRequest } from '../api';
+import { useAuth } from '../context/AuthContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import ScrapbookBook from '../components/Scrapbook/ScrapbookBook';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +16,9 @@ import {
   WarningCircle,
   Lightning,
   Medal,
-  BookmarksSimple
+  BookmarksSimple,
+  Sword,
+  ShieldCheck
 } from '@phosphor-icons/react';
 
 const containerVariants = {
@@ -32,12 +35,12 @@ const itemVariants = {
 };
 
 const getOtakuRank = (count) => {
-  if (count >= 100) return { name: "SHŌGUN", kanji: "将軍", color: "text-[#D97706]", bg: "bg-[#D97706]/10", border: "border-[#D97706]/40", desc: "Supreme Commander" };
-  if (count >= 50)  return { name: "DAIMYŌ", kanji: "大名", color: "text-[#DD0426]", bg: "bg-[#DD0426]/10", border: "border-[#DD0426]/40", desc: "Great Lord" };
-  if (count >= 25)  return { name: "HATAMOTO", kanji: "旗本", color: "text-[#BE233F]", bg: "bg-[#BE233F]/10", border: "border-[#BE233F]/40", desc: "Elite Retainer" };
-  if (count >= 10)  return { name: "SAMURAI", kanji: "侍", color: "text-[#F5EBE0]", bg: "bg-white/5", border: "border-white/20", desc: "Honorable Warrior" };
-  if (count >= 1)   return { name: "ASHIGARU", kanji: "足軽", color: "text-[#AAAAAA]", bg: "bg-white/5", border: "border-white/10", desc: "Foot Soldier" };
-  return { name: "RŌNIN", kanji: "浪人", color: "text-[#666666]", bg: "bg-transparent", border: "border-dashed border-white/10", desc: "Wandering soul" };
+  if (count >= 100) return { name: "ELITE", color: "text-[#D97706]", bg: "bg-[#D97706]/10", border: "border-[#D97706]/40", desc: "Top Tier Contributor" };
+  if (count >= 50)  return { name: "MASTER", color: "text-[#DD0426]", bg: "bg-[#DD0426]/10", border: "border-[#DD0426]/40", desc: "Highly Experienced" };
+  if (count >= 25)  return { name: "EXPERT", color: "text-[#BE233F]", bg: "bg-[#BE233F]/10", border: "border-[#BE233F]/40", desc: "Regular Contributor" };
+  if (count >= 10)  return { name: "ADVANCED", color: "text-[#F5EBE0]", bg: "bg-white/5", border: "border-white/20", desc: "Active Member" };
+  if (count >= 1)   return { name: "NOVICE", color: "text-[#AAAAAA]", bg: "bg-white/5", border: "border-white/10", desc: "New Member" };
+  return { name: "BEGINNER", color: "text-[#666666]", bg: "bg-transparent", border: "border-dashed border-white/10", desc: "Initial Phase" };
 };
 
 const SkeletonProfile = () => (
@@ -83,6 +86,8 @@ function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [scrapbookEntries, setScrapbookEntries] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const { userId: currentUserId } = useAuth();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -112,7 +117,30 @@ function UserProfilePage() {
       }
     };
     if (userId) fetchUserProfile();
-  }, [userId]); 
+
+    // Fetch Pending Requests if it's the user's own profile
+    if (userId && currentUserId && parseInt(userId) === currentUserId) {
+      getPendingRequests(userId).then(setPendingRequests).catch(console.error);
+    }
+  }, [userId, currentUserId]); 
+
+  const handleFriendAction = async (sender_id, action) => {
+    try {
+      await processFriendRequest({
+        sender_id,
+        receiver_id: currentUserId,
+        action
+      });
+      // Refresh pending list
+      const updated = await getPendingRequests(currentUserId);
+      setPendingRequests(updated);
+      // Also refresh profile to see new friends
+      const profileRes = await getUserProfile(userId);
+      setUserProfile(profileRes.UserProfile);
+    } catch (err) {
+      alert("Action failed: " + err.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -184,7 +212,7 @@ function UserProfilePage() {
             {React.cloneElement(icon, { size: 28, weight: "bold", className: color })} {title}
           </h3>
           <span className="text-[11px] font-accent text-[#AAAAAA] uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full">
-            {list.length} Units
+            {list.length} Series
           </span>
         </div>
         
@@ -201,13 +229,13 @@ function UserProfilePage() {
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.3em] hover:bg-white/5 transition-colors"
               >
-                {isExpanded ? "Collapse Archive" : `View All ${list.length} Records`}
+                {isExpanded ? "Collapse View" : `View All ${list.length} Records`}
               </button>
             )}
           </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-center p-12 space-y-4 border border-dashed border-white/10 rounded-3xl">
-             <p className="text-[#AAAAAA] text-lg font-hand">No entries found in this sector.</p>
+             <p className="text-[#AAAAAA] text-lg font-hand">No records found in this category.</p>
           </div>
         )}
       </div>
@@ -245,14 +273,13 @@ function UserProfilePage() {
                       {userProfile.userName}
                     </h2>
                     <div className="inline-flex px-4 py-1 rounded-xl text-[9px] font-accent font-black uppercase tracking-[0.2em] border border-white/10 bg-white/5 text-[#AAAAAA] gap-2 items-center">
-                        <span className="text-base opacity-80 font-serif">{rank.kanji}</span>
-                        <span>{rank.name} CLASS</span>
+                        <span>{rank.name} ACCOUNT</span>
                     </div>
                   </div>
                   
                   <div className="pt-4 border-t border-white/5 w-full">
                     <div className="flex justify-between items-end mb-2">
-                        <span className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em]">Ascension</span>
+                        <span className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em]">Account Progress</span>
                         <span className="text-[10px] font-accent font-bold text-[#DD0426] tracking-widest">{watchedCount} / {nextRankCount}</span>
                     </div>
                     <div className="h-2 w-full bg-black/40 rounded-full border border-white/10 p-0.5 overflow-hidden">
@@ -302,7 +329,7 @@ function UserProfilePage() {
                           if (active && payload && payload.length) {
                             return (
                               <div className="bg-[#111] border border-white/10 rounded-xl p-3 shadow-2xl backdrop-blur-md">
-                                <p className="text-[10px] font-accent font-black uppercase tracking-widest mb-1 text-white/40">Archive Intel</p>
+                                <p className="text-[10px] font-accent font-black uppercase tracking-widest mb-1 text-white/40">Data Distribution</p>
                                 <p className="text-sm font-display uppercase tracking-wider" style={{ color: payload[0].payload.color }}>
                                   {payload[0].name}: {payload[0].value}
                                 </p>
@@ -326,62 +353,103 @@ function UserProfilePage() {
                </div>
             </Motion.div>
 
-            {/* Col 3: Battle Allies (Friends) */}
+            {/* Col 3: Connections */}
             <Motion.div variants={itemVariants} className="ss-card rounded-[2.5rem] p-6 border border-white/10 bg-[#0D0D0D]/80 backdrop-blur-xl relative overflow-hidden group flex flex-col">
                <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
                   <h3 className="text-[11px] font-accent text-[#F5EBE0] uppercase tracking-[0.2em] flex items-center gap-2">
-                     <UserCircle size={16} className="text-[#DD0426]" weight="bold" /> Battle Allies
+                     <UserCircle size={16} className="text-[#DD0426]" weight="bold" /> Connections
                   </h3>
-                  <span className="text-[10px] font-accent text-[#AAAAAA] opacity-50">4 active</span>
+                  <span className="text-[10px] font-accent text-[#AAAAAA] opacity-50">
+                    {userProfile.friends?.length || 0} active
+                  </span>
                </div>
                
-               <div className="space-y-3 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+               <div className="space-y-4 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+                  {/* Pending Section - Only visible on user's own profile */}
+                  {parseInt(userId) === currentUserId && pendingRequests.length > 0 && (
+                    <div className="space-y-2 mb-6">
+                      <p className="text-[9px] font-accent text-[#DD0426] uppercase tracking-[0.2em] font-black mb-3 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#DD0426] animate-pulse" /> Pending Requests
+                      </p>
+                      {pendingRequests.map((req) => (
+                        <div key={req.req_id} className="p-3 rounded-2xl bg-[#DD0426]/5 border border-[#DD0426]/20 space-y-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg overflow-hidden border border-[#DD0426]/30">
+                              <img 
+                                src={req.sender?.profilePicture || `https://ui-avatars.com/api/?name=${req.sender?.userName || 'U'}&background=DD0426&color=fff`} 
+                                className="w-full h-full object-cover"
+                                alt=""
+                              />
+                            </div>
+                            <span className="text-[11px] font-accent text-[#F5EBE0] font-bold">{req.sender?.userName}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={() => handleFriendAction(req.sender_id, "ACCEPT")}
+                              className="flex-grow py-1.5 bg-[#DD0426] hover:bg-[#A10A24] text-white text-[9px] font-accent uppercase tracking-widest rounded-lg transition-all"
+                            >
+                              Accept
+                            </button>
+                            <button 
+                              onClick={() => handleFriendAction(req.sender_id, "REJECT")}
+                              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-[#AAAAAA] text-[9px] font-accent uppercase tracking-widest rounded-lg transition-all"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Connections List */}
                   {userProfile.friends && userProfile.friends.length > 0 ? (
-                    userProfile.friends.map((friend, i) => (
+                    userProfile.friends.map((friendId, i) => (
                       <div key={i} className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.02] border border-transparent hover:border-white/5 hover:bg-white/[0.04] transition-all cursor-pointer group/item">
-                         <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10">
-                            <img src={friend.img} alt="" className="w-full h-full object-cover grayscale group-hover/item:grayscale-0 transition-all" />
+                         <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-[#111] flex items-center justify-center">
+                            <UserCircle size={18} className="text-[#333] group-hover/item:text-[#DD0426] transition-colors" />
                          </div>
                          <div className="flex-grow min-w-0">
-                            <p className="text-[11px] font-accent text-[#F5EBE0] truncate group-hover/item:text-[#DD0426] transition-colors">{friend.name}</p>
-                            <p className="text-[8px] font-accent text-[#AAAAAA] uppercase tracking-tighter opacity-60">{friend.rank}</p>
+                            <p className="text-[11px] font-accent text-[#F5EBE0] truncate group-hover/item:text-[#DD0426] transition-colors">User #{friendId}</p>
+                            <p className="text-[8px] font-accent text-[#AAAAAA] uppercase tracking-tighter opacity-60">Active Connection</p>
                          </div>
-                         <div className="w-1 h-1 rounded-full bg-[#DD0426] animate-pulse" />
+                         <div className="w-1 h-1 rounded-full bg-[#DD0426] opacity-0 group-hover/item:opacity-100 transition-opacity" />
                       </div>
                     ))
                   ) : (
-                    <div className="flex-grow flex flex-col items-center justify-center text-center p-4 border border-dashed border-white/5 rounded-2xl opacity-40">
-                       <p className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-widest">No active allies found</p>
+                    <div className="flex-grow flex flex-col items-center justify-center text-center py-10 border border-dashed border-white/5 rounded-2xl opacity-40">
+                       <UserCircle size={24} className="mb-2 text-[#AAAAAA]" />
+                       <p className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-widest">No active connections found</p>
                     </div>
                   )}
                </div>
                
                <button className="mt-4 w-full py-2 bg-white/5 rounded-xl text-[9px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em] hover:bg-[#DD0426]/10 hover:text-[#DD0426] transition-all border border-white/5">
-                  Recruit Allies
+                  Find Connections
                </button>
             </Motion.div>
 
           </div>
 
 
-          {/* Structured War-Journal Grid */}
+          {/* Structured Activity Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-white/10 border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
              
-             {/* Cell 1: Combat Stats */}
+             {/* Cell 1: User Statistics */}
              <div className="bg-[#0D0D0D] p-10 lg:p-14 space-y-10">
                 <div className="flex items-center gap-4 mb-8">
                    <div className="w-12 h-12 rounded-xl bg-[#DD0426]/10 flex items-center justify-center">
                       <Lightning size={28} weight="bold" className="text-[#DD0426]" />
                    </div>
-                   <h3 className="text-3xl font-display text-[#F5EBE0] tracking-tight uppercase">Combat Portfolio</h3>
+                   <h3 className="text-3xl font-display text-[#F5EBE0] tracking-tight uppercase">User Statistics</h3>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-6">
                    {[
-                     { label: 'Victory Records (Watched)', value: userProfile.anime_watched_count || 0, icon: <Trophy />, color: 'text-[#DD0426]' },
-                     { label: 'Active Missions (Watching)', value: userProfile.anime_watching_count || 0, icon: <Play />, color: 'text-[#F5EBE0]' },
-                     { label: 'Strategic Intel (Saved)', value: userProfile.anime_bookmarked_count || 0, icon: <BookmarksSimple />, color: 'text-[#D97706]' },
-                     { label: 'Tactical Seniority (Rank)', value: `LVL ${Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}`, icon: <Medal />, color: 'text-[#AAAAAA]' }
+                     { label: 'Completed Series', value: userProfile.anime_watched_count || 0, icon: <Trophy />, color: 'text-[#DD0426]' },
+                     { label: 'Currently Watching', value: userProfile.anime_watching_count || 0, icon: <Play />, color: 'text-[#F5EBE0]' },
+                     { label: 'Saved Records', value: userProfile.anime_bookmarked_count || 0, icon: <BookmarksSimple />, color: 'text-[#D97706]' },
+                     { label: 'Account Rank', value: `LVL ${Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}`, icon: <Medal />, color: 'text-[#AAAAAA]' }
                    ].map((stat, i) => (
                      <div key={i} className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all group">
                         <div className={`mb-4 ${stat.color} opacity-40 group-hover:opacity-100 transition-opacity`}>
@@ -395,7 +463,7 @@ function UserProfilePage() {
 
                 <div className="p-8 rounded-3xl bg-[#DD0426]/5 border border-[#DD0426]/20">
                    <p className="font-hand text-xl text-[#F5EBE0]/80 leading-relaxed italic">
-                     "The path of the Shōgun is paved with thousands of stories. Each record added is a step closer to supreme enlightenment."
+                     "Each record added is a milestone in your journey through the worlds of animation."
                    </p>
                 </div>
              </div>
@@ -422,19 +490,19 @@ function UserProfilePage() {
              />
           </div>
 
-          {/* Scrapbook Section */}
+          {/* Gallery Section */}
           <div className="pt-20">
             <div className="flex flex-col items-center mb-16 space-y-4 text-center">
                <div className="w-16 h-px bg-[#DD0426]" />
                <h3 className="text-4xl md:text-5xl font-display font-black text-[#F5EBE0] tracking-tight uppercase">
-                 The Shōgun's Scrapbook
+                 Personal Gallery
                </h3>
-               <p className="font-hand text-2xl text-[#AAAAAA] max-w-2xl">
-                 A visual testament to your journey through the worlds of animation.
+               <p className="font-sans text-2xl text-[#AAAAAA] max-w-2xl opacity-80">
+                 A visual record of your journey through the worlds of animation.
                </p>
                <div className="flex items-center gap-3 text-[10px] font-accent text-[#DD0426] uppercase tracking-[0.4em] pt-4">
                   <span className="w-2 h-2 rounded-full bg-[#DD0426] animate-pulse" />
-                  {scrapbookEntries.length} Captured Moments
+                  {scrapbookEntries.length} Saved Moments
                </div>
             </div>
             

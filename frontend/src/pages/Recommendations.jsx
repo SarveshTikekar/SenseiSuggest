@@ -179,21 +179,21 @@ const RecommendationPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-16"
       >
-        <span className="text-[#DD0426] text-[11px] font-mono font-black tracking-[0.3em] uppercase mb-3 block">Neural Recommendations</span>
+        <span className="text-[#DD0426] text-[11px] font-mono font-black tracking-[0.3em] uppercase mb-3 block">Personalized Analytics</span>
         <h1 className="text-5xl md:text-6xl font-display font-black text-[#F5EBE0] leading-tight tracking-tight">
-          Sensei <span className="text-[#DD0426] italic">Spotlight.</span>
+          Sensei <span className="text-[#DD0426] italic">Recommendations.</span>
         </h1>
         <p className="text-[#AAAAAA] mt-4 max-w-xl mx-auto text-sm font-sans leading-relaxed">
-          Intelligence refined by your unique watch patterns.
+          Algorithmically refined by your unique watch patterns.
         </p>
       </Motion.div>
 
       {!userId ? (
         <div className="text-center p-16 bg-white/[0.03] rounded-3xl border border-white/10 shadow-2xl backdrop-blur-sm ss-card">
           <Sparkle size={64} weight="bold" className="text-[#DD0426] mx-auto mb-6 opacity-40 shrink-0" />
-          <h2 className="text-3xl font-display font-black text-[#F5EBE0] mb-2">Identify Yourself.</h2>
+          <h2 className="text-3xl font-display font-black text-[#F5EBE0] mb-2">Authentication Required.</h2>
           <p className="text-[#AAAAAA] text-sm max-w-md mx-auto mb-8 leading-relaxed">
-            Personalized intelligence requires a user profile. Log in to allow the Sensei to analyze your destiny.
+            Personalized recommendations require an active profile. Log in to allow the system to analyze your preferences.
           </p>
           <Link to="/login" className="ss-btn-primary px-8 py-3.5 rounded-xl font-bold inline-flex items-center gap-2">
             Proceed to Login
@@ -224,11 +224,11 @@ const RecommendationPage = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#0D0D0D]/40 z-20" />
                   <div className="absolute top-8 left-8 flex gap-3 z-30">
                     <span className="bg-[#DD0426] text-white px-5 py-1.5 rounded-full text-[10px] font-accent uppercase tracking-widest shadow-xl flex items-center gap-2">
-                      <Trophy size={14} weight="bold" /> {isColdStart ? "Global Apex" : "Top Selection"}
+                      <Trophy size={14} weight="bold" /> {isColdStart ? "Global Trending" : "Top Selection"}
                     </span>
                     {isColdStart && (
                       <span className="bg-white/10 backdrop-blur-md text-white px-5 py-1.5 rounded-full text-[10px] font-accent uppercase tracking-widest shadow-xl border border-white/10">
-                        New User Special
+                        Getting Started
                       </span>
                     )}
                   </div>
@@ -236,7 +236,7 @@ const RecommendationPage = () => {
 
                 <div className="w-full lg:w-1/2 p-10 lg:p-20 flex flex-col justify-center">
                   <div className="inline-flex items-center gap-2 text-[#DD0426] font-accent text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-                    <Lightning size={16} weight="bold" /> {isColdStart ? "High Viral Potential" : "Compatibility High"}
+                    <Lightning size={16} weight="bold" /> {isColdStart ? "High Popularity" : "Strong Compatibility"}
                   </div>
                   
                   <h2 className="text-4xl lg:text-5xl font-display font-black text-[#F5EBE0] mb-4 leading-tight">
@@ -253,11 +253,11 @@ const RecommendationPage = () => {
 
                   <div className="bg-white/5 border border-white/10 p-6 rounded-2xl mb-10 shadow-inner">
                     <h4 className="text-[#AAAAAA] opacity-60 font-accent text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <Info size={14} weight="bold" /> {isColdStart ? "Discovery Logic" : "Neural Logic"}
+                      <Info size={14} weight="bold" /> {isColdStart ? "Discovery Logic" : "Algorithm Logic"}
                     </h4>
-                    <p className="text-[#F5EBE0] text-[1.4rem] font-hand leading-relaxed">
+                    <p className="text-[#F5EBE0] text-[1.4rem] font-sans leading-relaxed opacity-90">
                       {isColdStart 
-                        ? "As a new initiate, the Sensei recommends this masterpiece which has defined the current era of animation."
+                        ? "As a new user, we recommend this series which has significantly influenced modern animation."
                         : topPick.sensei_reason}
                     </p>
                   </div>
@@ -338,7 +338,7 @@ const RecommendationPage = () => {
                         
                         <div className="flex items-center justify-between">
                           <p className="text-[10px] text-[#AAAAAA] font-accent leading-none uppercase">
-                            Sub | Dub
+                            Subtitled & Dubbed
                           </p>
                           {anime.rating && (
                             <div className="flex items-center gap-1 opacity-60">
@@ -360,7 +360,7 @@ const RecommendationPage = () => {
                 <div className="h-[1px] flex-grow max-w-[100px] bg-white/10"></div>
                 <div className="flex items-center gap-4 text-center">
                    <ChartIcon size={32} weight="bold" className="text-[#DD0426]" />
-                   <h3 className="text-4xl font-display text-[#F5EBE0] tracking-tight">Intelligence <span className="text-[#DD0426]">Analysis.</span></h3>
+                   <h3 className="text-4xl font-display text-[#F5EBE0] tracking-tight">Data <span className="text-[#DD0426]">Analytics.</span></h3>
                 </div>
                 <div className="h-[1px] flex-grow max-w-[100px] bg-white/10"></div>
              </div>
@@ -442,7 +442,7 @@ const RecommendationPage = () => {
                    </div>
                    
                    <div className="mt-8 p-6 bg-[#DD0426]/5 rounded-3xl border border-[#DD0426]/10">
-                      <p className="text-[10px] text-[#DD0426] font-accent uppercase tracking-[0.2em] mb-2">Algorithm Verdict</p>
+                      <p className="text-[10px] text-[#DD0426] font-accent uppercase tracking-[0.2em] mb-2">Trend Analysis</p>
                       <p className="text-[1.2rem] text-[#AAAAAA] leading-relaxed font-hand opacity-95">The global user base is currently favoriting high-complexity narratives with 8+ scores.</p>
                    </div>
                 </Motion.div>
@@ -453,7 +453,7 @@ const RecommendationPage = () => {
           <section className="mt-40 mb-32 text-center relative px-4">
              <div className="inline-block px-10 py-3 bg-white/[0.03] border border-white/10 rounded-full mb-16 backdrop-blur-3xl">
                 <span className="flex items-center gap-4 text-[10px] font-accent uppercase tracking-[0.4em] text-[#AAAAAA]">
-                   <CaretRight size={16} weight="bold" className="text-[#DD0426] animate-pulse" /> Legendary Picks <CaretRight size={16} weight="bold" className="text-[#DD0426] animate-pulse" />
+                   <CaretRight size={16} weight="bold" className="text-[#DD0426] animate-pulse" /> Top Rated <CaretRight size={16} weight="bold" className="text-[#DD0426] animate-pulse" />
                 </span>
              </div>
 
@@ -471,7 +471,7 @@ const RecommendationPage = () => {
                          <div className="flex flex-col md:flex-row items-center gap-6 mb-6 justify-center md:justify-start">
                             <h4 className="text-4xl lg:text-6xl font-display text-[#F5EBE0] tracking-tight">{mostPopularAnime.animeName}</h4>
                             <div className="bg-[#DD0426]/10 text-[#DD0426] px-5 py-1.5 rounded-lg text-[10px] font-accent tracking-widest border border-[#DD0426]/20 uppercase">
-                               HALL OF FAME
+                               TOP RATED
                             </div>
                          </div>
                          <p className="text-[#AAAAAA] text-[1.4rem] mb-10 leading-relaxed font-hand italic opacity-80">
@@ -488,7 +488,7 @@ const RecommendationPage = () => {
                             </div>
                             <div className="p-6 bg-[#DD0426] rounded-2xl shadow-[0_10px_30px_rgba(221,4,38,0.3)] border border-white/10 text-white">
                                <p className="text-[10px] font-accent uppercase tracking-widest mb-2 opacity-60">Status</p>
-                               <p className="text-3xl font-display text-[#F5EBE0]">Viral</p>
+                               <p className="text-3xl font-display text-[#F5EBE0]">Popular</p>
                             </div>
                          </div>
                       </div>

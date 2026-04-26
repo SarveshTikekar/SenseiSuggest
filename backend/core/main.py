@@ -1,3 +1,4 @@
+from backend.core.schemas import FriendRequest
 from fastapi import FastAPI, Query, HTTPException, Depends, status, UploadFile, File, Form  
 from fastapi.middleware.cors import CORSMiddleware
 from .database import get_supabase
@@ -9,7 +10,7 @@ import os
 import json
 from backend.recommendation_model.main_ml_model import main_recommendation_model
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 #Testing if application is working
 app = FastAPI(
@@ -210,7 +211,8 @@ async def get_user_info(user: UserBasicCreate, supabase: AsyncClient = Depends(g
         "locationId": location_id,
         "anime_watched_count": 0,
         "anime_watching_count": 0,
-        "profilePicture": ""
+        "profilePicture": "",
+        "friends": [],
     }
 
     try:
@@ -687,6 +689,106 @@ async def user_profile(user_id: int, supabase: AsyncClient = Depends(get_supabas
 
     return {"UserProfile": userProfileObj, "message": "User profile fetched successfully"}
 
+# Friend Requests Handling API
+@app.post('/initiate-connection', status_code=status.HTTP_200_OK)
+async def initiate_friend_request(requestData: FriendRequest, supabase: AsyncClient = Depends(get_supabase)):
+    """Check if u1 already has added u2 as friend"""
+    
+    # Check sender
+    resp = await supabase.table("users").select("friends").eq("userId", requestData.sender_id).execute()
+    if not resp.data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Sender not found")
+    
+    friends = resp.data[0].get("friends", []) or []
+    if requestData.receiver_id in friends:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You are already friends with this user")
+    
+    # Prevent duplicate pending requests
+    pending_check = await supabase.table("friend_requests")\
+        .select("*")\
+        .eq("sender_id", requestData.sender_id)\
+        .eq("receiver_id", requestData.receiver_id)\
+        .eq("status", "PENDING")\
+        .execute()
+    
+    if pending_check.data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A pending request already exists")
+
+    # Insert new request
+    await supabase.table("friend_requests").insert({
+        "sender_id": requestData.sender_id, 
+        "receiver_id": requestData.receiver_id,
+        "status": "PENDING"
+    }).execute()
+    
+    return {"message": f"Friend request sent successfully to {requestData.receiver_id}"}
+    
+@app.post('/process-connection', status_code=status.HTTP_200_OK)
+async def friend_request_process(requestData: FriendRequestProcess, supabase: AsyncClient = Depends(get_supabase)):
+    """Check and act on friend requests"""
+
+    # Fetch the pending request
+    resp = await supabase.table("friend_requests").select("*")\
+        .eq("sender_id", requestData.sender_id)\
+        .eq("receiver_id", requestData.receiver_id)\
+        .eq("status", "PENDING")\
+        .order("req_created_at", desc=True).limit(1).execute()
+    
+    if not resp.data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No pending friend request found")
+    
+    req_id = resp.data[0]["req_id"]
+
+    if requestData.action == "ACCEPT":
+        # 1. Update Sender's friends
+        sender_resp = await supabase.table("users").select("friends").eq("userId", requestData.sender_id).single().execute()
+        sender_friends = set(sender_resp.data.get("friends", []) or [])
+        sender_friends.add(requestData.receiver_id)
+        await supabase.table("users").update({"friends": list(sender_friends)}).eq("userId", requestData.sender_id).execute()
+
+        # 2. Update Receiver's friends
+        receiver_resp = await supabase.table("users").select("friends").eq("userId", requestData.receiver_id).single().execute()
+        receiver_friends = set(receiver_resp.data.get("friends", []) or [])
+        receiver_friends.add(requestData.sender_id)
+        await supabase.table("users").update({"friends": list(receiver_friends)}).eq("userId", requestData.receiver_id).execute()
+
+        status_update = "ACCEPTED"
+    else:
+        status_update = "REJECTED"
+    
+    # Finalize the request record
+    await supabase.table("friend_requests").update({
+        "status": status_update, 
+        "req_updated_at": datetime.now(timezone.utc).isoformat()
+    }).eq("req_id", req_id).execute()
+
+    return {"message": f"Friend request {status_update.lower()} successfully"}
+
+@app.get('/allies/find', status_code=status.HTTP_200_OK)
+async def find_allies(userId: int, query: str,supabase: AsyncClient = Depends(get_supabase)):
+
+    """ Simple search for allies based on username """
+
+    resp = await supabase.table("users").select("userName, profilePicture").ilike("userName", f"{query}%").neq("userId", userId).execute()
+    return resp.data
+
+@app.get('/connections/pending/{userId}', status_code=status.HTTP_200_OK)
+async def get_pending_requests(userId: int, supabase: AsyncClient = Depends(get_supabase)):
+    """Fetch all pending friend requests for a user with sender details"""
+    
+    # 1. Prune expired first
+    threshold = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    await supabase.table("friend_requests").delete().eq("status", "PENDING").lt("req_created_at", threshold).execute()
+
+    # 2. Fetch pending requests
+    resp = await supabase.table("friend_requests")\
+        .select("*, sender:users!friend_requests_sender_id_fkey(userName, profilePicture)")\
+        .eq("receiver_id", userId)\
+        .eq("status", "PENDING")\
+        .execute()
+    
+    return resp.data
+
 @app.get('/anime/search/{query}', status_code=status.HTTP_200_OK)
 async def search_anime(query: str, supabase: AsyncClient = Depends(get_supabase)):
 
@@ -695,6 +797,13 @@ async def search_anime(query: str, supabase: AsyncClient = Depends(get_supabase)
     # If nothing returned, return an empty list
     if response.data is None:
         return []
-    
+     
     anime_ids = [item["animeId"] for item in response.data if item.get("animeId")]
     return anime_ids
+
+# An API for testing
+@app.get('/SenseiSuggest/testing', status_code=status.HTTP_200_OK)
+async def testing(supabase: AsyncClient = Depends(get_supabase)):
+
+    resp = await supabase.table("users").select("friends").eq("userId", 6).execute()
+    return resp

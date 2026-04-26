@@ -18,27 +18,27 @@ const SeasonTimeline = ({ seasons = [] }) => {
   return (
     <section className="py-48 relative bg-[#0D0D0D] overflow-hidden">
       
-      {/* 📜 SHOGUN STYLE TEXTURES */}
+      {/* 📜 BACKGROUND TEXTURES */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay z-0" 
            style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/parchment.png")' }} />
 
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 relative z-10">
         
-        {/* Clearcut Shogun Headline */}
+        {/* Timeline Header */}
         <div className="mb-60 flex flex-col items-center text-center">
           <div className="w-20 h-1.5 bg-[#DD0426] mb-8 shadow-[0_0_20px_rgba(221,4,38,0.8)]" />
           <h2 className="text-5xl md:text-7xl font-display font-black text-[#F5EBE0] uppercase tracking-tighter leading-none mb-2">
-            Saga Chronicles
+            Series Timeline
           </h2>
-          <p className="font-hand text-3xl text-[#AAAAAA] italic opacity-60" style={{ fontFamily: "'Tangerine', cursive", fontSize: '3rem' }}>
-            "The serpent's path is carved in tradition and steel."
+          <p className="font-sans text-xl text-[#AAAAAA] uppercase tracking-widest opacity-60">
+            Chronological Progression
           </p>
         </div>
 
         {/* The Square Snake Container */}
         <div className="relative flex flex-col items-center">
           
-          {/* THE TEXTURED SHOGUN SNAKE PATH */}
+          {/* TIMELINE CONNECTOR PATH */}
           <div className="absolute inset-0 pointer-events-none z-0" aria-hidden="true" style={{ height: `${rows.length * 400}px` }}>
             <svg 
               width="100%" 
@@ -47,18 +47,18 @@ const SeasonTimeline = ({ seasons = [] }) => {
               preserveAspectRatio="none"
             >
               <defs>
-                <pattern id="shogun-scales" x="0" y="0" width="40" height="20" patternUnits="userSpaceOnUse">
+                <pattern id="timeline-pattern" x="0" y="0" width="40" height="20" patternUnits="userSpaceOnUse">
                    <path d="M 0 10 Q 10 0, 20 10 Q 30 20, 40 10" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
                 </pattern>
-                <filter id="shogun-ink">
+                <filter id="timeline-filter">
                   <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="4" result="noise" />
                   <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" />
                 </filter>
               </defs>
               
               <path d={generateSquareSnakePath(rows)} fill="none" stroke="#DD0426" strokeWidth="22" className="opacity-20 blur-md" />
-              <path d={generateSquareSnakePath(rows)} fill="none" stroke="#DD0426" strokeWidth="18" filter="url(#shogun-ink)" className="opacity-100" />
-              <path d={generateSquareSnakePath(rows)} fill="none" stroke="url(#shogun-scales)" strokeWidth="18" className="opacity-40" />
+              <path d={generateSquareSnakePath(rows)} fill="none" stroke="#DD0426" strokeWidth="18" filter="url(#timeline-filter)" className="opacity-100" />
+              <path d={generateSquareSnakePath(rows)} fill="none" stroke="url(#timeline-pattern)" strokeWidth="18" className="opacity-40" />
             </svg>
           </div>
 
@@ -82,7 +82,7 @@ const SeasonTimeline = ({ seasons = [] }) => {
                         </div>
                       </div>
                       <div className="mt-8 text-center max-w-[200px]">
-                        <p className="text-[#DD0426] font-accent text-[10px] tracking-[0.5em] uppercase font-black mb-1 opacity-60">ARCHIVE 0{season.seasonNumber}</p>
+                        <p className="text-[#DD0426] font-accent text-[10px] tracking-[0.5em] uppercase font-black mb-1 opacity-60">SEASON 0{season.seasonNumber}</p>
                         <h3 className="text-base md:text-xl font-display text-[#F5EBE0] uppercase tracking-widest group-hover:text-white transition-colors">
                           {season.seasonName || `Season ${season.seasonNumber}`}
                         </h3>
@@ -129,7 +129,7 @@ const SeasonTimeline = ({ seasons = [] }) => {
                 <X size={24} weight="bold" className="group-hover:rotate-90 transition-transform" />
               </button>
 
-              {/* LEFT: Cinematic Visual Archive */}
+              {/* LEFT: Season Visuals */}
               <div className="w-full md:w-[45%] relative bg-black flex-shrink-0">
                 <img 
                   src={selectedSeason.seasonImage || 'https://placehold.co/1200x1200/0D0D0D/F5EBE0?text=Intel'} 
@@ -142,7 +142,7 @@ const SeasonTimeline = ({ seasons = [] }) => {
                 <div className="absolute bottom-10 left-10">
                    <div className="flex items-center gap-3 mb-2">
                       <BookmarkSimple size={20} className="text-[#DD0426]" weight="fill" />
-                      <span className="text-white/40 font-accent text-[10px] tracking-[0.5em] uppercase font-black">Record Fragment</span>
+                      <span className="text-white/40 font-accent text-[10px] tracking-[0.5em] uppercase font-black">Official Record</span>
                    </div>
                    <h3 className="text-4xl md:text-6xl font-display text-white uppercase leading-none tracking-tighter drop-shadow-2xl">
                       {selectedSeason.seasonName}
@@ -150,7 +150,7 @@ const SeasonTimeline = ({ seasons = [] }) => {
                 </div>
               </div>
 
-              {/* RIGHT: Structured Briefing Intel */}
+              {/* RIGHT: Season Information */}
               <div className="flex-1 p-10 md:p-20 flex flex-col justify-between space-y-12 bg-gradient-to-br from-[#0D0D0D] to-[#0A0A0A] relative z-10 overflow-hidden">
                 
                 {/* Header Sector */}
@@ -159,9 +159,9 @@ const SeasonTimeline = ({ seasons = [] }) => {
                      <div className="space-y-1">
                         <div className="flex items-center gap-2 mb-2">
                            <div className="w-4 h-1 bg-[#DD0426]" />
-                           <p className="text-[#DD0426] font-accent text-[11px] tracking-[0.4em] uppercase font-black">Archive Record</p>
+                           <p className="text-[#DD0426] font-accent text-[11px] tracking-[0.4em] uppercase font-black">Record Entry</p>
                         </div>
-                        <p className="text-white text-4xl font-display tracking-[0.2em] uppercase font-black">Chapter 0{selectedSeason.seasonNumber}</p>
+                        <p className="text-white text-4xl font-display tracking-[0.2em] uppercase font-black">Season 0{selectedSeason.seasonNumber}</p>
                      </div>
                      <ShieldCheck size={40} className="text-[#DD0426] opacity-30" weight="fill" />
                   </div>
@@ -169,24 +169,21 @@ const SeasonTimeline = ({ seasons = [] }) => {
                   {/* Narrative Sector */}
                   <div className="space-y-8">
                     <p className="text-white/30 font-accent text-[10px] tracking-[0.6em] uppercase flex items-center gap-4">
-                       <div className="w-10 h-px bg-white/20" /> Briefing Summary
+                       <div className="w-10 h-px bg-white/20" /> Overview
                     </p>
                     
-                    {/* The Structured Intel Card */}
+                    {/* Information Panel */}
                     <div className="p-10 md:p-14 rounded-[3rem] bg-white/[0.02] border border-white/5 shadow-inner relative group/card">
                        <div className="max-h-[380px] overflow-y-auto pr-6 custom-scrollbar">
-                          <p className="text-[#F5EBE0] font-hand leading-[1.3] italic transition-opacity group-hover/card:opacity-100 opacity-90" 
-                             style={{ fontFamily: "'Tangerine', cursive", fontSize: '3.6rem' }}>
-                             {selectedSeason.seasonInfo || "Detailed intelligence for this deployment is restricted. The journey through the Grand Line continues."}
+                          <p className="text-[#F5EBE0] font-sans leading-relaxed opacity-90 text-lg">
+                             {selectedSeason.seasonInfo || "Detailed information for this season is being compiled. The story continues."}
                           </p>
                        </div>
-                       {/* Subtle Ink Splatter Decoration */}
-                       <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-[#DD0426]/5 blur-3xl rounded-full pointer-events-none" />
                     </div>
                   </div>
                 </div>
 
-                {/* Tactical Actions */}
+                {/* Actions */}
                 <div className="pt-10 flex flex-col sm:flex-row gap-6">
                   {selectedSeason.seasonTrailer && (
                     <a 
@@ -195,14 +192,14 @@ const SeasonTimeline = ({ seasons = [] }) => {
                       rel="noopener noreferrer"
                       className="flex-1 flex items-center justify-center gap-4 px-10 py-6 bg-[#DD0426] text-white text-xs font-accent uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all shadow-[10px_10px_0px_rgba(221,4,38,0.15)] font-black group"
                     >
-                      <PlayCircle size={24} weight="bold" className="group-hover:scale-110 transition-transform" /> Access Feed
+                      <PlayCircle size={24} weight="bold" className="group-hover:scale-110 transition-transform" /> View Trailer
                     </a>
                   )}
                   <button 
                     onClick={() => setSelectedSeason(null)}
                     className="flex-1 px-10 py-6 border border-white/10 text-white/40 text-xs font-accent uppercase tracking-[0.3em] hover:bg-white hover:text-black hover:border-white transition-all font-black"
                   >
-                    Close Files
+                    Close
                   </button>
                 </div>
 

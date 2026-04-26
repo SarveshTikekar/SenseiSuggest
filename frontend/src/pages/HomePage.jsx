@@ -72,7 +72,7 @@ const PreviewCard = ({ anime }) => (
       <div className="flex items-center gap-2">
          <span style={{ width: '12px', height: '1px', background: '#DD0426' }} />
          <p style={{ fontSize: '9px', color: '#8D7F8B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-           Sub | Dub Available
+           Subtitled & Dubbed
          </p>
       </div>
     </div>
@@ -396,16 +396,16 @@ function HomePage({ onSearchOpen }) {
               </h1>
 
               <p style={{ 
-                fontFamily: 'var(--font-hand)',
+                fontFamily: 'var(--font-sans)',
                 color: HERO_THEME.textMuted, 
-                fontSize: '1.4rem', 
-                lineHeight: 1.4, 
+                fontSize: '1rem', 
+                lineHeight: 1.6, 
                 maxWidth: '520px', 
                 marginBottom: '32px' 
               }}>
                 {userId
-                  ? "Your list is synced. The Sensei's been curating."
-                  : "We analyse your taste, community signals, and genre history to surface anime you'd actually finish — not just what's trending."}
+                  ? "Your collection is synced. Personalized recommendations are ready."
+                  : "We analyze your viewing history, community data, and preferences to surface content you'll genuinely enjoy."}
               </p>
 
               {/* CTAs */}
@@ -485,7 +485,7 @@ function HomePage({ onSearchOpen }) {
                       onMouseLeave={e => { e.currentTarget.style.color = HERO_THEME.textMuted; e.currentTarget.style.borderColor = 'rgba(170, 170, 170, 0.15)'; }}
                     >
                       <MagnifyingGlass size={16} weight="bold" />
-                      Quick search
+                      Search Records
                       <kbd style={{
                         padding: '1px 5px', borderRadius: '4px',
                         background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(170, 170, 170, 0.18)',
@@ -514,7 +514,7 @@ function HomePage({ onSearchOpen }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ width: '2px', height: '16px', background: HERO_THEME.crimson, borderRadius: '99px', display: 'inline-block' }} />
-                <h2 className="font-display font-bold" style={{ color: HERO_THEME.cream, fontSize: '18px' }}>Global Archives</h2>
+                <h2 className="font-display font-bold" style={{ color: HERO_THEME.cream, fontSize: '18px' }}>Library Preview</h2>
               </div>
               <Link
                 to="/all-anime"

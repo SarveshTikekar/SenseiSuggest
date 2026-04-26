@@ -12,8 +12,12 @@ import {
   UserPlus,
   List,
   X,
-  MagnifyingGlass
+  MagnifyingGlass,
+  Bell,
+  Sword,
+  ShieldCheck
 } from '@phosphor-icons/react';
+import { getPendingRequests, processFriendRequest } from '../api';
 
 const WordMark = () => (
   <span
@@ -42,6 +46,8 @@ function Navbar({ onSearchOpen }) {
   const [navUserProfile, setNavUserProfile] = useState(null);
   const [scrolled, setScrolled]             = useState(false);
   const [mobileOpen, setMobileOpen]         = useState(false);
+  const [notifications, setNotifications]   = useState([]);
+  const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -51,14 +57,47 @@ function Navbar({ onSearchOpen }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  const fetchNotifications = async () => {
+    if (!isAuthenticated || !userId) return;
+    try {
+      const data = await getPendingRequests(userId);
+      setNotifications(data);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  };
+
   useEffect(() => {
-    if (!isAuthenticated || !userId) { setNavUserProfile(null); return; }
+    if (!isAuthenticated || !userId) { setNavUserProfile(null); setNotifications([]); return; }
+    
+    // Initial fetch
+    fetchNotifications();
+    
+    // Profile info
     getUserProfile(userId)
       .then(r => setNavUserProfile(r.UserProfile))
       .catch(() => setNavUserProfile(null));
+      
+    // Periodic check for new invites
+    const interval = setInterval(fetchNotifications, 30000); // 30s
+    return () => clearInterval(interval);
   }, [isAuthenticated, userId]);
 
-  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => { setMobileOpen(false); setShowNotifDropdown(false); }, [location.pathname]);
+
+  const handleAction = async (sender_id, action) => {
+    try {
+      await processFriendRequest({
+        sender_id,
+        receiver_id: userId,
+        action
+      });
+      // Refresh notifications immediately
+      await fetchNotifications();
+    } catch (err) {
+      alert("Failed to process request: " + err.message);
+    }
+  };
 
   const isActive = (path) => location.pathname === path;
 
@@ -146,6 +185,84 @@ function Navbar({ onSearchOpen }) {
                         </div>
                       )}
                     </button>
+
+                    {/* Notification Bell */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowNotifDropdown(!showNotifDropdown)}
+                        className={`p-2 rounded-lg transition-all relative ${
+                          showNotifDropdown ? 'text-[#DD0426] bg-[#DD0426]/10' : 'text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/5'
+                        }`}
+                      >
+                        <Bell size={20} weight={notifications.length > 0 ? "fill" : "bold"} />
+                        {notifications.length > 0 && (
+                          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#DD0426] text-[9px] text-white font-black rounded-full flex items-center justify-center border-2 border-[#0D0D0D]">
+                            {notifications.length}
+                          </span>
+                        )}
+                      </button>
+
+                      <AnimatePresence>
+                        {showNotifDropdown && (
+                          <Motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                            className="absolute right-0 mt-3 w-80 bg-[#111111] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl"
+                          >
+                            <div className="p-4 border-b border-white/5 flex items-center justify-between">
+                              <h4 className="text-[10px] font-accent uppercase tracking-[0.2em] text-[#AAAAAA] font-black">Notifications</h4>
+                              {notifications.length > 0 && <span className="text-[9px] font-accent text-[#DD0426] animate-pulse">Action Required</span>}
+                            </div>
+                            
+                            <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
+                              {notifications.length > 0 ? (
+                                notifications.map((notif) => (
+                                  <div key={notif.req_id} className="p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
+                                    <div className="flex items-start gap-3">
+                                      <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 flex-shrink-0">
+                                        <img 
+                                          src={notif.sender?.profilePicture || `https://ui-avatars.com/api/?name=${notif.sender?.userName || 'U'}&background=DD0426&color=fff`} 
+                                          className="w-full h-full object-cover"
+                                          alt=""
+                                        />
+                                      </div>
+                                      <div className="flex-grow">
+                                        <p className="text-[11px] text-[#F5EBE0] font-accent leading-tight">
+                                          <span className="text-[#DD0426] font-black">{notif.sender?.userName}</span> has sent a friend request.
+                                        </p>
+                                        <p className="text-[9px] text-[#AAAAAA] mt-1 opacity-50 uppercase tracking-tighter">Incoming • 24h TTL</p>
+                                        <div className="flex items-center gap-2 mt-3">
+                                          <button 
+                                            onClick={() => handleAction(notif.sender_id, "ACCEPT")}
+                                            className="flex-grow py-1.5 bg-[#DD0426] hover:bg-[#A10A24] text-white text-[9px] font-accent uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5"
+                                          >
+                                            <ShieldCheck size={12} weight="bold" /> Accept
+                                          </button>
+                                          <button 
+                                            onClick={() => handleAction(notif.sender_id, "REJECT")}
+                                            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-[#AAAAAA] hover:text-[#F5EBE0] text-[9px] font-accent uppercase tracking-widest rounded-lg transition-all"
+                                          >
+                                            Dismiss
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="p-10 text-center">
+                                  <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 opacity-20">
+                                    <Sword size={20} className="text-[#AAAAAA]" />
+                                  </div>
+                                  <p className="text-[10px] font-accent uppercase tracking-widest text-[#AAAAAA] opacity-40">No pending requests</p>
+                                </div>
+                              )}
+                            </div>
+                          </Motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                     <button
                       onClick={logout}
                       className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-accent uppercase tracking-widest text-[#AAAAAA] hover:text-[#F5EBE0] hover:bg-white/[0.04] transition-all"
