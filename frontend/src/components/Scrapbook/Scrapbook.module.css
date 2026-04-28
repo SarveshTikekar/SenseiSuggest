@@ -227,7 +227,7 @@
   margin: 30px 0;
   color: #dccfb2;
   opacity: 0.4;
-  font-family: serif;
+  font-family: var(--font-accent);
 }
 
 .scrapbookPage {

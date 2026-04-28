@@ -338,3 +338,7 @@ export const processFriendRequest = async (processData) => {
     body: JSON.stringify(processData),
   });
 };
+
+export const findAllies = async (userId, query) => {
+  return fetchData(`${API_BASE_URL}/allies/find?userId=${userId}&query=${encodeURIComponent(query)}`);
+};

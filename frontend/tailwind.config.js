@@ -5,6 +5,15 @@ export default {
     "./src/**/*.{js,jsx,ts,tsx}"
   ],
   theme: {
+    screens: {
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+      'hd': '1280px',
+      'fullhd': '1920px',
+    },
     extend: {
       colors: {
         /* ================================================================
@@ -26,10 +35,11 @@ export default {
         'anime-border':       '#2A2A2A',
       },
       fontFamily: {
-        'display': ['Outfit', 'sans-serif'],
+        'display': ['Eagle Lake', 'cursive'],
         'sans':    ['Inter', 'sans-serif'],
-        'mono':    ['Space Grotesk', 'sans-serif'],
-        'accent':  ['Space Grotesk', 'sans-serif'],
+        'accent':  ['Oldenburg', 'cursive'],
+        'hand':    ['Patrick Hand', 'cursive'],
+        'calligraphy': ['Tangerine', 'cursive'],
       },
       boxShadow: {
         'ss-card': '0 4px 24px rgba(0,0,0,0.6)',

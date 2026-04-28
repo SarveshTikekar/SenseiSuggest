@@ -4,6 +4,8 @@ import { getUserProfile, getUserScrapbook, getAnimeStats, getPendingRequests, pr
 import { useAuth } from '../context/AuthContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import ScrapbookBook from '../components/Scrapbook/ScrapbookBook';
+import ScrapbookDrawer from '../components/Scrapbook/ScrapbookDrawer';
+import FriendSearchModal from '../components/FriendSearchModal';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   Star,
@@ -44,7 +46,7 @@ const getOtakuRank = (count) => {
 };
 
 const SkeletonProfile = () => (
-  <div className="max-w-screen-xl mx-auto space-y-6">
+  <div className="max-w-[1880px] mx-auto space-y-6">
     {/* ID Card */}
     <div className="ss-card p-6 md:p-8 flex flex-col md:flex-row gap-6 items-center">
       <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl ss-skeleton flex-shrink-0"></div>
@@ -87,6 +89,7 @@ function UserProfilePage() {
   const [error, setError] = useState('');
   const [scrapbookEntries, setScrapbookEntries] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [isFriendSearchOpen, setIsFriendSearchOpen] = useState(false);
   const { userId: currentUserId } = useAuth();
 
   useEffect(() => {
@@ -174,10 +177,10 @@ function UserProfilePage() {
         className="ss-anime-card group"
       >
         <div className="ss-anime-card__img-container">
-          {/* Blurred Backdrop */}
+          {/* Blurred Backdrop - Disabled on mobile for performance */}
           <img 
             src={anime.image_url_base_anime || 'https://placehold.co/400x600/131316/3A3A4A?text=No+Image'} 
-            className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110 pointer-events-none"
+            className="hidden sm:block absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110 pointer-events-none"
             alt=""
             aria-hidden
           />
@@ -218,7 +221,7 @@ function UserProfilePage() {
         
         {list.length > 0 ? (
           <div className="space-y-8">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {displayList.map((anime) => (
                 <AnimeCard key={anime.animeId} anime={anime} />
               ))}
@@ -248,7 +251,7 @@ function UserProfilePage() {
       <Motion.div animate={{ y: [0, -40, 0], opacity: [0.1, 0.3, 0.1] }} transition={{ duration: 10, repeat: Infinity }} className="absolute -top-20 right-10 w-96 h-96 bg-kawaii-accent/20 blur-3xl rounded-full z-0 pointer-events-none" />
       <Motion.div animate={{ x: [0, 50, 0], opacity: [0.1, 0.2, 0.1] }} transition={{ duration: 12, repeat: Infinity }} className="absolute bottom-10 left-10 w-80 h-80 bg-kawaii-tertiary/20 blur-3xl rounded-full z-0 pointer-events-none" />
 
-      <div className="container mx-auto relative z-10 max-w-[1640px] px-4 md:px-8">
+      <div className="container mx-auto relative z-10 max-w-[1880px] px-4 md:px-8">
         <Motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-12">
           
           {/* 3-Column Header Section */}
@@ -424,10 +427,18 @@ function UserProfilePage() {
                   )}
                </div>
                
-               <button className="mt-4 w-full py-2 bg-white/5 rounded-xl text-[9px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em] hover:bg-[#DD0426]/10 hover:text-[#DD0426] transition-all border border-white/5">
+               <button 
+                  onClick={() => setIsFriendSearchOpen(true)}
+                  className="mt-4 w-full py-2 bg-white/5 rounded-xl text-[9px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em] hover:bg-[#DD0426]/10 hover:text-[#DD0426] transition-all border border-white/5"
+               >
                   Find Connections
                </button>
             </Motion.div>
+
+            <FriendSearchModal 
+              open={isFriendSearchOpen} 
+              onClose={() => setIsFriendSearchOpen(false)} 
+            />
 
           </div>
 
@@ -506,12 +517,22 @@ function UserProfilePage() {
                </div>
             </div>
             
-            <div className="max-w-screen-xl mx-auto">
-              <ScrapbookBook 
-                entries={scrapbookEntries} 
-                username={userProfile.userName} 
-                rank={getOtakuRank(userProfile.anime_watched_count || 0).name}
-              />
+            <div className="max-w-[1880px] mx-auto">
+              <div className="hidden lg:block">
+                <ScrapbookBook 
+                  entries={scrapbookEntries} 
+                  username={userProfile.userName} 
+                  rank={getOtakuRank(userProfile.anime_watched_count || 0).name}
+                />
+              </div>
+              <div className="lg:hidden">
+                <ScrapbookDrawer 
+                  photos={scrapbookEntries}
+                  loading={false}
+                  onRemove={() => {}} // Remove not allowed from profile usually
+                  onUpload={() => {}} // Upload not allowed from profile usually
+                />
+              </div>
             </div>
           </div>
 

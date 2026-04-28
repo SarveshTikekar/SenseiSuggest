@@ -171,7 +171,7 @@ const RecommendationPage = () => {
   const topPick = recommendedAnimeDetails[0];
 
   return (
-    <div className="max-w-[1640px] mx-auto px-4 sm:px-6 lg:px-8 py-12 font-inter selection:bg-anime-accent selection:text-white">
+    <div className="max-w-[1880px] mx-auto px-4 sm:px-6 lg:px-8 py-12 font-inter selection:bg-[#DD0426] selection:text-white">
       
       {/* Header Section */}
       <Motion.div 
@@ -179,11 +179,11 @@ const RecommendationPage = () => {
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-16"
       >
-        <span className="text-[#DD0426] text-[11px] font-mono font-black tracking-[0.3em] uppercase mb-3 block">Personalized Analytics</span>
-        <h1 className="text-5xl md:text-6xl font-display font-black text-[#F5EBE0] leading-tight tracking-tight">
+        <span className="text-[#DD0426] text-[10px] font-accent uppercase tracking-[0.3em] mb-3 block">Personalized Analytics</span>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-display text-[#F5EBE0] leading-tight tracking-tight">
           Sensei <span className="text-[#DD0426] italic">Recommendations.</span>
         </h1>
-        <p className="text-[#AAAAAA] mt-4 max-w-xl mx-auto text-sm font-sans leading-relaxed">
+        <p className="text-[#AAAAAA] mt-4 max-w-xl mx-auto text-sm sm:text-base font-hand leading-relaxed opacity-80">
           Algorithmically refined by your unique watch patterns.
         </p>
       </Motion.div>
@@ -302,7 +302,7 @@ const RecommendationPage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 fullhd:grid-cols-8 gap-6">
                   {list.map((anime, idx) => (
                     <Motion.div 
                       key={anime.animeId || `${key}-${idx}`}
@@ -312,9 +312,10 @@ const RecommendationPage = () => {
                       className="ss-anime-card group"
                     >
                       <div className="ss-anime-card__img-container">
+                        {/* Performance optimization: hidden on mobile */}
                         <img 
                           src={anime.image_url_base_anime} 
-                          className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none"
+                          className="hidden sm:block absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-110 pointer-events-none"
                           alt=""
                           aria-hidden
                         />

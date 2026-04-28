@@ -7,6 +7,7 @@ import {
   getUserScrapbook, uploadScrapbookImage, deleteScrapbookImage
 } from '../api';
 import ScrapbookGrid from '../components/Scrapbook/ScrapbookGrid';
+import ScrapbookDrawer from '../components/Scrapbook/ScrapbookDrawer';
 import SeasonTimeline from '../components/SeasonTimeline';
 import { useAuth } from '../context/AuthContext';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
@@ -41,7 +42,7 @@ const SkeletonDetail = () => (
     <div className="relative h-[420px] overflow-hidden">
       <div className="absolute inset-0 ss-skeleton opacity-40" />
     </div>
-    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 -mt-32 relative z-10 pb-20">
+    <div className="max-w-[1880px] mx-auto px-4 sm:px-6 -mt-32 relative z-10 pb-20">
       <div className="flex gap-8">
         <div className="w-44 flex-shrink-0 rounded-xl ss-skeleton" style={{ aspectRatio: '2/3' }} />
         <div className="flex-1 pt-40 space-y-4">
@@ -288,7 +289,7 @@ function AnimeDetailPage() {
         </div>
 
         {/* ── Main content row — sits on top of the hero ── */}
-        <div className="relative z-10 max-w-screen-xl mx-auto px-4 sm:px-6 pt-10 pb-8">
+        <div className="relative z-10 max-w-[1880px] mx-auto px-4 sm:px-6 pt-10 pb-8">
 
           {/* Back button */}
           <Link
@@ -311,10 +312,10 @@ function AnimeDetailPage() {
               >
                 {poster ? (
                   <div className="w-full h-full relative">
-                    {/* Blurred Backdrop */}
+                    {/* Blurred Backdrop - Optimized for mobile */}
                     <img 
                       src={poster} 
-                      className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-40 scale-125 pointer-events-none"
+                      className="hidden sm:block absolute inset-0 w-full h-full object-cover blur-3xl opacity-40 scale-125 pointer-events-none"
                       alt=""
                       aria-hidden
                     />
@@ -526,7 +527,7 @@ function AnimeDetailPage() {
       {/* ══════════════════════════════════════════════════
           BODY CONTENT — synopsis, trailer, rating
           ══════════════════════════════════════════════════ */}
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 pb-20">
+      <div className="max-w-[1880px] mx-auto px-4 sm:px-6 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* ── Left: synopsis + trailer ── */}
@@ -693,8 +694,8 @@ function AnimeDetailPage() {
           SCRAPBOOK GRID (Bottom of page)
           ══════════════════════════════════════════════════ */}
       {userId && animeStatus !== 'none' && (
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 pb-20">
-          <ScrapbookGrid 
+        <div className="max-w-[1880px] mx-auto px-4 sm:px-6">
+          <ScrapbookDrawer 
             photos={scrapbookPhotos} 
             onUpload={handleScrapbookUpload} 
             onRemove={handleScrapbookRemove} 

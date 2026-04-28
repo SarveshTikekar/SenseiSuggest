@@ -1,5 +1,5 @@
 /* SenseiSuggest — Global Styles */
-@import url('https://fonts.googleapis.com/css2?family=Eagle+Lake&family=Oldenburg&family=Tangerine:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Eagle+Lake&family=Oldenburg&family=Patrick+Hand&family=Tangerine:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -176,14 +176,20 @@
 
   /* ── Legacy classes (keeps non-Browse pages working) ── */
   .ss-card {
-    background: rgba(18, 18, 18, 0.8);
-    backdrop-filter: blur(12px);
+    background: rgba(18, 18, 18, 0.95);
     border: 1px solid rgba(170, 170, 170, 0.1);
     border-radius: 1rem;
     box-shadow: 0 10px 40px rgba(0,0,0,0.4);
     position: relative;
     overflow: hidden;
     transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  
+  @media (min-width: 768px) {
+    .ss-card {
+      background: rgba(18, 18, 18, 0.8);
+      backdrop-filter: blur(12px);
+    }
   }
   .ss-card:hover {
     border-color: rgba(221,4,38,0.25);
@@ -328,4 +334,17 @@ main {
   flex-direction: column;
   position: relative;
   z-index: 10;
+  padding: 1.5rem 1rem;
+}
+
+@media (min-width: 768px) {
+  main { padding: 2rem 2rem; }
+}
+
+@media (min-width: 1280px) {
+  main { padding: 2.5rem 3rem; }
+}
+
+@media (min-width: 1920px) {
+  main { padding: 3rem 5rem; }
 }

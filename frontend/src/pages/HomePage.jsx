@@ -360,31 +360,23 @@ function HomePage({ onSearchOpen }) {
 
   return (
     <div className="relative pb-24 min-h-[60vh] w-full" style={{ overflowX: 'clip' }}>
-      <div className="relative" style={{ zIndex: 10, maxWidth: '1280px', margin: '0 auto', padding: '0 1.5rem' }}>
+      <div className="relative" style={{ zIndex: 10, maxWidth: '1880px', margin: '0 auto', padding: '0 1.5rem' }}>
 
         {/* ════════════════ HERO ════════════════ */}
-        <section style={{ paddingTop: '72px', paddingBottom: '64px' }}>
-          <div className="hero-main-grid" style={{ display: 'grid', gap: '28px', alignItems: 'start' }}>
-            <div className="hero-text-area">
+        <section className="pt-12 sm:pt-20 lg:pt-24 pb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr,0.9fr] gap-12 lg:gap-8 items-center">
+            <div className="hero-text-area text-center lg:text-left flex flex-col items-center lg:items-start">
               {/* Eyebrow — line + label, no pill badge */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                <span style={{ width: '28px', height: '1px', background: HERO_THEME.crimson, display: 'inline-block' }} />
-                <span style={{
-                  color: HERO_THEME.textMuted, fontSize: '10px', fontFamily: 'var(--font-accent)',
-                  fontWeight: 400, letterSpacing: '0.2em', textTransform: 'uppercase'
-                }}>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="w-8 h-[1px] bg-[#DD0426] hidden sm:inline-block" />
+                <span className="text-[#AAAAAA] text-[10px] font-accent uppercase tracking-[0.2em]">
                   Anime Discovery Engine
                 </span>
               </div>
 
               {/* Main headline */}
               <h1
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  color: HERO_THEME.cream, lineHeight: 1.1,
-                  letterSpacing: '0.02em', marginBottom: '24px',
-                  fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
-                }}
+                className="font-display text-[#F5EBE0] leading-[1.1] tracking-tight mb-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl fullhd:text-8xl"
               >
                 The Sensei knows<br />
                 <span style={{
@@ -395,47 +387,26 @@ function HomePage({ onSearchOpen }) {
                 </span>
               </h1>
 
-              <p style={{ 
-                fontFamily: 'var(--font-sans)',
-                color: HERO_THEME.textMuted, 
-                fontSize: '1rem', 
-                lineHeight: 1.6, 
-                maxWidth: '520px', 
-                marginBottom: '32px' 
-              }}>
+              <p className="text-[#AAAAAA] text-base sm:text-lg lg:text-xl font-hand leading-relaxed max-w-[520px] mb-10 opacity-80">
                 {userId
                   ? "Your collection is synced. Personalized recommendations are ready."
                   : "We analyze your viewing history, community data, and preferences to surface content you'll genuinely enjoy."}
               </p>
 
               {/* CTAs */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4">
                 {userId ? (
                   <>
                     <Link
                       to="/get_recommendations"
-                      className="ss-btn-primary"
-                      style={{
-                        borderRadius: '10px',
-                        fontSize: '13px',
-                        padding: '10px 20px',
-                        background: `linear-gradient(135deg, ${HERO_THEME.crimson}, #A10A24)`,
-                        boxShadow: '0 6px 24px rgba(221, 4, 38, 0.28)'
-                      }}
+                      className="ss-btn-primary rounded-xl px-6 py-3 text-sm"
+                      style={{ boxShadow: '0 6px 24px rgba(221, 4, 38, 0.28)' }}
                     >
                       My Recommendations <ArrowRight size={14} weight="bold" />
                     </Link>
                     <Link
                       to="/all-anime"
-                      className="ss-btn-ghost"
-                      style={{
-                        borderRadius: '10px',
-                        fontSize: '13px',
-                        padding: '10px 20px',
-                        color: HERO_THEME.cream,
-                        borderColor: 'rgba(170, 170, 170, 0.2)',
-                        background: 'rgba(170, 170, 170, 0.05)',
-                      }}
+                      className="ss-btn-ghost rounded-xl px-6 py-3 text-sm border-[#AAAAAA]/20 bg-[#AAAAAA]/5"
                     >
                       Full Library
                     </Link>
@@ -444,28 +415,14 @@ function HomePage({ onSearchOpen }) {
                   <>
                     <Link
                       to="/signup"
-                      className="ss-btn-primary"
-                      style={{
-                        borderRadius: '10px',
-                        fontSize: '13px',
-                        padding: '10px 20px',
-                        background: `linear-gradient(135deg, ${HERO_THEME.crimson}, #A10A24)`,
-                        boxShadow: '0 6px 24px rgba(221, 4, 38, 0.28)',
-                      }}
+                      className="ss-btn-primary rounded-xl px-6 py-3 text-sm"
+                      style={{ boxShadow: '0 6px 24px rgba(221, 4, 38, 0.28)' }}
                     >
                       Get Started <ArrowRight size={14} weight="bold" />
                     </Link>
                     <Link
                       to="/all-anime"
-                      className="ss-btn-ghost"
-                      style={{
-                        borderRadius: '10px',
-                        fontSize: '13px',
-                        padding: '10px 20px',
-                        color: HERO_THEME.cream,
-                        borderColor: 'rgba(170, 170, 170, 0.2)',
-                        background: 'rgba(170, 170, 170, 0.05)',
-                      }}
+                      className="ss-btn-ghost rounded-xl px-6 py-3 text-sm border-[#AAAAAA]/20 bg-[#AAAAAA]/5"
                     >
                       Browse Anime
                     </Link>
@@ -474,23 +431,11 @@ function HomePage({ onSearchOpen }) {
                 {onSearchOpen && (
                     <button
                       onClick={onSearchOpen}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '7px',
-                        padding: '9px 14px', borderRadius: '10px',
-                        border: '1px solid rgba(170, 170, 170, 0.15)', background: 'rgba(170, 170, 170, 0.05)',
-                        color: HERO_THEME.textMuted, fontSize: '12px', fontFamily: 'Space Grotesk', cursor: 'pointer',
-                        transition: 'color 0.2s, border-color 0.2s',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.color = HERO_THEME.cream; e.currentTarget.style.borderColor = 'rgba(170, 170, 170, 0.35)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.color = HERO_THEME.textMuted; e.currentTarget.style.borderColor = 'rgba(170, 170, 170, 0.15)'; }}
+                      className="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#AAAAAA]/15 bg-[#AAAAAA]/5 text-[#AAAAAA] hover:text-[#F5EBE0] transition-all text-xs font-accent uppercase tracking-wider"
                     >
                       <MagnifyingGlass size={16} weight="bold" />
                       Search Records
-                      <kbd style={{
-                        padding: '1px 5px', borderRadius: '4px',
-                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(170, 170, 170, 0.18)',
-                        fontSize: '10px', fontFamily: 'Space Grotesk', color: HERO_THEME.cream,
-                      }}>⌘K</kbd>
+                      <kbd className="ml-2 px-1.5 py-0.5 rounded bg-black/30 border border-[#AAAAAA]/10 text-[9px] font-mono">⌘K</kbd>
                     </button>
                 )}
               </div>
@@ -498,14 +443,6 @@ function HomePage({ onSearchOpen }) {
 
             <HeroVisualCluster reduceMotion={Boolean(reduceMotion)} />
           </div>
-          <style>{`
-            .hero-main-grid {
-              grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
-            }
-            @media (max-width: 1024px) {
-              .hero-main-grid { grid-template-columns: 1fr; }
-            }
-          `}</style>
         </section>
 
         {/* ════════════════ LIBRARY PREVIEW (MARQUEE) ════════════════ */}

@@ -769,7 +769,7 @@ async def find_allies(userId: int, query: str,supabase: AsyncClient = Depends(ge
 
     """ Simple search for allies based on username """
 
-    resp = await supabase.table("users").select("userName, profilePicture").ilike("userName", f"{query}%").neq("userId", userId).execute()
+    resp = await supabase.table("users").select("userId, userName, profilePicture").ilike("userName", f"{query}%").neq("userId", userId).execute()
     return resp.data
 
 @app.get('/connections/pending/{userId}', status_code=status.HTTP_200_OK)

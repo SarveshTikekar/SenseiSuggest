@@ -9,15 +9,17 @@ const PhotoItem = ({ photo, onRemove }) => {
   return (
     <div 
       className={styles.photoFrameWrapper}
-      onMouseEnter={() => setIsFlipped(true)}
-      onMouseLeave={() => setIsFlipped(false)}
+      onClick={() => setIsFlipped(!isFlipped)}
+      onMouseEnter={() => window.innerWidth > 1024 && setIsFlipped(true)}
+      onMouseLeave={() => window.innerWidth > 1024 && setIsFlipped(false)}
     >
       <Motion.div 
         className={styles.photoFrameInner}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0, rotateY: isFlipped ? 180 : 0 }}
         exit={{ opacity: 0, scale: 0.8 }}
-        transition={{ duration: 0.5, type: "spring", stiffness: 260, damping: 20 }}
+        transition={{ duration: 0.6, type: "spring", stiffness: 200, damping: 25 }}
+        style={{ willChange: 'transform' }}
       >
         {/* Front Side: Full Image */}
         <div className={styles.photoFront}>
@@ -133,7 +135,7 @@ const ScrapbookGrid = ({ photos = [], onUpload, onRemove, loading }) => {
            <h3 className="font-display text-3xl text-[#dd0426] tracking-widest uppercase">
              Cinematic Memories
            </h3>
-           <p className="text-[#8b4513] mt-2 opacity-80" style={{ fontFamily: "'Tangerine', cursive", fontSize: '2.0rem', lineHeight: '1' }}>
+           <p className="text-[#8b4513] mt-2 opacity-80 font-calligraphy text-4xl leading-none">
              Capture and preserve your favorite scenes.
            </p>
         </div>

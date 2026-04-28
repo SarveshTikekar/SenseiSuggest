@@ -56,14 +56,16 @@ const FlipPhotoItem = ({ photo }) => {
   return (
     <div 
       className={styles.photoFrameWrapper}
-      onMouseEnter={() => setIsFlipped(true)}
-      onMouseLeave={() => setIsFlipped(false)}
+      onClick={() => setIsFlipped(!isFlipped)}
+      onMouseEnter={() => window.innerWidth > 1024 && setIsFlipped(true)}
+      onMouseLeave={() => window.innerWidth > 1024 && setIsFlipped(false)}
     >
       <Motion.div 
         className={styles.photoFrameInner}
         initial={false}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ duration: 0.8, type: "spring", stiffness: 100, damping: 20 }}
+        transition={{ duration: 0.7, type: "spring", stiffness: 80, damping: 20 }}
+        style={{ willChange: 'transform' }}
       >
         <div className={styles.photoFront}>
           <div className={styles.washiTape}></div>
@@ -148,25 +150,39 @@ const ScrapbookBook = ({ entries = [], username, rank }) => {
       >
         <Cover username={username} rank={rank}>Scrapbook Cover</Cover>
 
-        {animeGroupKeys.map((key, index) => (
-          <Page key={key}>
-            <div className="text-center mb-6 border-b border-[#dd0426]/30 pb-4">
-              <h2 className="font-display text-lg font-black text-[#dd0426] tracking-[0.1em] uppercase px-4 leading-tight">
-                {groups[key].name}
-              </h2>
-            </div>
-            
-            <div className="flex-grow overflow-y-auto pr-6 space-y-12 custom-scrollbar">
-              {groups[key].items.slice(0, 6).map((photo) => (
-                <FlipPhotoItem key={photo.id || photo.screenshotUrl} photo={photo} />
-              ))}
-            </div>
-            
-            <div className="absolute bottom-6 left-0 right-0 text-center font-mono text-[10px] text-[#8b4513]/40 tracking-widest uppercase">
-              Chronicle Page {index + 1}
-            </div>
-          </Page>
-        ))}
+        {animeGroupKeys.map((key) => {
+          const animeItems = groups[key].items;
+          const itemsPerPage = 2;
+          const pagesNeeded = Math.ceil(animeItems.length / itemsPerPage);
+          const pageChunks = [];
+          
+          for (let i = 0; i < pagesNeeded; i++) {
+            pageChunks.push(animeItems.slice(i * itemsPerPage, (i + 1) * itemsPerPage));
+          }
+
+          return pageChunks.map((chunk, chunkIndex) => (
+            <Page key={`${key}-page-${chunkIndex}`}>
+              <div className="text-center mb-8 border-b border-[#dd0426]/30 pb-4">
+                <h2 className="font-display text-lg font-black text-[#dd0426] tracking-[0.1em] uppercase px-4 leading-tight">
+                  {groups[key].name}
+                </h2>
+                <p className="text-[9px] font-accent uppercase tracking-widest opacity-40 mt-1">
+                  Collection — Part {chunkIndex + 1}
+                </p>
+              </div>
+              
+              <div className="flex-grow space-y-10 flex flex-col items-center">
+                {chunk.map((photo) => (
+                  <FlipPhotoItem key={photo.id || photo.screenshotUrl} photo={photo} />
+                ))}
+              </div>
+              
+              <div className="absolute bottom-6 left-0 right-0 text-center font-mono text-[9px] text-[#8b4513]/40 tracking-widest uppercase">
+                {groups[key].name} // Chronicle {chunkIndex + 1}
+              </div>
+            </Page>
+          ));
+        })}
         
         <Cover username={username} rank={rank}>Back Cover</Cover>
       </HTMLFlipBook>

@@ -112,7 +112,7 @@ function Navbar({ onSearchOpen }) {
         }`}
         style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
       >
-        <div className="max-w-full px-6 sm:px-10 h-14 flex items-center justify-between gap-4">
+        <div className="max-w-[1880px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
 
           {/* logo */}
           <Link to="/" className="flex items-center gap-1 group flex-shrink-0">

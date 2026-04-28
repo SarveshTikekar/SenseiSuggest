@@ -38,9 +38,9 @@ const AnimeCard = ({ anime, index }) => {
         className="ss-anime-card group"
       >
         <div className="ss-anime-card__img-container">
-          {/* Blurred Backdrop */}
+          {/* Blurred Backdrop - Disabled on mobile for performance */}
           <img 
-            className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110 pointer-events-none"
+            className="hidden sm:block absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110 pointer-events-none"
             src={anime.image_url_base_anime || ''} 
             alt=""
             aria-hidden
@@ -115,26 +115,26 @@ function BrowseAnimePage() {
   );
 
   return (
-    <div className="max-w-[1640px] mx-auto py-10 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-[1880px] mx-auto py-10 px-4 sm:px-6 lg:px-8">
 
       {/* Header — compact, no wasted space */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', color: '#F5EBE0', fontSize: 'clamp(1.5rem,3vw,2.5rem)', letterSpacing: '0.02em' }}>
+          <h1 className="font-display text-[#F5EBE0] text-3xl sm:text-4xl lg:text-5xl" style={{ letterSpacing: '0.02em' }}>
             Library
           </h1>
-          <p style={{ color: '#AAAAAA', fontSize: '11px', fontFamily: 'var(--font-accent)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <p className="text-[#AAAAAA] text-[10px] sm:text-[11px] font-accent mt-1 uppercase tracking-wider">
             {animeList.length.toLocaleString()} titles · page {currentPage}/{total}
           </p>
         </div>
 
         {/* Sort controls — right side, compact */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Funnel size={14} weight="bold" style={{ color: '#AAAAAA' }} />
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
-            style={{ fontSize: '12px', fontFamily: 'var(--font-accent)', minWidth: '130px', padding: '6px 28px 6px 10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+            style={{ fontSize: '11px', fontFamily: 'var(--font-accent)', minWidth: '120px', padding: '6px 28px 6px 10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
           >
             <option value="animeName">By Name</option>
             <option value="releaseDate">By Date</option>
@@ -144,7 +144,7 @@ function BrowseAnimePage() {
             onClick={() => setSortOrder(p => p === 'asc' ? 'desc' : 'asc')}
             className="flex items-center gap-1.5 transition-all"
             style={{
-              padding: '6px 12px', borderRadius: '8px', fontSize: '11px', fontFamily: 'var(--font-accent)',
+              padding: '6px 12px', borderRadius: '8px', fontSize: '10px', fontFamily: 'var(--font-accent)',
               fontWeight: 400, letterSpacing: '0.05em', textTransform: 'uppercase',
               background: sortOrder === 'asc' ? 'rgba(221,4,38,0.1)' : 'rgba(186,175,184,0.05)',
               border: `1px solid ${sortOrder === 'asc' ? 'rgba(221,4,38,0.25)' : 'rgba(186,175,184,0.15)'}`,
@@ -170,14 +170,14 @@ function BrowseAnimePage() {
         </div>
       </div>
 
-      {/* Grid — 4 cols, larger image cards */}
+      {/* Grid — responsive columns from mobile to 1080p */}
       {animeList.length === 0 ? (
-        <div className="py-32 text-center" style={{ color: '#AAAAAA', fontFamily: 'var(--font-accent)', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        <div className="py-32 text-center text-[#AAAAAA] font-accent text-[12px] uppercase tracking-widest">
           No anime found in the library.
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 fullhd:grid-cols-8 gap-6">
             {paged.map((anime, i) => <AnimeCard key={anime.animeId} anime={anime} index={i} />)}
           </div>
 
