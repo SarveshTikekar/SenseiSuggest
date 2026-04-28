@@ -677,6 +677,13 @@ async def user_profile(user_id: int, supabase: AsyncClient = Depends(get_supabas
         ) for item in result.get("user_bookmarked_anime", []) if item.get("anime")
     ]
 
+    # 4. Resolve Friend Details
+    friend_ids = result.get("friends", []) or []
+    friend_info_list = []
+    if friend_ids:
+        friends_resp = await supabase.table("users").select("userId, userName, profilePicture").in_("userId", friend_ids).execute()
+        friend_info_list = [FriendInfo(**f) for f in friends_resp.data]
+
     userProfileObj = UserProfile(
         userId = result["userId"],
         userName = result["userName"],
@@ -685,6 +692,7 @@ async def user_profile(user_id: int, supabase: AsyncClient = Depends(get_supabas
         watchedAnime=watchedList,
         watchingAnime=watchingList,
         bookmarkedAnime=bookmarkedList,
+        friends=friend_info_list
     )
 
     return {"UserProfile": userProfileObj, "message": "User profile fetched successfully"}
@@ -753,6 +761,14 @@ async def friend_request_process(requestData: FriendRequestProcess, supabase: As
         await supabase.table("users").update({"friends": list(receiver_friends)}).eq("userId", requestData.receiver_id).execute()
 
         status_update = "ACCEPTED"
+        
+        # 3. Create Notification for the Sender
+        await supabase.table("notifications").insert({
+            "userId": requestData.sender_id,
+            "content": f"Your Ally Request to {receiver_resp.data['userName']} has been accepted!",
+            "type": "FRIEND_ACCEPT",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }).execute()
     else:
         status_update = "REJECTED"
     
@@ -802,6 +818,11 @@ async def search_anime(query: str, supabase: AsyncClient = Depends(get_supabase)
     return anime_ids
 
 # An API for testing
+@app.get('/notifications/{userId}', status_code=status.HTTP_200_OK)
+async def get_notifications(userId: int, supabase: AsyncClient = Depends(get_supabase)):
+    resp = await supabase.table("notifications").select("*").eq("userId", userId).order("created_at", desc=True).limit(20).execute()
+    return resp.data
+
 @app.get('/SenseiSuggest/testing', status_code=status.HTTP_200_OK)
 async def testing(supabase: AsyncClient = Depends(get_supabase)):
 

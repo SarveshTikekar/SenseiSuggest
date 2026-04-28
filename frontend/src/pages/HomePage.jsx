@@ -102,17 +102,19 @@ const HeroCarouselPortal = ({ i, rotation, character, springX, springY }) => {
   const baseAngle = i * 72;
   const angle = useTransform(rotation, (r) => (r + baseAngle) % 360);
   
-  const orbitRadius = 310;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const orbitRadius = isMobile ? 140 : 310;
   const rad = useTransform(angle, (a) => (a * Math.PI) / 180);
   
   const x = useTransform(rad, (r) => Math.sin(r) * orbitRadius);
   const zIndex = useTransform(rad, (r) => Math.round(Math.cos(r) * 10) + 10);
-  const scale = useTransform(rad, (r) => 0.6 + (Math.cos(r) + 1) * 0.2);
+  const scale = useTransform(rad, (r) => isMobile ? 0.45 + (Math.cos(r) + 1) * 0.15 : 0.6 + (Math.cos(r) + 1) * 0.2);
   const opacity = useTransform(rad, (r) => 0.3 + (Math.cos(r) + 1) * 0.3);
-  const yOffset = useTransform(rad, (r) => Math.cos(r) * 60);
+  const yOffset = useTransform(rad, (r) => Math.cos(r) * (isMobile ? 30 : 60));
 
-  const finalX = useTransform([x, springX], ([lat, m]) => lat + (m - 960) * 0.04);
-  const finalY = useTransform([yOffset, springY], ([vert, m]) => vert + (m - 540) * 0.04);
+  // Disable mouse follow on mobile to prevent coordinate jumps
+  const finalX = useTransform([x, springX], ([lat, m]) => isMobile ? lat : lat + (m - 960) * 0.04);
+  const finalY = useTransform([yOffset, springY], ([vert, m]) => isMobile ? vert : vert + (m - 540) * 0.04);
 
   const [visCharacter, setVisCharacter] = useState(character);
   const coinRotateY = useMotionValue(0);
@@ -182,6 +184,7 @@ const HeroCarouselPortal = ({ i, rotation, character, springX, springY }) => {
 };
 
 const HeroVisualCluster = ({ reduceMotion }) => {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const [portalIndices, setPortalIndices] = useState([0, 2, 4, 6, 8]);
   
   const mouseX = useMotionValue(960);
@@ -236,7 +239,8 @@ const HeroVisualCluster = ({ reduceMotion }) => {
         </div>
         <div className="hero-mosaic-glow" />
 
-        {[0, 1, 2, 3, 4].map((i) => (
+        {/* Render 3 coins on mobile, 5 on desktop */}
+        {(isMobile ? [0, 2, 4] : [0, 1, 2, 3, 4]).map((i) => (
           <HeroCarouselPortal 
             key={`portal-${i}`}
             i={i}
@@ -293,6 +297,8 @@ const HeroVisualCluster = ({ reduceMotion }) => {
           transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
           box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(221, 4, 38, 0.1);
           cursor: pointer;
+          will-change: transform;
+          backface-visibility: hidden;
         }
         .hero-mosaic-card:hover {
           transform: scale(1.05) !important;

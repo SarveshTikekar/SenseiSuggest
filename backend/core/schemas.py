@@ -202,6 +202,11 @@ class AnimesForUserProfile(BaseModel):
     animeName: str
     image_url_base_anime: Optional[str] = None
 
+class FriendInfo(BaseModel):
+    userId: int
+    userName: str
+    profilePicture: Optional[str] = None
+
 class UserProfile(BaseModel):
     userId: int
     userName: str
@@ -210,7 +215,7 @@ class UserProfile(BaseModel):
     watchedAnime: List[AnimesForUserProfile] = Field([])
     watchingAnime: List[AnimesForUserProfile] = Field([])
     bookmarkedAnime: List[AnimesForUserProfile] = Field([])
-    friends: List[int] = Field([])
+    friends: List[FriendInfo] = Field([])
 
     @computed_field
     @property

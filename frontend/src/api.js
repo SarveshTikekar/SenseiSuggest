@@ -342,3 +342,7 @@ export const processFriendRequest = async (processData) => {
 export const findAllies = async (userId, query) => {
   return fetchData(`${API_BASE_URL}/allies/find?userId=${userId}&query=${encodeURIComponent(query)}`);
 };
+
+export const getNotifications = async (userId) => {
+  return fetchData(`${API_BASE_URL}/notifications/${userId}`);
+};

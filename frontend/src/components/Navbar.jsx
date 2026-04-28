@@ -17,7 +17,7 @@ import {
   Sword,
   ShieldCheck
 } from '@phosphor-icons/react';
-import { getPendingRequests, processFriendRequest } from '../api';
+import { getPendingRequests, processFriendRequest, getNotifications } from '../api';
 
 const WordMark = () => (
   <span
@@ -37,8 +37,8 @@ const WordMark = () => (
 );
 
 const NAV_LINKS = [
-  { label: 'Discover', to: '/get_recommendations', icon: Compass },
-  { label: 'Browse',   to: '/all-anime',            icon: SquaresFour },
+  { label: 'Discovery', to: '/get_recommendations', icon: Compass },
+  { label: 'Archives',  to: '/all-anime',           icon: SquaresFour },
 ];
 
 function Navbar({ onSearchOpen }) {
@@ -60,8 +60,18 @@ function Navbar({ onSearchOpen }) {
   const fetchNotifications = async () => {
     if (!isAuthenticated || !userId) return;
     try {
-      const data = await getPendingRequests(userId);
-      setNotifications(data);
+      const [pending, general] = await Promise.all([
+        getPendingRequests(userId),
+        getNotifications(userId)
+      ]);
+      
+      // Combine them: Pending requests have 'sender' object, general ones have 'content'
+      const combined = [
+        ...pending.map(p => ({ ...p, type: 'INVITE' })),
+        ...general.map(g => ({ ...g, type: 'ALERT' }))
+      ].sort((a, b) => new Date(b.created_at || b.req_created_at) - new Date(a.created_at || a.req_created_at));
+      
+      setNotifications(combined);
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
     }
@@ -217,35 +227,50 @@ function Navbar({ onSearchOpen }) {
                             
                             <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
                               {notifications.length > 0 ? (
-                                notifications.map((notif) => (
-                                  <div key={notif.req_id} className="p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
+                                notifications.map((notif, idx) => (
+                                  <div key={notif.id || notif.req_id || idx} className="p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
                                     <div className="flex items-start gap-3">
-                                      <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 flex-shrink-0">
-                                        <img 
-                                          src={notif.sender?.profilePicture || `https://ui-avatars.com/api/?name=${notif.sender?.userName || 'U'}&background=DD0426&color=fff`} 
-                                          className="w-full h-full object-cover"
-                                          alt=""
-                                        />
+                                      <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 flex-shrink-0 bg-white/5 flex items-center justify-center">
+                                        {notif.type === 'INVITE' ? (
+                                          <img 
+                                            src={notif.sender?.profilePicture || `https://ui-avatars.com/api/?name=${notif.sender?.userName || 'U'}&background=DD0426&color=fff`} 
+                                            className="w-full h-full object-cover"
+                                            alt=""
+                                          />
+                                        ) : (
+                                          <Bell size={20} className="text-[#DD0426]" weight="fill" />
+                                        )}
                                       </div>
                                       <div className="flex-grow">
                                         <p className="text-[11px] text-[#F5EBE0] font-accent leading-tight">
-                                          <span className="text-[#DD0426] font-black">{notif.sender?.userName}</span> has sent a friend request.
+                                          {notif.type === 'INVITE' ? (
+                                            <>
+                                              <span className="text-[#DD0426] font-black">{notif.sender?.userName}</span> has sent a friend request.
+                                            </>
+                                          ) : (
+                                            notif.content
+                                          )}
                                         </p>
-                                        <p className="text-[9px] text-[#AAAAAA] mt-1 opacity-50 uppercase tracking-tighter">Incoming • 24h TTL</p>
-                                        <div className="flex items-center gap-2 mt-3">
-                                          <button 
-                                            onClick={() => handleAction(notif.sender_id, "ACCEPT")}
-                                            className="flex-grow py-1.5 bg-[#DD0426] hover:bg-[#A10A24] text-white text-[9px] font-accent uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5"
-                                          >
-                                            <ShieldCheck size={12} weight="bold" /> Accept
-                                          </button>
-                                          <button 
-                                            onClick={() => handleAction(notif.sender_id, "REJECT")}
-                                            className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-[#AAAAAA] hover:text-[#F5EBE0] text-[9px] font-accent uppercase tracking-widest rounded-lg transition-all"
-                                          >
-                                            Dismiss
-                                          </button>
-                                        </div>
+                                        <p className="text-[9px] text-[#AAAAAA] mt-1 opacity-50 uppercase tracking-tighter">
+                                          {notif.type === 'INVITE' ? 'Incoming • 24h TTL' : 'Status Update'}
+                                        </p>
+                                        
+                                        {notif.type === 'INVITE' && (
+                                          <div className="flex items-center gap-2 mt-3">
+                                            <button 
+                                              onClick={() => handleAction(notif.sender_id, "ACCEPT")}
+                                              className="flex-grow py-1.5 bg-[#DD0426] hover:bg-[#A10A24] text-white text-[9px] font-accent uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-1.5"
+                                            >
+                                              <ShieldCheck size={12} weight="bold" /> Accept
+                                            </button>
+                                            <button 
+                                              onClick={() => handleAction(notif.sender_id, "REJECT")}
+                                              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-[#AAAAAA] hover:text-[#F5EBE0] text-[9px] font-accent uppercase tracking-widest rounded-lg transition-all"
+                                            >
+                                              Dismiss
+                                            </button>
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
                                   </div>
@@ -253,9 +278,9 @@ function Navbar({ onSearchOpen }) {
                               ) : (
                                 <div className="p-10 text-center">
                                   <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3 opacity-20">
-                                    <Sword size={20} className="text-[#AAAAAA]" />
+                                    <ShieldCheck size={20} className="text-[#AAAAAA]" />
                                   </div>
-                                  <p className="text-[10px] font-accent uppercase tracking-widest text-[#AAAAAA] opacity-40">No pending requests</p>
+                                  <p className="text-[10px] font-accent uppercase tracking-widest text-[#AAAAAA] opacity-40">All quiet in the archives</p>
                                 </div>
                               )}
                             </div>

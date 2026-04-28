@@ -162,7 +162,7 @@ function AnimeDetailPage() {
       if (type === 'watching') await removeFromWatching({ userId, animeId: anime.animeId });
       else                     await removeFromWatched({ userId, animeId: anime.animeId });
       setStatus('none');
-      setListMsg('Removed from list.');
+      setListMsg('Record purged from your archives.');
     } catch (e) { setListMsg(`Error: ${e.message}`); }
     finally { setProcessing(false); }
   };

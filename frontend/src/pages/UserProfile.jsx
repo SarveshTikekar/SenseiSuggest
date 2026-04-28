@@ -407,13 +407,17 @@ function UserProfilePage() {
 
                   {/* Connections List */}
                   {userProfile.friends && userProfile.friends.length > 0 ? (
-                    userProfile.friends.map((friendId, i) => (
+                    userProfile.friends.map((friend, i) => (
                       <div key={i} className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.02] border border-transparent hover:border-white/5 hover:bg-white/[0.04] transition-all cursor-pointer group/item">
                          <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-[#111] flex items-center justify-center">
-                            <UserCircle size={18} className="text-[#333] group-hover/item:text-[#DD0426] transition-colors" />
+                            {friend.profilePicture ? (
+                              <img src={friend.profilePicture} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <UserCircle size={18} className="text-[#333] group-hover/item:text-[#DD0426] transition-colors" />
+                            )}
                          </div>
                          <div className="flex-grow min-w-0">
-                            <p className="text-[11px] font-accent text-[#F5EBE0] truncate group-hover/item:text-[#DD0426] transition-colors">User #{friendId}</p>
+                            <p className="text-[11px] font-accent text-[#F5EBE0] truncate group-hover/item:text-[#DD0426] transition-colors">{friend.userName}</p>
                             <p className="text-[8px] font-accent text-[#AAAAAA] uppercase tracking-tighter opacity-60">Active Connection</p>
                          </div>
                          <div className="w-1 h-1 rounded-full bg-[#DD0426] opacity-0 group-hover/item:opacity-100 transition-opacity" />
