@@ -80,11 +80,7 @@ Make sure you have the following installed:
 *   [PostgreSQL](https://www.postgresql.org/) (or your preferred SQL database)
 
 ### Backend Setup
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
-2. Create and activate a virtual environment:
+1. Create and activate a virtual environment in the project root:
    ```bash
    python -m venv venv
    source venv/bin/activate  # On Windows use `venv\Scripts\activate`

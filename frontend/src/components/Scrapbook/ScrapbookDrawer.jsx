@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion as Motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { CaretUp, CaretDown, Notebook, PencilSimple as Pencil } from '@phosphor-icons/react';
 import ScrapbookGrid from './ScrapbookGrid';
 

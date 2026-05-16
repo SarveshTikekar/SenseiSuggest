@@ -73,50 +73,6 @@ async def get_topn(count: int, supabase: AsyncClient = Depends(get_supabase)):
     response = await supabase.table("anime").select("*").order("releaseDate", desc=True).limit(count).execute()
     return response.data
 
-#Returns the top rated anime
-@app.get("/anime/top-rated", status_code=status.HTTP_200_OK)
-async def get_top_rated(supabase: AsyncClient = Depends(get_supabase)) -> dict:
-    
-    # Since PostgREST doesn't support complex aggregations natively, we fetch aggregated data or calculate it.
-    # For production, an RPC or View in Supabase is recommended. Here we compute it in Python.
-    response = await supabase.table("ratings").select("score, anime(animeId, animeName, releaseDate, image_url_base_anime)").execute()
-    ratings_data = response.data
-    
-    if not ratings_data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No ratings found")
-    
-    anime_stats = {}
-    for r in ratings_data:
-        anime = r.get("anime")
-        if not anime: continue
-        a_id = anime["animeId"]
-        if a_id not in anime_stats:
-            anime_stats[a_id] = {"anime": anime, "total": 0, "positive": 0}
-        
-        anime_stats[a_id]["total"] += 1
-        if r["score"] >= 6:
-            anime_stats[a_id]["positive"] += 1
-            
-    best_ratio = -1
-    best_anime = None
-    
-    for a_id, stats in anime_stats.items():
-        ratio = (stats["positive"] * 100.0) / stats["total"]
-        if ratio > best_ratio:
-            best_ratio = ratio
-            best_anime = stats["anime"]
-
-    if not best_anime:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Anime not found")
-    
-    dict = {
-        "animeName" : best_anime["animeName"],
-        "releaseDate": best_anime["releaseDate"],
-        "image_url_base_anime": best_anime["image_url_base_anime"],
-        "Positivity Percentage": best_ratio
-    }
-
-    return dict
 
 #Sorting logic
 @app.get('/anime/sort', status_code=status.HTTP_200_OK)
@@ -128,10 +84,6 @@ async def sort_results(sort_param: str, sort_order: str, supabase: AsyncClient =
 
     return response.data
 
-#Filtering logic
-@app.get('/anime/filter', status_code=status.HTTP_200_OK)
-async def apply_filter(supabase: AsyncClient = Depends(get_supabase)):
-    pass
 #Get all anime
 @app.get("/anime/all", status_code=status.HTTP_200_OK)
 async def get_all_anime(supabase: AsyncClient = Depends(get_supabase)):
@@ -345,51 +297,6 @@ async def recommendations(user_id: int, supabase: AsyncClient = Depends(get_supa
         "is_cold_start": is_cold_start,
         "message": f"Great Recommendations generated for {user_id}"
     }
-
-#For admin side APIs where ADMIN_ID is fetched from env to prevent unauthorized access
-@app.post("/add_season", status_code=status.HTTP_200_OK)
-async def add_season(seasonData: SeasonsCreate, supabase: AsyncClient = Depends(get_supabase)):
-
-    seasonObj = {
-        "animeId": seasonData.animeId,
-        "seasonNumber": seasonData.seasonNumber,
-        "seasonName": seasonData.seasonName,
-        "seasonInfo": seasonData.seasonInfo,
-        "seasonTrailer": seasonData.seasonTrailer,
-        "seasonImage": seasonData.seasonImage,
-    }
-
-    try:
-        await supabase.table("seasons").insert(seasonObj).execute()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Season couldn't be added")
-    
-    return {'message': f"Season for {seasonData.animeName} added successfully"}
-    
-
-#To add new genres
-@app.post("/add_genre", status_code=status.HTTP_200_OK)
-async def add_genre(genre: genreCreate, user_id: int = 8, supabase: AsyncClient = Depends(get_supabase)):
-    
-    if user_id != int(ADMIN_ID):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail=f"User is prohibited from doing this action")
-
-    pass
-
-#To get all genres
-@app.get('/genres/all')
-async def get_all_genres(supabase: AsyncClient = Depends(get_supabase)):
-
-    response = await supabase.table("genres").select("*").execute()
-    return response.data
-
-#To get all seasons
-@app.get('/seasons/all')
-async def get_all_seasons(supabase: AsyncClient = Depends(get_supabase)):
-
-    response = await supabase.table("seasons").select("*").execute()
-    return response.data
-
 
 @app.get('/get_cities/{stateName}')
 async def get_cities(stateName: str, supabase: AsyncClient = Depends(get_supabase)):
@@ -817,14 +724,25 @@ async def search_anime(query: str, supabase: AsyncClient = Depends(get_supabase)
     anime_ids = [item["animeId"] for item in response.data if item.get("animeId")]
     return anime_ids
 
-# An API for testing
-@app.get('/notifications/{userId}', status_code=status.HTTP_200_OK)
-async def get_notifications(userId: int, supabase: AsyncClient = Depends(get_supabase)):
-    resp = await supabase.table("notifications").select("*").eq("userId", userId).order("created_at", desc=True).limit(20).execute()
+# API Endpoints for handling ratings and reviews
+""" API for submiting / updating a review and rating for an anime"""
+@app.post('/rate_anime', status_code=status.HTTP_201_CREATED)
+async def rate_anime(ratingData: RatingData, supabase: AsyncClient = Depends(get_supabase)):
+
+    """ Either create a new record or update the existing one for the user-anime pair"""
+    now = datetime.now(timezone.utc).isoformat()
+    rating_payload = RatingAdd(**ratingData.model_dump(), created_at=now, updated_at=now)
+    
+    resp = await supabase.table("ratings").upsert(
+        rating_payload.model_dump(mode='json'), 
+        on_conflict="userId,animeId"
+    ).execute()
+
     return resp.data
+    
 
 @app.get('/SenseiSuggest/testing', status_code=status.HTTP_200_OK)
 async def testing(supabase: AsyncClient = Depends(get_supabase)):
 
-    resp = await supabase.table("users").select("friends").eq("userId", 6).execute()
-    return resp
+    resp = await supabase.table("ratings").select("*").execute()
+    return resp.data

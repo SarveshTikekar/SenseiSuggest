@@ -99,7 +99,8 @@ function AnimeDetailPage() {
   const [animeStatus, setStatus]    = useState('none'); // 'none' | 'watching' | 'watched'
   const [listMsg, setListMsg]       = useState('');
   const [processing, setProcessing] = useState(false);
-  const [rating, setRating]         = useState('');
+  const [rating, setRating]         = useState(0);
+  const [reviewText, setReviewText] = useState('');
   const [ratingMsg, setRatingMsg]   = useState({ type: '', text: '' });
   const [imgError, setImgError]     = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -191,14 +192,28 @@ function AnimeDetailPage() {
     e.preventDefault();
     setRatingMsg({ type: '', text: '' });
     if (!userId) { setRatingMsg({ type: 'error', text: 'Log in to rate anime.' }); return; }
-    const score = parseInt(rating);
-    if (isNaN(score) || score < 1 || score > 10) { setRatingMsg({ type: 'error', text: 'Enter a score from 1 to 10.' }); return; }
+    
+    if (rating === 0) {
+      setRatingMsg({ type: 'error', text: 'Please select a star rating.' });
+      return;
+    }
+
+    const finalScore = Math.round(rating);
+
+    setProcessing(true);
     try {
-      await rateAnime({ userId, animeId: anime.animeId, score, review_text: 'User rated via Sensei Suggest' });
-      setRatingMsg({ type: 'success', text: `Rated ${score}/10` });
-      setRating('');
+      await rateAnime({ 
+        userId, 
+        animeId: anime.animeId, 
+        score: finalScore, 
+        review_text: reviewText || 'User rated via Sensei Suggest' 
+      });
+      setRatingMsg({ type: 'success', text: `Review chronicles updated! Rated ${finalScore}/10` });
+      setReviewText('');
     } catch (e) {
-      setRatingMsg({ type: 'error', text: e.message || 'Failed to submit.' });
+      setRatingMsg({ type: 'error', text: e.message || 'Failed to submit chronicles.' });
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -593,66 +608,135 @@ function AnimeDetailPage() {
               </div>
             )}
 
-            {/* Rate This Anime */}
-            <div
-              className="rounded-xl p-5"
-              style={{ background: 'rgba(186,175,184,0.03)', border: '1px solid rgba(186,175,184,0.15)' }}
+
+            {/* Review Chronicle Module */}
+            <section
+              className="rounded-xl overflow-hidden border border-[#AAAAAA]/10"
+              style={{ background: 'rgba(186,175,184,0.03)' }}
             >
-              <h3 className="text-[#AAAAAA] opacity-60 text-[10px] font-accent uppercase tracking-widest mb-4">Your Rating</h3>
+              <div className="p-5 border-b border-[#AAAAAA]/10">
+                <h3 className="text-[#F5EBE0] text-xs font-display flex items-center gap-2">
+                  <span className="w-0.5 h-3 bg-[#DD0426]" />
+                  Rating & Review
+                </h3>
+              </div>
+              
+              <div className="p-5 space-y-8 relative">
+                {/* Background Accent */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#DD0426]/5 blur-[60px] pointer-events-none" />
 
-              {ratingMsg.text && (
-                <div
-                  className="mb-3 px-3 py-2 rounded-lg text-xs font-accent"
-                  style={{
-                    background: ratingMsg.type === 'success' ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
-                    border: `1px solid ${ratingMsg.type === 'success' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
-                    color: ratingMsg.type === 'success' ? '#22C55E' : '#EF4444',
-                  }}
-                >
-                  {ratingMsg.text}
-                </div>
-              )}
+                {userId ? (
+                  <form onSubmit={handleRate} className="space-y-8 relative z-10">
+                    {/* Direct Drag Caliper Section */}
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[#AAAAAA] text-[9px] font-accent uppercase tracking-widest">Score</p>
+                        <div className="flex items-baseline gap-0.5">
+                          <span className="text-[#DD0426] font-display text-3xl leading-none">
+                            {rating ? Math.round(rating) : 0}
+                          </span>
+                          <span className="text-[#AAAAAA]/30 text-[9px] font-accent tracking-tighter">/ 10</span>
+                        </div>
+                      </div>
+                      
+                      {/* Caliper Track */}
+                      <div className="relative h-14 bg-white/[0.02] rounded-xl border border-white/[0.05] overflow-visible">
 
-              {userId ? (
-                <form onSubmit={handleRate} className="space-y-3">
-                  {/* Star selector row */}
-                  <div className="flex gap-1">
-                    {[2, 4, 6, 8, 10].map(val => (
-                      <button
-                        key={val}
-                        type="button"
-                        onClick={() => setRating(String(val))}
-                        className="flex-1 py-2 rounded-lg text-xs font-accent transition-all"
-                        style={{
-                          background: parseInt(rating) >= val ? 'rgba(221,4,38,0.15)' : 'rgba(186,175,184,0.05)',
-                          border: `1px solid ${parseInt(rating) >= val ? 'rgba(221,4,38,0.3)' : 'rgba(186,175,184,0.15)'}`,
-                          color: parseInt(rating) >= val ? '#DD0426' : '#AAAAAA',
-                        }}
+                        {/* Number Line — centered vertically */}
+                        <div className="absolute inset-0 flex items-center px-4">
+                          {/* Scale baseline */}
+                          <div className="absolute left-4 right-4 h-[1px] bg-white/10" />
+
+                          {/* Numbers + ticks */}
+                          <div className="relative w-full flex justify-between items-center">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => {
+                              const isSelected = Math.round(rating) === num;
+                              return (
+                                <div
+                                  key={num}
+                                  onClick={() => setRating(num)}
+                                  className="flex flex-col items-center gap-1 cursor-pointer"
+                                  style={{ width: '10%' }}
+                                >
+                                  <Motion.span
+                                    animate={{
+                                      scale: isSelected ? 1.4 : 1,
+                                      opacity: isSelected ? 1 : 0.45,
+                                      color: isSelected ? '#DD0426' : '#F5EBE0'
+                                    }}
+                                    transition={{ type: 'spring', damping: 20, stiffness: 1000 }}
+                                    className="font-display text-[11px] leading-none"
+                                  >
+                                    {num}
+                                  </Motion.span>
+                                  <div className={`w-px ${num % 5 === 0 ? 'h-2.5 bg-[#DD0426]/50' : 'h-1.5 bg-white/20'}`} />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Lens — anchored to exact same left/right as numbers */}
+                        <div className="absolute left-4 right-4 top-0 bottom-0 pointer-events-none">
+                          <Motion.div
+                            className="absolute top-1/2 -translate-y-1/2 border-2 border-[#DD0426] rounded-lg bg-[#DD0426]/5"
+                            animate={{
+                              left: `calc(5% + (90% * ${(rating - 1) / 9}) - 1.25rem)`,
+                              boxShadow: '0 0 18px rgba(221,4,38,0.25)'
+                            }}
+                            transition={{ type: 'spring', damping: 80, stiffness: 5000 }}
+                            style={{ width: '2.5rem', height: '2.75rem' }}
+                          >
+                            <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-0.5 h-3 bg-[#DD0426] rounded-full shadow-[0_0_6px_rgba(221,4,38,0.8)]" />
+                            <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-0.5 h-3 bg-[#DD0426] rounded-full shadow-[0_0_6px_rgba(221,4,38,0.8)]" />
+                          </Motion.div>
+                        </div>
+
+                        {/* Invisible drag input */}
+                        <input
+                          type="range" min="1" max="10" step="0.01"
+                          value={rating}
+                          onChange={(e) => setRating(parseFloat(e.target.value))}
+                          onMouseUp={() => setRating(Math.round(rating))}
+                          onTouchEnd={() => setRating(Math.round(rating))}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Review Section */}
+                    <div className="space-y-3">
+                      <p className="text-[#AAAAAA] text-[10px] font-accent uppercase tracking-widest">Written Review</p>
+                      <textarea
+                        value={reviewText}
+                        onChange={(e) => setReviewText(e.target.value)}
+                        placeholder="Share your assessment of this title..."
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-4 min-h-[160px] text-[#F5EBE0] font-hand text-lg outline-none focus:border-[#DD0426]/50 transition-all placeholder:text-[#AAAAAA]/20 resize-none"
+                      />
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-white/5">
+                      {ratingMsg.text && (
+                        <p className={`text-center text-[10px] font-accent ${ratingMsg.type === 'success' ? 'text-[#22C55E]' : 'text-[#EF4444]'}`}>
+                          {ratingMsg.text}
+                        </p>
+                      )}
+                      <button 
+                        type="submit" disabled={processing}
+                        className="ss-btn-primary w-full py-3 rounded-xl text-[10px] font-black tracking-widest disabled:opacity-50"
                       >
-                        {val}
+                        {processing ? "Submitting..." : "Submit Review"}
                       </button>
-                    ))}
+                    </div>
+                  </form>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-[#AAAAAA] font-hand text-lg mb-4">Please sign in to submit a rating.</p>
+                    <Link to="/login" className="ss-btn-primary px-6 py-2 rounded-xl text-[10px]">Sign In</Link>
                   </div>
-
-                  <div className="flex gap-2">
-                    <input
-                      type="number" min="1" max="10"
-                      value={rating}
-                      onChange={e => setRating(e.target.value)}
-                      placeholder="1 – 10"
-                      className="flex-1 bg-black/10 border border-white/10 rounded-xl px-3 py-2.5 text-[#F5EBE0] text-sm text-center font-accent outline-none focus:border-[rgba(221,4,38,0.4)] transition-colors"
-                    />
-                    <button type="submit" className="ss-btn-primary px-4 py-2.5 rounded-xl text-sm flex-1">
-                      Submit
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <p className="text-[#AAAAAA] text-sm font-hand">
-                  <Link to="/login" className="text-[#DD0426] hover:underline">Log in</Link> to rate this anime.
-                </p>
-              )}
-            </div>
+                )}
+              </div>
+            </section>
 
             {/* Info card */}
             <div

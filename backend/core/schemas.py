@@ -39,13 +39,13 @@ class AnimeTable(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class RatingsTable(BaseModel):
-    ratingId: int
+    ratingId: uuid.UUID
     userId: int
     animeId: int
     score: int = Field(..., ge=1, le=10)
     created_at: datetime
     updated_at: datetime
-    reviewText: Optional[str]
+    review_text: Optional[str]
     model_config = ConfigDict(from_attributes=True)
 
 class UsersTable(BaseModel):
@@ -130,14 +130,14 @@ class RatingCreateModel(BaseModel):
     userId: int
     animeId: int
     score: int = Field(..., ge=1, le=10)
-    reviewText: Optional[str] = Field(None, max_length=1000)
+    review_text: Optional[str] = Field(None, max_length=1000)
 
 #Returns the user rating for a specific anime
 class userRatingforAnime(BaseModel):
     userName: str
     animeName: str
     score: int = Field(..., ge=1, le=10)
-    reviewText: Optional[str] = Field(None, max_length=1000)
+    review_text: Optional[str] = Field(None, max_length=1000)
 
 class UserForRatingResponse(BaseModel):
     userId: int
@@ -146,11 +146,11 @@ class UserForRatingResponse(BaseModel):
 
 # Detailed Rating Response model (for API output)
 class RatingDetailResponse(BaseModel):
-    ratingId: int
+    ratingId: uuid.UUID
     user: UserForRatingResponse
     anime: AnimeListForUser    # Reuse AnimeListForUser for simplified anime info
     score: int = Field(..., ge=1, le=10)
-    reviewText: Optional[str] = Field(None, max_length=1000)
+    review_text: Optional[str] = Field(None, max_length=1000)
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
@@ -266,3 +266,14 @@ class FriendRequest(BaseModel):
 
 class FriendRequestProcess(FriendRequest):
     action: str = Field(..., pattern="^(ACCEPT|REJECT)$")
+
+""" Schemas for Ratings and Reviews """
+class RatingData(BaseModel):
+    userId: int = Field(...)
+    animeId: int = Field(...)
+    score: int = Field(..., ge=1, le=10)
+    review_text: Optional[str] = Field(None, max_length=256)
+
+class RatingAdd(RatingData):
+    created_at: datetime
+    updated_at: datetime

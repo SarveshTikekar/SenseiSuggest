@@ -10,14 +10,14 @@ const Page = React.forwardRef(({ children }, ref) => {
       boxShadow: 'inset 0 0 30px rgba(0,0,0,0.1), 5px 0 0 #dccfb2' 
     }}>
       <div className={styles.burntEdges}></div>
-      <div className="absolute inset-0 p-10 flex flex-col h-full z-10">
+      <div className={`${styles['custom-scrollbar']} absolute inset-0 p-10 flex flex-col h-full z-10 overflow-y-auto`}>
         {children}
       </div>
     </div>
   );
 });
 
-const Cover = React.forwardRef(({ username, rank }, ref) => {
+const Cover = React.forwardRef(({ username, rank, profilePicture }, ref) => {
   return (
     <div className={styles.scrapbookCover} ref={ref} data-density="hard" style={{
        boxShadow: 'inset 0 0 100px rgba(0,0,0,0.9), 5px 0 0 #dccfb2'
@@ -35,6 +35,12 @@ const Cover = React.forwardRef(({ username, rank }, ref) => {
            <p className={styles.ownerName}>{username || 'THE VOYAGER'}</p>
         </div>
         
+        {profilePicture && (
+          <div className={styles.coverProfileFrame}>
+            <img src={profilePicture} alt={username} className={styles.coverProfileImage} />
+          </div>
+        )}
+        
         <div className={styles.kanjiVertical}>思い出のアルバム</div>
         
         <div className="flex flex-col items-center gap-1">
@@ -42,9 +48,7 @@ const Cover = React.forwardRef(({ username, rank }, ref) => {
            {rank && <p className={styles.userRank}>{rank} RANK</p>}
         </div>
 
-        <div className={styles.waxSeal}>
-           <span className="opacity-70 text-[8px] tracking-tighter">HANKO</span>
-        </div>
+        <div className={styles.waxSeal}></div>
       </div>
     </div>
   );
@@ -90,9 +94,10 @@ const FlipPhotoItem = ({ photo }) => {
   );
 };
 
-const ScrapbookBook = ({ entries = [], username, rank }) => {
+const ScrapbookBook = ({ entries = [], username, rank, profilePicture }) => {
   const bookRef = useRef();
 
+  // 1. Group and Prepare Entries
   const groups = entries.reduce((acc, entry) => {
     const key = entry.animeId || entry.anime?.animeName || 'Unknown';
     if (!acc[key]) {
@@ -107,23 +112,71 @@ const ScrapbookBook = ({ entries = [], username, rank }) => {
 
   const animeGroupKeys = Object.keys(groups);
 
+  // 2. Build a Flat Array of Pages to prevent react-pageflip crashes
+  const pages = [];
+
+  // Front Cover
+  pages.push(<Cover key="cover-front" username={username} rank={rank} profilePicture={profilePicture} />);
+
+  // Empty State Pages
   if (entries.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24">
-         <div className="w-72 h-96 bg-[#111] rounded-sm border border-white/5 flex flex-col items-center justify-center shadow-2xl relative">
-            <div className="absolute inset-4 border border-[#dd0426]/20"></div>
-            <p className="text-[#dd0426] font-display font-black text-xl mb-4 tracking-widest uppercase">Empty Journal</p>
-            <p className="text-[#dccfb2] opacity-40 font-mono text-center px-8 text-xs leading-loose">
-               No memories have been recorded yet. Visit an Anime page to begin your chronicle.
+    pages.push(
+      <Page key="empty-1">
+        <div className="flex flex-col items-center justify-center h-full text-center p-6">
+           <p className="font-display text-[#dd0426] text-xl uppercase tracking-widest mb-4">Blank Chronicle</p>
+           <p className="font-hand text-[#8b4513]/60 text-lg leading-relaxed">
+             Your journey is just beginning.<br/>Capture your first memories from any anime details page.
+           </p>
+        </div>
+      </Page>
+    );
+    pages.push(
+      <Page key="empty-2">
+         <div className="flex flex-col items-center justify-center h-full opacity-30">
+            <div className="w-40 h-px bg-[#dd0426] mb-6"></div>
+            <p className="font-accent text-[9px] uppercase tracking-[0.4em] text-[#8b4513] text-center">
+              Reserved for your<br/>future legends
             </p>
+            <div className="w-40 h-px bg-[#dd0426] mt-6"></div>
          </div>
-      </div>
+      </Page>
     );
   }
 
+  // Anime Content Pages
+  animeGroupKeys.forEach((key) => {
+    const animeItems = groups[key].items;
+    const itemsPerPage = 2;
+    const pagesNeeded = Math.ceil(animeItems.length / itemsPerPage);
+    
+    for (let i = 0; i < pagesNeeded; i++) {
+      const chunk = animeItems.slice(i * itemsPerPage, (i + 1) * itemsPerPage);
+      pages.push(
+        <Page key={`${key}-page-${i}`}>
+          <div className="text-center mb-8 border-b border-[#dd0426]/30 pb-4">
+            <h2 className="font-display text-lg font-black text-[#dd0426] tracking-[0.1em] uppercase px-4 leading-tight">
+              {groups[key].name}
+            </h2>
+            <p className="text-[9px] font-accent uppercase tracking-widest opacity-40 mt-1">
+              Collection — Part {i + 1}
+            </p>
+          </div>
+          
+          <div className="flex-grow space-y-10 flex flex-col items-center">
+            {chunk.map((photo) => (
+              <FlipPhotoItem key={photo.id || photo.screenshotUrl} photo={photo} />
+            ))}
+          </div>  
+        </Page>
+      );
+    }
+  });
+
+  // Back Cover
+  pages.push(<Cover key="cover-back" username={username} rank={rank} profilePicture={profilePicture} />);
+
   return (
     <div className="flex justify-center my-16 perspective-2000 relative">
-      {/* Physical Spiral Spine Overlay */}
       <div className={styles.physicalSpine}>
         {[...Array(18)].map((_, i) => (
           <div key={i} className={styles.spiralRing}></div>
@@ -147,44 +200,9 @@ const ScrapbookBook = ({ entries = [], username, rank }) => {
         autoSize={true}
         ref={bookRef}
         className="shadow-2xl mx-auto transform -translate-x-[10px]"
+        key={entries.length}
       >
-        <Cover username={username} rank={rank}>Scrapbook Cover</Cover>
-
-        {animeGroupKeys.map((key) => {
-          const animeItems = groups[key].items;
-          const itemsPerPage = 2;
-          const pagesNeeded = Math.ceil(animeItems.length / itemsPerPage);
-          const pageChunks = [];
-          
-          for (let i = 0; i < pagesNeeded; i++) {
-            pageChunks.push(animeItems.slice(i * itemsPerPage, (i + 1) * itemsPerPage));
-          }
-
-          return pageChunks.map((chunk, chunkIndex) => (
-            <Page key={`${key}-page-${chunkIndex}`}>
-              <div className="text-center mb-8 border-b border-[#dd0426]/30 pb-4">
-                <h2 className="font-display text-lg font-black text-[#dd0426] tracking-[0.1em] uppercase px-4 leading-tight">
-                  {groups[key].name}
-                </h2>
-                <p className="text-[9px] font-accent uppercase tracking-widest opacity-40 mt-1">
-                  Collection — Part {chunkIndex + 1}
-                </p>
-              </div>
-              
-              <div className="flex-grow space-y-10 flex flex-col items-center">
-                {chunk.map((photo) => (
-                  <FlipPhotoItem key={photo.id || photo.screenshotUrl} photo={photo} />
-                ))}
-              </div>
-              
-              <div className="absolute bottom-6 left-0 right-0 text-center font-mono text-[9px] text-[#8b4513]/40 tracking-widest uppercase">
-                {groups[key].name} // Chronicle {chunkIndex + 1}
-              </div>
-            </Page>
-          ));
-        })}
-        
-        <Cover username={username} rank={rank}>Back Cover</Cover>
+        {pages}
       </HTMLFlipBook>
     </div>
   );

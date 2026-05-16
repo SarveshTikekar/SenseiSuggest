@@ -256,10 +256,11 @@ const HeroVisualCluster = ({ reduceMotion }) => {
         .hero-mosaic-shell {
           position: relative;
           height: 540px;
+          width: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
-
+          overflow: clip; /* Strictly contain the orbit within the shell */
         }
         .hero-mosaic-container {
           position: relative;
@@ -284,7 +285,7 @@ const HeroVisualCluster = ({ reduceMotion }) => {
         }
         .hero-mosaic-card {
           position: relative;
-          width: clamp(180px, 24vw, 240px);
+          width: clamp(160px, 20vw, 220px);
           aspect-ratio: 1 / 1;
           background: rgba(13, 13, 13, 0.4);
           border: 1px solid rgba(221, 4, 38, 0.2);
@@ -372,17 +373,10 @@ function HomePage({ onSearchOpen }) {
         <section className="pt-12 sm:pt-20 lg:pt-24 pb-16">
           <div className="grid grid-cols-1 lg:grid-cols-[1.1fr,0.9fr] gap-12 lg:gap-8 items-center">
             <div className="hero-text-area text-center lg:text-left flex flex-col items-center lg:items-start">
-              {/* Eyebrow — line + label, no pill badge */}
-              <div className="flex items-center gap-3 mb-6">
-                <span className="w-8 h-[1px] bg-[#DD0426] hidden sm:inline-block" />
-                <span className="text-[#AAAAAA] text-[10px] font-accent uppercase tracking-[0.2em]">
-                  Anime Discovery Engine
-                </span>
-              </div>
 
               {/* Main headline */}
               <h1
-                className="font-display text-[#F5EBE0] leading-[1.1] tracking-tight mb-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl fullhd:text-8xl"
+                className="font-display text-[#F5EBE0] leading-[1.1] tracking-tight mb-10 text-4xl sm:text-5xl md:text-6xl lg:text-7xl fullhd:text-8xl"
               >
                 The Sensei knows<br />
                 <span style={{
@@ -392,12 +386,6 @@ function HomePage({ onSearchOpen }) {
                   what you'll love.
                 </span>
               </h1>
-
-              <p className="text-[#AAAAAA] text-base sm:text-lg lg:text-xl font-hand leading-relaxed max-w-[520px] mb-10 opacity-80">
-                {userId
-                  ? "Your collection is synced. Personalized recommendations are ready."
-                  : "We analyze your viewing history, community data, and preferences to surface content you'll genuinely enjoy."}
-              </p>
 
               {/* CTAs */}
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4">

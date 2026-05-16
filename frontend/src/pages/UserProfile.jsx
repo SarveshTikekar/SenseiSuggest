@@ -20,7 +20,10 @@ import {
   Medal,
   BookmarksSimple,
   Sword,
-  ShieldCheck
+  ShieldCheck,
+  CaretLeft,
+  CaretRight,
+  CaretDown
 } from '@phosphor-icons/react';
 
 const containerVariants = {
@@ -90,20 +93,26 @@ function UserProfilePage() {
   const [scrapbookEntries, setScrapbookEntries] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [isFriendSearchOpen, setIsFriendSearchOpen] = useState(false);
+  const [friendPage, setFriendPage] = useState(0);
   const { userId: currentUserId } = useAuth();
 
   useEffect(() => {
+    console.log("[UserProfile] Effect trigger - userId:", userId, "currentUserId:", currentUserId);
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
         setError(''); 
+        setFriendPage(0);
         const profileRes = await getUserProfile(userId);
+        console.log("[UserProfile] Raw Profile Response:", profileRes);
         setUserProfile(profileRes.UserProfile); 
         
         // Fetch Stats
         const statsRes = await getAnimeStats(userId);
+        console.log("[UserProfile] Raw Stats Response:", statsRes);
         setAnimeStats(statsRes);
       } catch (err) {
+        console.error("[UserProfile] Data Fetch Error:", err);
         setError(err.message || 'Failed to fetch user profile.');
       } finally {
         setLoading(false);
@@ -122,7 +131,7 @@ function UserProfilePage() {
     if (userId) fetchUserProfile();
 
     // Fetch Pending Requests if it's the user's own profile
-    if (userId && currentUserId && parseInt(userId) === currentUserId) {
+    if (userId && currentUserId && String(userId) === String(currentUserId)) {
       getPendingRequests(userId).then(setPendingRequests).catch(console.error);
     }
   }, [userId, currentUserId]); 
@@ -156,8 +165,15 @@ function UserProfilePage() {
   if (error) return <div className="text-center p-8 text-[#EF4444] text-xl h-screen flex items-center justify-center font-bold font-display">{error}</div>;
   if (!userProfile) return <div className="text-center p-8 text-[#AAAAAA] text-xl h-screen flex items-center justify-center font-bold font-display">User Not Found.</div>;
 
-  const profilePicSrc = userProfile.profilePicture || `https://ui-avatars.com/api/?name=${userProfile.userName}&background=FF2E93&color=fff&size=200`;
-  const watchedCount = userProfile.anime_watched_count || 0;
+  const profilePicSrc = userProfile?.profilePicture || `https://ui-avatars.com/api/?name=${userProfile?.userName || 'U'}&background=FF2E93&color=fff&size=200`;
+  const watchedCount = userProfile?.anime_watched_count || 0;
+  const safeFriends = Array.isArray(userProfile?.friends) ? userProfile.friends : [];
+  
+  console.log("[UserProfile] Render Data - profileFound:", !!userProfile, "safeFriendsCount:", safeFriends.length);
+  if (safeFriends.length === 0 && userProfile?.friends && !Array.isArray(userProfile.friends)) {
+    console.warn("[UserProfile] CRITICAL: friends property exists but is NOT an array:", userProfile.friends);
+  }
+
   const rank = getOtakuRank(watchedCount);
   const getNextThreshold = (c) => {
     if (c >= 100) return c + 50; 
@@ -170,70 +186,81 @@ function UserProfilePage() {
   const nextRankCount = getNextThreshold(watchedCount);
   const progressPercent = Math.min((watchedCount / nextRankCount) * 100, 100);
 
-  const AnimeCard = ({ anime }) => (
-    <Motion.div variants={itemVariants} className="block group">
-      <Link 
-        to={`/anime/details/${encodeURIComponent(anime.animeName)}`} 
-        className="ss-anime-card group"
-      >
-        <div className="ss-anime-card__img-container">
-          {/* Blurred Backdrop - Disabled on mobile for performance */}
-          <img 
-            src={anime.image_url_base_anime || 'https://placehold.co/400x600/131316/3A3A4A?text=No+Image'} 
-            className="hidden sm:block absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110 pointer-events-none"
-            alt=""
-            aria-hidden
-          />
-          <img
-            src={anime.image_url_base_anime || 'https://placehold.co/400x600/131316/3A3A4A?text=No+Image'}
-            alt={anime.animeName}
-            className="ss-anime-card__img relative z-10"
-            onError={(e) => {e.target.onerror = null; e.target.src='https://placehold.co/400x600/131316/3A3A4A?text=Image+Missing';}}
-          />
-        </div>
-        <div className="ss-anime-card__body">
-          <p className="text-[#F5EBE0] group-hover:text-[#DD0426] text-[13px] font-black tracking-tight transition-colors line-clamp-1">
-            {anime.animeName}
-          </p>
-          <p className="text-[11px] text-[#AAAAAA] font-medium">
-            Sub | Dub
-          </p>
-        </div>
-      </Link>
-    </Motion.div>
-  );
+  const AnimeCard = ({ anime }) => {
+    if (!anime) return null;
+    return (
+      <Motion.div variants={itemVariants} className="block group">
+        <Link 
+          to={`/anime/details/${encodeURIComponent(anime.animeName || '')}`} 
+          className="ss-anime-card group"
+        >
+          <div className="ss-anime-card__img-container">
+            <img 
+              src={anime.image_url_base_anime || 'https://placehold.co/400x600/131316/3A3A4A?text=No+Image'} 
+              className="hidden sm:block absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110 pointer-events-none"
+              alt=""
+              aria-hidden
+            />
+            <img
+              src={anime.image_url_base_anime || 'https://placehold.co/400x600/131316/3A3A4A?text=No+Image'}
+              alt={anime.animeName || 'Anime'}
+              className="ss-anime-card__img relative z-10"
+              onError={(e) => {e.target.onerror = null; e.target.src='https://placehold.co/400x600/131316/3A3A4A?text=Image+Missing';}}
+            />
+          </div>
+          <div className="ss-anime-card__body py-3">
+            <p className="text-[#F5EBE0] group-hover:text-[#DD0426] text-lg font-display tracking-tight transition-colors line-clamp-1">
+              {anime.animeName || 'Unknown Title'}
+            </p>
+            <p className="text-sm font-accent text-[#AAAAAA] uppercase tracking-widest opacity-60">
+              Sub | Dub
+            </p>
+          </div>
+        </Link>
+      </Motion.div>
+    );
+  };
 
-  const AnimeSection = ({ title, list, icon, color }) => {
+  const AnimeSection = ({ title, list = [], icon, color }) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const displayList = isExpanded ? list : list.slice(0, 9);
-    const hasMore = list.length > 9;
+    const safeList = Array.isArray(list) ? list : [];
+    const displayList = isExpanded ? safeList : safeList.slice(0, 12);
+    const hasMore = safeList.length > 12;
 
     return (
       <div className="bg-[#0D0D0D] p-10 lg:p-14 border-white/5 border-b lg:border-b-0">
         <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
           <h3 className="text-3xl font-display text-[#F5EBE0] tracking-tight flex items-center gap-4 uppercase">
-            {React.cloneElement(icon, { size: 28, weight: "bold", className: color })} {title}
+            {icon && React.isValidElement(icon) ? React.cloneElement(icon, { size: 28, weight: "bold", className: color }) : null} {title}
           </h3>
           <span className="text-[11px] font-accent text-[#AAAAAA] uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full">
-            {list.length} Series
+            {safeList.length} Series
           </span>
         </div>
         
-        {list.length > 0 ? (
+        {safeList.length > 0 ? (
           <div className="space-y-8">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {displayList.map((anime) => (
-                <AnimeCard key={anime.animeId} anime={anime} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {displayList.map((anime, idx) => (
+                <AnimeCard key={anime?.animeId || idx} anime={anime} />
               ))}
             </div>
             
             {hasMore && (
-              <button 
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full py-4 border border-dashed border-white/10 rounded-2xl text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.3em] hover:bg-white/5 transition-colors"
-              >
-                {isExpanded ? "Collapse View" : `View All ${list.length} Records`}
-              </button>
+              <div className="flex justify-center pt-6">
+                <button 
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="flex flex-col items-center gap-2 group transition-all"
+                  title={isExpanded ? "Show Less" : "View All"}
+                >
+                  <span className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.3em] group-hover:text-[#DD0426] transition-colors">
+                    {isExpanded ? "Collapse" : `Show All ${safeList.length}`}
+                  </span>
+                  <div className={`p-2 rounded-full border border-white/10 group-hover:border-[#DD0426]/50 group-hover:bg-[#DD0426]/5 transition-all ${isExpanded ? 'rotate-180' : ''}`}>
+                    <CaretDown size={20} className="text-[#AAAAAA] group-hover:text-[#DD0426]" weight="bold" />
+                  </div>
+                </button>
+              </div>
             )}
           </div>
         ) : (
@@ -363,7 +390,7 @@ function UserProfilePage() {
                      <UserCircle size={16} className="text-[#DD0426]" weight="bold" /> Connections
                   </h3>
                   <span className="text-[10px] font-accent text-[#AAAAAA] opacity-50">
-                    {userProfile.friends?.length || 0} active
+                    {safeFriends.length} active
                   </span>
                </div>
                
@@ -377,14 +404,18 @@ function UserProfilePage() {
                       {pendingRequests.map((req) => (
                         <div key={req.req_id} className="p-3 rounded-2xl bg-[#DD0426]/5 border border-[#DD0426]/20 space-y-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg overflow-hidden border border-[#DD0426]/30">
-                              <img 
-                                src={req.sender?.profilePicture || `https://ui-avatars.com/api/?name=${req.sender?.userName || 'U'}&background=DD0426&color=fff`} 
-                                className="w-full h-full object-cover"
-                                alt=""
-                              />
-                            </div>
-                            <span className="text-[11px] font-accent text-[#F5EBE0] font-bold">{req.sender?.userName}</span>
+                            <Link to={`/profile/${req.sender_id}`} className="flex-shrink-0 group">
+                              <div className="w-8 h-8 rounded-lg overflow-hidden border border-[#DD0426]/30 transition-transform group-hover:scale-105">
+                                <img 
+                                  src={req.sender?.profilePicture || `https://ui-avatars.com/api/?name=${req.sender?.userName || 'U'}&background=DD0426&color=fff`} 
+                                  className="w-full h-full object-cover"
+                                  alt=""
+                                />
+                              </div>
+                            </Link>
+                            <Link to={`/profile/${req.sender_id}`} className="group">
+                              <span className="text-[11px] font-accent text-[#F5EBE0] font-bold group-hover:text-[#DD0426] transition-colors">{req.sender?.userName}</span>
+                            </Link>
                           </div>
                           <div className="flex items-center gap-2">
                             <button 
@@ -405,28 +436,64 @@ function UserProfilePage() {
                     </div>
                   )}
 
-                  {/* Connections List */}
-                  {userProfile.friends && userProfile.friends.length > 0 ? (
-                    userProfile.friends.map((friend, i) => (
-                      <div key={i} className="flex items-center gap-3 p-2 rounded-xl bg-white/[0.02] border border-transparent hover:border-white/5 hover:bg-white/[0.04] transition-all cursor-pointer group/item">
-                         <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-[#111] flex items-center justify-center">
-                            {friend.profilePicture ? (
-                              <img src={friend.profilePicture} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <UserCircle size={18} className="text-[#333] group-hover/item:text-[#DD0426] transition-colors" />
-                            )}
-                         </div>
-                         <div className="flex-grow min-w-0">
-                            <p className="text-[11px] font-accent text-[#F5EBE0] truncate group-hover/item:text-[#DD0426] transition-colors">{friend.userName}</p>
-                            <p className="text-[8px] font-accent text-[#AAAAAA] uppercase tracking-tighter opacity-60">Active Connection</p>
-                         </div>
-                         <div className="w-1 h-1 rounded-full bg-[#DD0426] opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                  {/* Connections List - 3x3 Grid with Pagination */}
+                  {safeFriends.length > 0 ? (
+                    <div className="flex flex-col h-full">
+                      <div className="grid grid-cols-3 gap-2 mb-4 justify-items-center">
+                        {safeFriends.slice(friendPage * 9, (friendPage + 1) * 9).map((friend, i) => (
+                          <Link 
+                            key={friend.userId || i} 
+                            to={`/profile/${friend.userId}`}
+                            className="group/item flex flex-col items-center gap-1.5 p-1 rounded-xl hover:bg-white/[0.03] transition-all w-full max-w-[60px] relative"
+                            title={friend.userName}
+                          >
+                             <div className="w-7 h-7 rounded-full overflow-hidden border border-white/10 bg-[#111] group-hover/item:border-[#DD0426]/50 transition-colors">
+                                {friend.profilePicture ? (
+                                  <img src={friend.profilePicture} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <UserCircle size={14} className="text-[#333] group-hover/item:text-[#DD0426] transition-colors" />
+                                  </div>
+                                )}
+                             </div>
+                             <p className="text-[7px] font-accent text-[#AAAAAA] group-hover/item:text-[#F5EBE0] transition-colors truncate w-full text-center px-0.5">
+                                {friend.userName}
+                             </p>
+                             <div className="absolute top-0 right-1 w-1 h-1 rounded-full bg-[#DD0426] opacity-40 group-hover/item:opacity-100 animate-pulse" />
+                          </Link>
+                        ))}
+                        {/* Fill empty grid slots for consistent layout */}
+                        {Array.from({ length: Math.max(0, 9 - (safeFriends.slice(friendPage * 9, (friendPage + 1) * 9).length)) }).map((_, idx) => (
+                          <div key={`empty-${idx}`} className="w-full max-w-[60px] aspect-square rounded-xl border border-dashed border-white/5 opacity-5" />
+                        ))}
                       </div>
-                    ))
+
+                      {safeFriends.length > 9 && (
+                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                           <button 
+                             onClick={() => setFriendPage(p => Math.max(0, p - 1))}
+                             disabled={friendPage === 0}
+                             className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-20 transition-all text-[#AAAAAA] hover:text-[#DD0426]"
+                           >
+                             <CaretLeft size={16} weight="bold" />
+                           </button>
+                           <span className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-widest opacity-50">
+                             Page {friendPage + 1} / {Math.ceil(safeFriends.length / 9)}
+                           </span>
+                           <button 
+                             onClick={() => setFriendPage(p => Math.min(Math.ceil(safeFriends.length / 9) - 1, p + 1))}
+                             disabled={friendPage >= Math.ceil(safeFriends.length / 9) - 1}
+                             className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-20 transition-all text-[#AAAAAA] hover:text-[#DD0426]"
+                           >
+                             <CaretRight size={16} weight="bold" />
+                           </button>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="flex-grow flex flex-col items-center justify-center text-center py-10 border border-dashed border-white/5 rounded-2xl opacity-40">
                        <UserCircle size={24} className="mb-2 text-[#AAAAAA]" />
-                       <p className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-widest">No active connections found</p>
+                       <p className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-widest">No active connections</p>
                     </div>
                   )}
                </div>
@@ -476,11 +543,6 @@ function UserProfilePage() {
                    ))}
                 </div>
 
-                <div className="p-8 rounded-3xl bg-[#DD0426]/5 border border-[#DD0426]/20">
-                   <p className="font-hand text-xl text-[#F5EBE0]/80 leading-relaxed italic">
-                     "Each record added is a milestone in your journey through the worlds of animation."
-                   </p>
-                </div>
              </div>
 
              <AnimeSection 
@@ -507,34 +569,28 @@ function UserProfilePage() {
 
           {/* Gallery Section */}
           <div className="pt-20">
-            <div className="flex flex-col items-center mb-16 space-y-4 text-center">
-               <div className="w-16 h-px bg-[#DD0426]" />
-               <h3 className="text-4xl md:text-5xl font-display font-black text-[#F5EBE0] tracking-tight uppercase">
-                 Personal Gallery
-               </h3>
-               <p className="font-sans text-2xl text-[#AAAAAA] max-w-2xl opacity-80">
-                 A visual record of your journey through the worlds of animation.
-               </p>
-               <div className="flex items-center gap-3 text-[10px] font-accent text-[#DD0426] uppercase tracking-[0.4em] pt-4">
-                  <span className="w-2 h-2 rounded-full bg-[#DD0426] animate-pulse" />
-                  {scrapbookEntries.length} Saved Moments
-               </div>
-            </div>
+             <div className="flex flex-col items-center mb-16 space-y-4 text-center">
+                <div className="w-16 h-px bg-[#DD0426]" />
+                <h3 className="text-4xl md:text-5xl font-display font-black text-[#F5EBE0] tracking-tight uppercase">
+                  Personal Gallery
+                </h3>
+             </div>
             
             <div className="max-w-[1880px] mx-auto">
               <div className="hidden lg:block">
                 <ScrapbookBook 
-                  entries={scrapbookEntries} 
-                  username={userProfile.userName} 
-                  rank={getOtakuRank(userProfile.anime_watched_count || 0).name}
+                  entries={scrapbookEntries || []} 
+                  username={userProfile?.userName} 
+                  rank={getOtakuRank(userProfile?.anime_watched_count || 0).name}
+                  profilePicture={profilePicSrc}
                 />
               </div>
               <div className="lg:hidden">
                 <ScrapbookDrawer 
-                  photos={scrapbookEntries}
+                  photos={scrapbookEntries || []}
                   loading={false}
-                  onRemove={() => {}} // Remove not allowed from profile usually
-                  onUpload={() => {}} // Upload not allowed from profile usually
+                  onRemove={() => {}} 
+                  onUpload={() => {}} 
                 />
               </div>
             </div>

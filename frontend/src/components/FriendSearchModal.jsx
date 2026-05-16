@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   MagnifyingGlass,
@@ -81,7 +82,7 @@ function FriendSearchModal({ open, onClose }) {
                   type="text"
                   value={query}
                   onChange={e => setQuery(e.target.value)}
-                  placeholder="Find allies by username..."
+                  placeholder="Find connections by username..."
                   className="flex-1 bg-transparent border-none outline-none text-[#F5EBE0] font-accent uppercase tracking-widest text-sm"
                 />
                 <button onClick={onClose} className="text-[#AAAAAA] hover:text-white transition-colors">
@@ -93,16 +94,20 @@ function FriendSearchModal({ open, onClose }) {
                 {results.length > 0 ? (
                   results.map(user => (
                     <div key={user.userId} className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all group">
-                      <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center overflow-hidden border border-white/10">
-                        {user.profilePicture ? (
-                          <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <UserCircle size={24} className="text-[#333] group-hover:text-[#DD0426] transition-colors" />
-                        )}
-                      </div>
+                      <Link to={`/profile/${user.userId}`} className="flex-shrink-0 group/av">
+                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center overflow-hidden border border-white/10 transition-transform group-hover/av:scale-105">
+                          {user.profilePicture ? (
+                            <img src={user.profilePicture} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <UserCircle size={24} className="text-[#333] group-hover:text-[#DD0426] transition-colors" />
+                          )}
+                        </div>
+                      </Link>
                       <div className="flex-grow">
-                        <p className="font-accent text-[#F5EBE0] uppercase tracking-wider">{user.userName}</p>
-                        <p className="text-[10px] font-accent text-[#AAAAAA] opacity-60">ID: SS-USR-{user.userId}</p>
+                        <Link to={`/profile/${user.userId}`} className="block group/name">
+                          <p className="font-accent text-[#F5EBE0] uppercase tracking-wider group-hover/name:text-[#DD0426] transition-colors">{user.userName}</p>
+                        </Link>
+                        <p className="text-[10px] font-accent text-[#AAAAAA] opacity-60 uppercase">System ID: {user.userId}</p>
                       </div>
                       {user.pending ? (
                         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#DD0426]/10 rounded-lg border border-[#DD0426]/20">
@@ -116,18 +121,18 @@ function FriendSearchModal({ open, onClose }) {
                           className="flex items-center gap-2 px-4 py-2 bg-[#DD0426] hover:bg-[#FF052D] disabled:opacity-50 transition-all rounded-xl text-[10px] font-accent text-white uppercase tracking-widest"
                         >
                           {requesting === user.userId ? <CircleNotch size={14} className="animate-spin" /> : <UserPlus size={14} weight="bold" />}
-                          Add Ally
+                          Connect
                         </button>
                       )}
                     </div>
                   ))
                 ) : query && !loading ? (
                   <div className="py-12 text-center opacity-40">
-                    <p className="font-hand text-2xl">No allies found with that name...</p>
+                    <p className="font-sans text-xl uppercase tracking-widest">No users found with that name...</p>
                   </div>
                 ) : (
                   <div className="py-12 text-center opacity-40">
-                    <p className="font-hand text-2xl">Enter a name to start searching...</p>
+                    <p className="font-sans text-xl uppercase tracking-widest">Enter a name to search connections...</p>
                   </div>
                 )}
               </div>

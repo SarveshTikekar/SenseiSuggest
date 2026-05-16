@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getUserProfile } from '../api';
@@ -57,7 +57,7 @@ function Navbar({ onSearchOpen }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated || !userId) return;
     try {
       const [pending, general] = await Promise.all([
@@ -75,7 +75,7 @@ function Navbar({ onSearchOpen }) {
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
     }
-  };
+  }, [isAuthenticated, userId]);
 
   useEffect(() => {
     if (!isAuthenticated || !userId) { setNavUserProfile(null); setNotifications([]); return; }
@@ -91,7 +91,7 @@ function Navbar({ onSearchOpen }) {
     // Periodic check for new invites
     const interval = setInterval(fetchNotifications, 30000); // 30s
     return () => clearInterval(interval);
-  }, [isAuthenticated, userId]);
+  }, [isAuthenticated, userId, fetchNotifications]);
 
   useEffect(() => { setMobileOpen(false); setShowNotifDropdown(false); }, [location.pathname]);
 
@@ -230,22 +230,22 @@ function Navbar({ onSearchOpen }) {
                                 notifications.map((notif, idx) => (
                                   <div key={notif.id || notif.req_id || idx} className="p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
                                     <div className="flex items-start gap-3">
-                                      <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 flex-shrink-0 bg-white/5 flex items-center justify-center">
+                                      <Link to={`/profile/${notif.sender_id}`} className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 flex-shrink-0 bg-white/5 flex items-center justify-center group/av">
                                         {notif.type === 'INVITE' ? (
                                           <img 
                                             src={notif.sender?.profilePicture || `https://ui-avatars.com/api/?name=${notif.sender?.userName || 'U'}&background=DD0426&color=fff`} 
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-cover transition-transform group-hover/av:scale-105"
                                             alt=""
                                           />
                                         ) : (
                                           <Bell size={20} className="text-[#DD0426]" weight="fill" />
                                         )}
-                                      </div>
+                                      </Link>
                                       <div className="flex-grow">
                                         <p className="text-[11px] text-[#F5EBE0] font-accent leading-tight">
                                           {notif.type === 'INVITE' ? (
                                             <>
-                                              <span className="text-[#DD0426] font-black">{notif.sender?.userName}</span> has sent a friend request.
+                                              <Link to={`/profile/${notif.sender_id}`} className="text-[#DD0426] font-black hover:underline">{notif.sender?.userName}</Link> has sent a connection request.
                                             </>
                                           ) : (
                                             notif.content
