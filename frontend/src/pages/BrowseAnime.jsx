@@ -31,7 +31,7 @@ const AnimeCard = ({ anime, index }) => {
     >
       <Link 
         to={`/anime/details/${encodeURIComponent(anime.animeName)}`} 
-        className="ss-anime-card group flex flex-col h-full bg-[#111111]/40 rounded-2xl border border-white/5 hover:border-[#DD0426]/30 hover:bg-[#111111]/80 transition-all overflow-hidden"
+        className="ss-anime-card group flex flex-col h-full bg-[#111111]/40 rounded-2xl border border-white/5 hover:border-[#FF1F44]/30 hover:bg-[#111111]/80 transition-all overflow-hidden"
       >
         <div className="ss-anime-card__img-container relative aspect-[16/9] overflow-hidden">
           <img
@@ -42,30 +42,30 @@ const AnimeCard = ({ anime, index }) => {
             onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x225/131316/3A3A4A?text=Image+Missing'; }}
           />
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-             <div className="flex items-center gap-1.5 text-[9px] font-accent text-[#DD0426] uppercase tracking-widest bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#DD0426]/30">
-                <Info size={10} weight="bold" /> View Details
+             <div className="flex items-center gap-1.5 text-[12px] font-accent text-[#FF1F44] font-bold uppercase tracking-widest bg-black/80 backdrop-blur-md px-4 py-2 rounded-lg border border-[#FF1F44]/40 shadow-lg">
+                <Info size={13} weight="bold" /> View Details
              </div>
           </div>
         </div>
         
-        <div className="ss-anime-card__body p-3.5 space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <p className="font-accent text-[12px] text-[#F5EBE0] line-clamp-1 group-hover:text-[#DD0426] transition-colors tracking-wide uppercase font-bold">
+        <div className="ss-anime-card__body p-3.5 space-y-2 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <p className="font-accent text-[12px] text-[#F5EBE0] line-clamp-1 group-hover:text-[#FF1F44] transition-colors tracking-wide uppercase font-bold w-full text-center">
               {anime.animeName}
             </p>
           </div>
-          <div className="flex items-center gap-2 pt-1 border-t border-white/5 flex-wrap">
+          <div className="flex items-center justify-center gap-2 pt-1 border-t border-white/5 flex-wrap">
             {year && (
-              <span className="text-[10px] font-accent text-white font-bold tracking-wider">{year}</span>
+              <span className="text-[12px] font-accent text-white font-bold tracking-wider">{year}</span>
             )}
-            <span className="w-1 h-1 rounded-full bg-[#DD0426]" />
-            <p className="text-[10px] text-white font-accent uppercase tracking-tighter font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF1F44]" />
+            <p className="text-[12px] text-white font-accent uppercase tracking-tighter font-bold">
               Sub | Dub
             </p>
             {anime.studio && (
               <>
-                <span className="w-1 h-1 rounded-full bg-[#DD0426]" />
-                <p className="text-[9px] font-accent text-[#DD0426] uppercase tracking-[0.15em] font-black truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FF1F44]" />
+                <p className="text-[11px] font-accent text-[#FF1F44] uppercase tracking-[0.15em] font-black truncate">
                   {anime.studio}
                 </p>
               </>
@@ -85,7 +85,7 @@ function BrowseAnimePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy]       = useState('animeName');
   const [sortOrder, setSortOrder] = useState('asc');
-  const ITEMS = 24; // 6 columns × 4 rows — exact user requirement
+  const ITEMS = 20; // 5 columns × 4 rows — exact user requirement
 
   useEffect(() => {
     setLoading(true);
@@ -111,15 +111,15 @@ function BrowseAnimePage() {
     <div className="max-w-[1880px] mx-auto py-12 px-8">
       <div className="ss-skeleton rounded h-12 w-48 mb-4" />
       <div className="ss-skeleton rounded h-4 w-64 mb-12" />
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-        {[...Array(12)].map((_, i) => <SkeletonCard key={i} />)}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        {[...Array(10)].map((_, i) => <SkeletonCard key={i} />)}
       </div>
     </div>
   );
 
   if (error) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-      <p className="font-display font-bold text-3xl mb-2 text-[#DD0426]">Transmission Interrupted</p>
+      <p className="font-display font-bold text-3xl mb-2 text-[#FF1F44]">Transmission Interrupted</p>
       <p className="text-[#AAAAAA] text-lg font-hand max-w-md">{error}</p>
     </div>
   );
@@ -129,7 +129,7 @@ function BrowseAnimePage() {
 
       {/* Header — compact, premium */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 relative">
-        <div className="absolute -top-12 -left-12 w-64 h-64 bg-[#DD0426]/5 blur-3xl rounded-full pointer-events-none" />
+        <div className="absolute -top-12 -left-12 w-64 h-64 bg-[#FF1F44]/5 blur-3xl rounded-full pointer-events-none" />
         
         <div className="relative z-10">
           <h1 className="font-display text-[#F5EBE0] text-5xl lg:text-7xl uppercase tracking-tighter">
@@ -157,7 +157,7 @@ function BrowseAnimePage() {
             onClick={() => setSortOrder(p => p === 'asc' ? 'desc' : 'asc')}
             className={`flex items-center gap-2 py-2.5 px-4 rounded-xl font-accent text-[10px] uppercase tracking-widest transition-all border ${
               sortOrder === 'asc' 
-              ? 'bg-[#DD0426]/10 border-[#DD0426]/30 text-[#DD0426] shadow-[0_0_20px_rgba(221,4,38,0.1)]' 
+              ? 'bg-[#FF1F44]/10 border-[#FF1F44]/30 text-[#FF1F44] shadow-[0_0_20px_rgba(255,31,68,0.1)]' 
               : 'bg-white/5 border-white/10 text-[#AAAAAA] hover:bg-white/10'
             }`}
           >
@@ -188,7 +188,7 @@ function BrowseAnimePage() {
         </div>
       ) : (
         <div className="flex-grow">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 lg:gap-8">
             {paged.map((anime, i) => <AnimeCard key={anime.animeId} anime={anime} index={i} />)}
           </div>
 
@@ -215,7 +215,7 @@ function BrowseAnimePage() {
                         onClick={() => setCurrentPage(p)}
                         className={`w-10 h-10 rounded-xl text-[11px] font-accent transition-all relative overflow-hidden group ${
                           currentPage === p
-                          ? 'bg-[#DD0426] text-white shadow-[0_0_25px_rgba(221,4,38,0.4)]'
+                          ? 'bg-[#FF1F44] text-white shadow-[0_0_25px_rgba(255,31,68,0.4)]'
                           : 'text-[#AAAAAA] hover:bg-white/5 hover:text-[#F5EBE0]'
                         }`}
                       >

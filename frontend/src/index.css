@@ -1,5 +1,5 @@
 /* SenseiSuggest — Global Styles */
-@import url('https://fonts.googleapis.com/css2?family=Eagle+Lake&family=Oldenburg&family=Patrick+Hand&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Eagle+Lake&family=Allata&family=Patrick+Hand&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,7 +10,7 @@
    ============================================================ */
 @layer base {
   :root {
-    --ss-red:      221, 4, 38;    /* Crimson (#DD0426) */
+    --ss-red:      255, 31, 68;   /* Neon Red (#FF1F44) */
     --ss-charcoal: 13, 13, 13;   /* Pitch Charcoal (#0D0D0D) */
     --ss-cream:    245, 235, 224; /* Cream primary text (#F5EBE0) */
     --ss-muted:    170, 170, 170; /* Neutral Gray (#AAAAAA) */
@@ -18,7 +18,7 @@
     
     /* Font Variables */
     --font-display: 'Eagle Lake', cursive;
-    --font-accent:  'Oldenburg', cursive;
+    --font-accent:  'Allata', sans-serif;
     --font-hand:    'Patrick Hand', cursive;
     --font-body:    'Inter', sans-serif;
   }
@@ -28,13 +28,19 @@
   }
 
   body {
-    font-family: var(--font-body);
+    font-family: var(--font-accent);
     background-color: #0D0D0D;
     color: #F5EBE0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
     overflow-x: hidden;
+  }
+
+  /* Allata as universal small-text font — covers all non-heading elements */
+  span, small, label, button, select, input, textarea, option,
+  a, li, nav, td, th, caption, figcaption, legend, summary, details {
+    font-family: var(--font-accent);
   }
 
   h1, h2 {
@@ -53,10 +59,11 @@
   }
 
   p {
-    font-family: var(--font-hand);
-    font-size: 1.1rem;
-    line-height: 1.6;
+    font-family: var(--font-accent);
+    font-size: 0.95rem;
+    line-height: 1.65;
     color: #AAAAAA;
+    letter-spacing: 0.01em;
   }
 
   /* ── Scrollbar ── */
@@ -294,7 +301,7 @@
     color: #F5EBE0;
     padding: 0.65rem 1rem 0.65rem 2.75rem;
     width: 100%;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-accent);
     font-size: 0.9rem;
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;

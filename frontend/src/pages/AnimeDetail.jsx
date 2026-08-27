@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
-  getAnimeDetails, rateAnime, getUserProfile,
+  getAnimeDetails, rateAnime, updateAnimeRating, getUserProfile,
   addTowatchedList, addTowatchingList, removeFromWatched, removeFromWatching,
   addToBookmarkList, removeFromBookmarkList,
   getUserScrapbook, uploadScrapbookImage, deleteScrapbookImage
@@ -83,7 +83,7 @@ const MetaItem = (props) => {
       <Icon size={14} weight="bold" className="text-[#AAAAAA] opacity-60 mt-0.5 flex-shrink-0" />
       <div>
         <p className="text-[#AAAAAA] opacity-60 text-[10px] font-accent uppercase tracking-widest leading-none mb-1">{label}</p>
-        <p className="text-[#F5EBE0] text-sm font-medium leading-tight">{value}</p>
+        <p className="text-[#F5EBE0] text-sm font-medium leading-tight font-accent">{value}</p>
       </div>
     </div>
   );
@@ -104,6 +104,7 @@ function AnimeDetailPage() {
   const [ratingMsg, setRatingMsg]   = useState({ type: '', text: '' });
   const [imgError, setImgError]     = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [hasExistingRating, setHasExistingRating] = useState(false);
 
   // Scrapbook State
   const [scrapbookPhotos, setScrapbookPhotos] = useState([]);
@@ -121,9 +122,9 @@ function AnimeDetailPage() {
 
   /* Fetch watchlist status */
   useEffect(() => {
-    if (!userId || !anime?.animeId) { setStatus('none'); setIsBookmarked(false); return; }
+    if (!userId || !anime?.animeId) { setStatus('none'); setIsBookmarked(false); setHasExistingRating(false); return; }
     getUserProfile(userId).then(res => {
-      const { watchedAnime = [], watchingAnime = [], bookmarkedAnime = [] } = res.UserProfile || {};
+      const { watchedAnime = [], watchingAnime = [], bookmarkedAnime = [], ratings = [] } = res.UserProfile || {};
       
       // Check watchlist status
       if (watchedAnime.some(a => a.animeId === anime.animeId))       setStatus('watched');
@@ -133,6 +134,16 @@ function AnimeDetailPage() {
       // Check bookmark status
       const bookmarked = bookmarkedAnime.some(a => a.animeId === anime.animeId);
       setIsBookmarked(bookmarked);
+
+      // Check rating status
+      const userRating = ratings.find(r => r.animeName === anime.animeName);
+      if (userRating) {
+        setRating(userRating.score);
+        setReviewText(userRating.review_text || '');
+        setHasExistingRating(true);
+      } else {
+        setHasExistingRating(false);
+      }
     }).catch(() => {});
 
     // Fetch Scrapbook Photos
@@ -202,14 +213,25 @@ function AnimeDetailPage() {
 
     setProcessing(true);
     try {
-      await rateAnime({ 
+      const payload = { 
         userId, 
         animeId: anime.animeId, 
         score: finalScore, 
         review_text: reviewText || 'User rated via Sensei Suggest' 
-      });
-      setRatingMsg({ type: 'success', text: `Review chronicles updated! Rated ${finalScore}/10` });
-      setReviewText('');
+      };
+
+      if (hasExistingRating) {
+        await updateAnimeRating(payload);
+        setRatingMsg({ type: 'success', text: `Review chronicles updated! Rated ${finalScore}/10` });
+      } else {
+        await rateAnime(payload);
+        setRatingMsg({ type: 'success', text: `Review chronicles created! Rated ${finalScore}/10` });
+        setHasExistingRating(true);
+      }
+
+      // Re-fetch anime details to update the reviews list and average rating!
+      const updatedDetails = await getAnimeDetails(decodeURIComponent(animeName));
+      setAnime(updatedDetails);
     } catch (e) {
       setRatingMsg({ type: 'error', text: e.message || 'Failed to submit chronicles.' });
     } finally {
@@ -392,7 +414,7 @@ function AnimeDetailPage() {
               </h1>
 
               {anime.studio && (
-                <p className="text-[#AAAAAA] text-sm font-sans mb-4">{anime.studio}</p>
+                <p className="text-[#AAAAAA] text-sm font-accent mb-4">{anime.studio}</p>
               )}
 
               {/* Genre tags */}
@@ -554,7 +576,7 @@ function AnimeDetailPage() {
                 <span className="w-0.5 h-4 rounded-full bg-[#DD0426] inline-block" />
                 Synopsis
               </h2>
-              <p className="text-[#AAAAAA] text-[14px] leading-[1.8] font-sans">
+              <p className="text-[#AAAAAA] text-[14px] leading-[1.8] font-accent">
                 {anime.description || 'No synopsis is available for this title.'}
               </p>
             </section>
@@ -681,7 +703,9 @@ function AnimeDetailPage() {
                           <Motion.div
                             className="absolute top-1/2 -translate-y-1/2 border-2 border-[#DD0426] rounded-lg bg-[#DD0426]/5"
                             animate={{
-                              left: `calc(5% + (90% * ${(rating - 1) / 9}) - 1.25rem)`,
+                              left: rating === 0 ? `calc(5% - 1.25rem)` : `calc(5% + (90% * ${(rating - 1) / 9}) - 1.25rem)`,
+                              // always visible
+                              opacity: 1,
                               boxShadow: '0 0 18px rgba(221,4,38,0.25)'
                             }}
                             transition={{ type: 'spring', damping: 80, stiffness: 5000 }}
@@ -694,7 +718,7 @@ function AnimeDetailPage() {
 
                         {/* Invisible drag input */}
                         <input
-                          type="range" min="1" max="10" step="0.01"
+                          type="range" min="0" max="10" step="0.01"
                           value={rating}
                           onChange={(e) => setRating(parseFloat(e.target.value))}
                           onMouseUp={() => setRating(Math.round(rating))}
@@ -731,8 +755,31 @@ function AnimeDetailPage() {
                   </form>
                 ) : (
                   <div className="text-center py-6">
-                    <p className="text-[#AAAAAA] font-hand text-lg mb-4">Please sign in to submit a rating.</p>
+                    <p className="text-[#AAAAAA] font-accent text-sm mb-4">Please sign in to submit a rating.</p>
                     <Link to="/login" className="ss-btn-primary px-6 py-2 rounded-xl text-[10px]">Sign In</Link>
+                  </div>
+                )}
+
+                {/* Community Chronicles List */}
+                {anime?.ratings && anime.ratings.length > 0 && (
+                  <div className="mt-8 pt-8 border-t border-white/10 space-y-4">
+                    <p className="text-[#AAAAAA] text-[9px] font-accent uppercase tracking-widest">Community Chronicles ({anime.ratings.length})</p>
+                    <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                      {anime.ratings.map((r, idx) => (
+                        <div key={idx} className="bg-white/[0.02] border border-white/5 p-4 rounded-xl space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono text-[#AAAAAA] tracking-wider">Chronicle #{idx + 1}</span>
+                            <div className="flex items-center gap-1 text-[#D97706]">
+                              <Star size={12} weight="fill" />
+                              <span className="font-mono text-xs font-bold">{r.score}/10</span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-[#F5EBE0] italic font-accent">
+                            "{r.review_text}"
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

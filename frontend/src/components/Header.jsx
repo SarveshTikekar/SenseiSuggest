@@ -12,7 +12,7 @@ function Header(){
                     Sensei Suggest
                 </h1>
                 
-                <p className="mt-2 text-[1.4rem] text-[#AAAAAA] font-hand">Your personalised recommendation gateway</p>
+                <p className="mt-2 text-[1.4rem] text-[#AAAAAA] font-accent">Your personalised recommendation gateway</p>
             </div>    
             
         </header>

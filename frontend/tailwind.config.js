@@ -36,8 +36,9 @@ export default {
       },
       fontFamily: {
         'display': ['Eagle Lake', 'cursive'],
-        'sans':    ['Inter', 'sans-serif'],
-        'accent':  ['Oldenburg', 'cursive'],
+        'sans':    ['Allata', 'sans-serif'],
+        'accent':  ['Allata', 'sans-serif'],
+        'body':    ['Inter', 'sans-serif'],
         'hand':    ['Patrick Hand', 'cursive'],
       },
       boxShadow: {

@@ -41,7 +41,7 @@ const itemVariants = {
 
 const getOtakuRank = (count) => {
   if (count >= 100) return { name: "ELITE", color: "text-[#D97706]", bg: "bg-[#D97706]/10", border: "border-[#D97706]/40", desc: "Top Tier Contributor" };
-  if (count >= 50)  return { name: "MASTER", color: "text-[#DD0426]", bg: "bg-[#DD0426]/10", border: "border-[#DD0426]/40", desc: "Highly Experienced" };
+  if (count >= 50)  return { name: "MASTER", color: "text-[#FF1F44]", bg: "bg-[#FF1F44]/10", border: "border-[#FF1F44]/40", desc: "Highly Experienced" };
   if (count >= 25)  return { name: "EXPERT", color: "text-[#BE233F]", bg: "bg-[#BE233F]/10", border: "border-[#BE233F]/40", desc: "Regular Contributor" };
   if (count >= 10)  return { name: "ADVANCED", color: "text-[#F5EBE0]", bg: "bg-white/5", border: "border-white/20", desc: "Active Member" };
   if (count >= 1)   return { name: "NOVICE", color: "text-[#AAAAAA]", bg: "bg-white/5", border: "border-white/10", desc: "New Member" };
@@ -209,7 +209,7 @@ function UserProfilePage() {
             />
           </div>
           <div className="ss-anime-card__body py-3">
-            <p className="text-[#F5EBE0] group-hover:text-[#DD0426] text-lg font-display tracking-tight transition-colors line-clamp-1">
+            <p className="text-[#F5EBE0] group-hover:text-[#FF1F44] text-lg font-display tracking-tight transition-colors line-clamp-1">
               {anime.animeName || 'Unknown Title'}
             </p>
             <p className="text-sm font-accent text-[#AAAAAA] uppercase tracking-widest opacity-60">
@@ -221,28 +221,142 @@ function UserProfilePage() {
     );
   };
 
+  const AnimeRow = ({ anime, icon, color }) => {
+    if (!anime) return null;
+    return (
+      <Motion.div variants={itemVariants}>
+        <Link
+          to={`/anime/details/${encodeURIComponent(anime.animeName || '')}`}
+          className="flex items-center gap-5 px-5 py-4 border-b border-white/[0.05] last:border-b-0 hover:bg-white/[0.04] transition-all group relative"
+        >
+          {/* Hover accent bar */}
+          <span className="absolute left-0 top-0 h-full w-[2px] bg-[#FF1F44] scale-y-0 group-hover:scale-y-100 transition-transform duration-200 origin-center" />
+
+          {/* Landscape poster */}
+          <div className="flex-shrink-0 w-20 h-12 overflow-hidden bg-[#111] border border-white/5">
+            <img
+              src={anime.image_url_base_anime || 'https://placehold.co/160x90/131316/3A3A4A?text=—'}
+              alt={anime.animeName || 'Anime'}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/160x90/131316/3A3A4A?text=—'; }}
+            />
+          </div>
+
+          {/* Name */}
+          <p className="flex-1 text-[14px] font-accent text-[#C8BFB8] group-hover:text-[#F5EBE0] tracking-wide transition-colors line-clamp-2 leading-snug m-0">
+            {anime.animeName || 'Unknown Title'}
+          </p>
+
+          {/* Category icon */}
+          <div className={`flex-shrink-0 opacity-25 group-hover:opacity-100 transition-opacity ${color}`}>
+            {icon && React.isValidElement(icon)
+              ? React.cloneElement(icon, { size: 20, weight: 'bold' })
+              : null}
+          </div>
+        </Link>
+      </Motion.div>
+    );
+  };
+
   const AnimeSection = ({ title, list = [], icon, color }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
     const safeList = Array.isArray(list) ? list : [];
-    const displayList = isExpanded ? safeList : safeList.slice(0, 12);
-    const hasMore = safeList.length > 12;
 
     return (
-      <div className="bg-[#0D0D0D] p-10 lg:p-14 border-white/5 border-b lg:border-b-0">
+      <div className="bg-[#0D0D0D] border border-white/10 shadow-2xl flex flex-col" style={{ maxHeight: '480px' }}>
+        {/* Header — fixed, never scrolls */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 flex-shrink-0">
+          <h3 className="text-[11px] font-accent text-[#F5EBE0] tracking-[0.2em] flex items-center gap-3 uppercase">
+            {icon && React.isValidElement(icon)
+              ? React.cloneElement(icon, { size: 15, weight: 'bold', className: color })
+              : null}
+            {title}
+          </h3>
+          <span className="text-[9px] font-accent text-[#AAAAAA] uppercase tracking-widest bg-white/5 px-2.5 py-1 rounded-full">
+            {safeList.length} Series
+          </span>
+        </div>
+
+        {/* Scrollable list body */}
+        {safeList.length > 0 ? (
+          <div className="overflow-y-auto flex-1" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,31,68,0.2) transparent' }}>
+            <Motion.div variants={{ visible: { transition: { staggerChildren: 0.025 } } }}>
+              {safeList.map((anime, idx) => (
+                <AnimeRow key={anime?.animeId || idx} anime={anime} icon={icon} color={color} />
+              ))}
+            </Motion.div>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-12 space-y-3">
+            <div className={`opacity-15 ${color}`}>
+              {icon && React.isValidElement(icon)
+                ? React.cloneElement(icon, { size: 30, weight: 'thin' })
+                : null}
+            </div>
+            <p className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.25em] m-0">
+              No records found
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const ReviewsSection = ({ title, list = [], icon, color }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const safeList = Array.isArray(list) ? list : [];
+    const displayList = isExpanded ? safeList : safeList.slice(0, 6);
+    const hasMore = safeList.length > 6;
+
+    return (
+      <div className="bg-[#0D0D0D] p-10 lg:p-14 border-white/5 border-b lg:border-b-0 col-span-1 lg:col-span-2">
         <div className="flex items-center justify-between mb-10 border-b border-white/5 pb-6">
           <h3 className="text-3xl font-display text-[#F5EBE0] tracking-tight flex items-center gap-4 uppercase">
             {icon && React.isValidElement(icon) ? React.cloneElement(icon, { size: 28, weight: "bold", className: color }) : null} {title}
           </h3>
           <span className="text-[11px] font-accent text-[#AAAAAA] uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full">
-            {safeList.length} Series
+            {safeList.length} Reviews
           </span>
         </div>
         
         {safeList.length > 0 ? (
           <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {displayList.map((anime, idx) => (
-                <AnimeCard key={anime?.animeId || idx} anime={anime} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {displayList.map((review, idx) => (
+                <div 
+                  key={review.ratingId || idx}
+                  className="bg-[#050505] border border-white/5 rounded-xl p-5 hover:border-white/10 transition-all flex flex-col justify-between space-y-4"
+                >
+                  <div className="space-y-3">
+                    <div className="flex gap-4 items-start">
+                      {review.image_url_base_anime ? (
+                        <img 
+                          src={review.image_url_base_anime} 
+                          alt={review.animeName} 
+                          className="w-12 h-16 object-cover rounded-lg border border-white/5" 
+                        />
+                      ) : (
+                        <div className="w-12 h-16 bg-[#0F0F0F] rounded-lg border border-white/5 flex items-center justify-center">
+                          <TelevisionSimple size={20} className="text-white/20" />
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-display text-lg text-[#F5EBE0] hover:text-[#FF1F44] transition-colors leading-tight">
+                          <Link to={`/anime/${encodeURIComponent(review.animeName)}`}>
+                            {review.animeName}
+                          </Link>
+                        </h4>
+                        <div className="flex items-center gap-1 mt-1 text-[#D97706]">
+                          <Star size={14} weight="fill" />
+                          <span className="font-mono text-sm font-bold">{review.score}/10</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-[#AAAAAA] italic font-accent line-clamp-3 leading-relaxed">
+                      "{review.review_text}"
+                    </p>
+                  </div>
+                </div>
               ))}
             </div>
             
@@ -253,19 +367,19 @@ function UserProfilePage() {
                   className="flex flex-col items-center gap-2 group transition-all"
                   title={isExpanded ? "Show Less" : "View All"}
                 >
-                  <span className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.3em] group-hover:text-[#DD0426] transition-colors">
+                  <span className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.3em] group-hover:text-[#FF1F44] transition-colors">
                     {isExpanded ? "Collapse" : `Show All ${safeList.length}`}
                   </span>
-                  <div className={`p-2 rounded-full border border-white/10 group-hover:border-[#DD0426]/50 group-hover:bg-[#DD0426]/5 transition-all ${isExpanded ? 'rotate-180' : ''}`}>
-                    <CaretDown size={20} className="text-[#AAAAAA] group-hover:text-[#DD0426]" weight="bold" />
+                  <div className={`p-2 rounded-full border border-white/10 group-hover:border-[#FF1F44]/50 group-hover:bg-[#FF1F44]/5 transition-all ${isExpanded ? 'rotate-180' : ''}`}>
+                    <CaretDown size={20} className="text-[#AAAAAA] group-hover:text-[#FF1F44]" weight="bold" />
                   </div>
                 </button>
               </div>
             )}
           </div>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-center p-12 space-y-4 border border-dashed border-white/10 rounded-3xl">
-             <p className="text-[#AAAAAA] text-lg font-hand">No records found in this category.</p>
+          <div className="text-center py-10 border border-dashed border-white/5 rounded-xl">
+            <p className="text-xs text-[#AAAAAA] uppercase tracking-widest font-accent">No chronicles written yet.</p>
           </div>
         )}
       </div>
@@ -285,14 +399,14 @@ function UserProfilePage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
             
             {/* Col 1: ID Card */}
-            <Motion.div variants={itemVariants} className="ss-card rounded-[2.5rem] p-6 border border-white/10 shadow-2xl flex flex-col items-center bg-[#0D0D0D]/80 backdrop-blur-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-[#DD0426]/5 blur-3xl rounded-full" />
+            <Motion.div variants={itemVariants} className="ss-card rounded-xl p-6 border border-white/10 shadow-2xl flex flex-col items-center bg-[#0D0D0D]/80 backdrop-blur-xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-[#FF1F44]/5 blur-3xl rounded-full" />
               
               <div className="relative mb-4">
-                  <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#DD0426] shadow-[0_0_30px_rgba(221,4,38,0.2)]">
+                  <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#FF1F44] shadow-[0_0_30px_rgba(255,31,68,0.2)]">
                     <img src={profilePicSrc} alt={userProfile.userName} className="w-full h-full object-cover" />
                   </div>
-                  <div className="absolute -bottom-2 -right-2 bg-[#DD0426] text-white font-accent px-3 py-1.5 rounded-lg shadow-2xl text-[10px] border border-white/20 uppercase tracking-widest">
+                  <div className="absolute -bottom-2 -right-2 bg-[#FF1F44] text-white font-accent px-3 py-1.5 rounded-lg shadow-2xl text-[10px] border border-white/20 uppercase tracking-widest">
                     LVL {Math.floor(watchedCount / 5) + 1}
                   </div>
               </div>
@@ -310,23 +424,23 @@ function UserProfilePage() {
                   <div className="pt-4 border-t border-white/5 w-full">
                     <div className="flex justify-between items-end mb-2">
                         <span className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em]">Account Progress</span>
-                        <span className="text-[10px] font-accent font-bold text-[#DD0426] tracking-widest">{watchedCount} / {nextRankCount}</span>
+                        <span className="text-[10px] font-accent font-bold text-[#FF1F44] tracking-widest">{watchedCount} / {nextRankCount}</span>
                     </div>
                     <div className="h-2 w-full bg-black/40 rounded-full border border-white/10 p-0.5 overflow-hidden">
-                        <Motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} transition={{ duration: 2 }} className="h-full bg-gradient-to-r from-[#DD0426] to-[#FF2E93] rounded-full" />
+                        <Motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} transition={{ duration: 2 }} className="h-full bg-gradient-to-r from-[#FF1F44] to-[#FF2E93] rounded-full" />
                     </div>
                   </div>
               </div>
             </Motion.div>
 
             {/* Col 2: Semicircular Stats Chart */}
-            <Motion.div variants={itemVariants} className="ss-card rounded-[2.5rem] p-6 border border-white/10 bg-[#0D0D0D]/80 backdrop-blur-xl flex flex-col items-center justify-center relative overflow-hidden">
+            <Motion.div variants={itemVariants} className="ss-card rounded-xl p-6 border border-white/10 bg-[#0D0D0D]/80 backdrop-blur-xl flex flex-col items-center justify-center relative overflow-hidden">
                <div className="w-full h-40 relative">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={[
-                          { name: 'Watched', value: animeStats?.watched || 0, color: '#DD0426' },
+                          { name: 'Watched', value: animeStats?.watched || 0, color: '#FF1F44' },
                           { name: 'Watching', value: animeStats?.watching || 0, color: '#FFB302' },
                           { name: 'Saved', value: animeStats?.bookmarked || 0, color: '#AAAAAA' },
                           { name: 'Remaining', value: Math.max(0, (animeStats?.total || 1000) - (animeStats?.watched || 0) - (animeStats?.watching || 0)), color: 'rgba(255,255,255,0.05)' }
@@ -342,7 +456,7 @@ function UserProfilePage() {
                         stroke="none"
                       >
                         {[
-                          { name: 'Watched', color: '#DD0426' },
+                          { name: 'Watched', color: '#FF1F44' },
                           { name: 'Watching', color: '#FFB302' },
                           { name: 'Saved', color: '#AAAAAA' },
                           { name: 'Remaining', color: 'rgba(255,255,255,0.05)' }
@@ -350,7 +464,7 @@ function UserProfilePage() {
                           <Cell 
                             key={`cell-${index}`} 
                             fill={entry.color} 
-                            style={{ filter: entry.name !== 'Remaining' ? 'drop-shadow(0 0 8px rgba(221,4,38,0.2))' : 'none' }}
+                            style={{ filter: entry.name !== 'Remaining' ? 'drop-shadow(0 0 8px rgba(255,31,68,0.2))' : 'none' }}
                           />
                         ))}
                       </Pie>
@@ -377,17 +491,17 @@ function UserProfilePage() {
                   </div>
                </div>
                <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 text-[8px] font-accent uppercase tracking-widest font-black">
-                  <span className="flex items-center gap-2 text-[#DD0426]"><span className="w-2 h-2 rounded-full bg-[#DD0426] shadow-[0_0_10px_rgba(221,4,38,0.5)]"></span> Watched</span>
+                  <span className="flex items-center gap-2 text-[#FF1F44]"><span className="w-2 h-2 rounded-full bg-[#FF1F44] shadow-[0_0_10px_rgba(255,31,68,0.5)]"></span> Watched</span>
                   <span className="flex items-center gap-2 text-[#FFB302]"><span className="w-2 h-2 rounded-full bg-[#FFB302] shadow-[0_0_10px_rgba(255,179,2,0.5)]"></span> Watching</span>
                   <span className="flex items-center gap-2 text-[#AAAAAA]"><span className="w-2 h-2 rounded-full bg-[#AAAAAA]"></span> Saved</span>
                </div>
             </Motion.div>
 
             {/* Col 3: Connections */}
-            <Motion.div variants={itemVariants} className="ss-card rounded-[2.5rem] p-6 border border-white/10 bg-[#0D0D0D]/80 backdrop-blur-xl relative overflow-hidden group flex flex-col">
+            <Motion.div variants={itemVariants} className="ss-card rounded-xl p-6 border border-white/10 bg-[#0D0D0D]/80 backdrop-blur-xl relative overflow-hidden group flex flex-col">
                <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
                   <h3 className="text-[11px] font-accent text-[#F5EBE0] uppercase tracking-[0.2em] flex items-center gap-2">
-                     <UserCircle size={16} className="text-[#DD0426]" weight="bold" /> Connections
+                     <UserCircle size={16} className="text-[#FF1F44]" weight="bold" /> Connections
                   </h3>
                   <span className="text-[10px] font-accent text-[#AAAAAA] opacity-50">
                     {safeFriends.length} active
@@ -398,29 +512,29 @@ function UserProfilePage() {
                   {/* Pending Section - Only visible on user's own profile */}
                   {parseInt(userId) === currentUserId && pendingRequests.length > 0 && (
                     <div className="space-y-2 mb-6">
-                      <p className="text-[9px] font-accent text-[#DD0426] uppercase tracking-[0.2em] font-black mb-3 flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#DD0426] animate-pulse" /> Pending Requests
+                      <p className="text-[9px] font-accent text-[#FF1F44] uppercase tracking-[0.2em] font-black mb-3 flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#FF1F44] animate-pulse" /> Pending Requests
                       </p>
                       {pendingRequests.map((req) => (
-                        <div key={req.req_id} className="p-3 rounded-2xl bg-[#DD0426]/5 border border-[#DD0426]/20 space-y-3">
+                        <div key={req.req_id} className="p-3 rounded-2xl bg-[#FF1F44]/5 border border-[#FF1F44]/20 space-y-3">
                           <div className="flex items-center gap-3">
                             <Link to={`/profile/${req.sender_id}`} className="flex-shrink-0 group">
-                              <div className="w-8 h-8 rounded-lg overflow-hidden border border-[#DD0426]/30 transition-transform group-hover:scale-105">
+                              <div className="w-8 h-8 rounded-lg overflow-hidden border border-[#FF1F44]/30 transition-transform group-hover:scale-105">
                                 <img 
-                                  src={req.sender?.profilePicture || `https://ui-avatars.com/api/?name=${req.sender?.userName || 'U'}&background=DD0426&color=fff`} 
+                                  src={req.sender?.profilePicture || `https://ui-avatars.com/api/?name=${req.sender?.userName || 'U'}&background=FF1F44&color=fff`} 
                                   className="w-full h-full object-cover"
                                   alt=""
                                 />
                               </div>
                             </Link>
                             <Link to={`/profile/${req.sender_id}`} className="group">
-                              <span className="text-[11px] font-accent text-[#F5EBE0] font-bold group-hover:text-[#DD0426] transition-colors">{req.sender?.userName}</span>
+                              <span className="text-[11px] font-accent text-[#F5EBE0] font-bold group-hover:text-[#FF1F44] transition-colors">{req.sender?.userName}</span>
                             </Link>
                           </div>
                           <div className="flex items-center gap-2">
                             <button 
                               onClick={() => handleFriendAction(req.sender_id, "ACCEPT")}
-                              className="flex-grow py-1.5 bg-[#DD0426] hover:bg-[#A10A24] text-white text-[9px] font-accent uppercase tracking-widest rounded-lg transition-all"
+                              className="flex-grow py-1.5 bg-[#FF1F44] hover:bg-[#CC0030] text-white text-[9px] font-accent uppercase tracking-widest rounded-lg transition-all"
                             >
                               Accept
                             </button>
@@ -447,19 +561,19 @@ function UserProfilePage() {
                             className="group/item flex flex-col items-center gap-1.5 p-1 rounded-xl hover:bg-white/[0.03] transition-all w-full max-w-[60px] relative"
                             title={friend.userName}
                           >
-                             <div className="w-7 h-7 rounded-full overflow-hidden border border-white/10 bg-[#111] group-hover/item:border-[#DD0426]/50 transition-colors">
+                             <div className="w-7 h-7 rounded-full overflow-hidden border border-white/10 bg-[#111] group-hover/item:border-[#FF1F44]/50 transition-colors">
                                 {friend.profilePicture ? (
                                   <img src={friend.profilePicture} alt="" className="w-full h-full object-cover" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
-                                    <UserCircle size={14} className="text-[#333] group-hover/item:text-[#DD0426] transition-colors" />
+                                    <UserCircle size={14} className="text-[#333] group-hover/item:text-[#FF1F44] transition-colors" />
                                   </div>
                                 )}
                              </div>
                              <p className="text-[7px] font-accent text-[#AAAAAA] group-hover/item:text-[#F5EBE0] transition-colors truncate w-full text-center px-0.5">
                                 {friend.userName}
                              </p>
-                             <div className="absolute top-0 right-1 w-1 h-1 rounded-full bg-[#DD0426] opacity-40 group-hover/item:opacity-100 animate-pulse" />
+                             <div className="absolute top-0 right-1 w-1 h-1 rounded-full bg-[#FF1F44] opacity-40 group-hover/item:opacity-100 animate-pulse" />
                           </Link>
                         ))}
                         {/* Fill empty grid slots for consistent layout */}
@@ -473,7 +587,7 @@ function UserProfilePage() {
                            <button 
                              onClick={() => setFriendPage(p => Math.max(0, p - 1))}
                              disabled={friendPage === 0}
-                             className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-20 transition-all text-[#AAAAAA] hover:text-[#DD0426]"
+                             className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-20 transition-all text-[#AAAAAA] hover:text-[#FF1F44]"
                            >
                              <CaretLeft size={16} weight="bold" />
                            </button>
@@ -483,7 +597,7 @@ function UserProfilePage() {
                            <button 
                              onClick={() => setFriendPage(p => Math.min(Math.ceil(safeFriends.length / 9) - 1, p + 1))}
                              disabled={friendPage >= Math.ceil(safeFriends.length / 9) - 1}
-                             className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-20 transition-all text-[#AAAAAA] hover:text-[#DD0426]"
+                             className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-20 transition-all text-[#AAAAAA] hover:text-[#FF1F44]"
                            >
                              <CaretRight size={16} weight="bold" />
                            </button>
@@ -500,7 +614,7 @@ function UserProfilePage() {
                
                <button 
                   onClick={() => setIsFriendSearchOpen(true)}
-                  className="mt-4 w-full py-2 bg-white/5 rounded-xl text-[9px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em] hover:bg-[#DD0426]/10 hover:text-[#DD0426] transition-all border border-white/5"
+                  className="mt-4 w-full py-2 bg-white/5 rounded-xl text-[9px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em] hover:bg-[#FF1F44]/10 hover:text-[#FF1F44] transition-all border border-white/5"
                >
                   Find Connections
                </button>
@@ -515,41 +629,12 @@ function UserProfilePage() {
 
 
           {/* Structured Activity Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-white/10 border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
-             
-             {/* Cell 1: User Statistics */}
-             <div className="bg-[#0D0D0D] p-10 lg:p-14 space-y-10">
-                <div className="flex items-center gap-4 mb-8">
-                   <div className="w-12 h-12 rounded-xl bg-[#DD0426]/10 flex items-center justify-center">
-                      <Lightning size={28} weight="bold" className="text-[#DD0426]" />
-                   </div>
-                   <h3 className="text-3xl font-display text-[#F5EBE0] tracking-tight uppercase">User Statistics</h3>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-6">
-                   {[
-                     { label: 'Completed Series', value: userProfile.anime_watched_count || 0, icon: <Trophy />, color: 'text-[#DD0426]' },
-                     { label: 'Currently Watching', value: userProfile.anime_watching_count || 0, icon: <Play />, color: 'text-[#F5EBE0]' },
-                     { label: 'Saved Records', value: userProfile.anime_bookmarked_count || 0, icon: <BookmarksSimple />, color: 'text-[#D97706]' },
-                     { label: 'Account Rank', value: `LVL ${Math.max(1, Math.floor((userProfile.anime_watched_count || 0) / 5))}`, icon: <Medal />, color: 'text-[#AAAAAA]' }
-                   ].map((stat, i) => (
-                     <div key={i} className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 hover:border-white/20 transition-all group">
-                        <div className={`mb-4 ${stat.color} opacity-40 group-hover:opacity-100 transition-opacity`}>
-                           {React.cloneElement(stat.icon, { size: 24, weight: 'bold' })}
-                        </div>
-                        <p className="text-[10px] font-accent text-[#AAAAAA] uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-                        <p className="text-3xl font-display text-[#F5EBE0]">{stat.value}</p>
-                     </div>
-                   ))}
-                </div>
-
-             </div>
-
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
              <AnimeSection 
                 title="Watching Anime" 
                 list={userProfile.watchingAnime || []} 
                 icon={<Stack />} 
-                color="text-[#DD0426]" 
+                color="text-[#FF1F44]" 
              />
 
              <AnimeSection 
@@ -563,14 +648,24 @@ function UserProfilePage() {
                 title="Watched Anime" 
                 list={userProfile.watchedAnime || []} 
                 icon={<Trophy />} 
-                color="text-[#DD0426]" 
+                color="text-[#FF1F44]" 
+             />
+          </div>
+
+          {/* Reviews Section */}
+          <div className="bg-[#0D0D0D] border border-white/10 shadow-2xl">
+             <ReviewsSection 
+                title="Anime Reviews & Ratings" 
+                list={userProfile.ratings || []} 
+                icon={<Star />} 
+                color="text-[#E0206F]" 
              />
           </div>
 
           {/* Gallery Section */}
           <div className="pt-20">
              <div className="flex flex-col items-center mb-16 space-y-4 text-center">
-                <div className="w-16 h-px bg-[#DD0426]" />
+                <div className="w-16 h-px bg-[#FF1F44]" />
                 <h3 className="text-4xl md:text-5xl font-display font-black text-[#F5EBE0] tracking-tight uppercase">
                   Personal Gallery
                 </h3>

@@ -147,6 +147,16 @@ export const rateAnime = async (ratingData) => {
   });
 };
 
+export const updateAnimeRating = async (ratingData) => {
+  return fetchData(`${API_BASE_URL}/update_anime_rating`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(ratingData),
+  });
+};
+
 export const getAllGenres = async () => {
     return fetchData(`${API_BASE_URL}/genres/all`);
 };
@@ -185,7 +195,6 @@ export const getCountries = async() => {
 }
 
 export const getAnimeStats = async(user_id) => {
-
   return fetchData(`${API_BASE_URL}/anime/stats/${user_id}`)
 }
 
@@ -274,9 +283,7 @@ export const removeFromWatching = async(animeListUpdate) => {
 }
 
 export const getUserProfile = async(user_id) => {
-
   return fetchData(`${API_BASE_URL}/profile/${user_id}`);
-  
 }
 export const updateWatchList = async (userId, animeId, status) => {
   const endpoint = status === 'watched' ? 'add-to-watched-list/' : 'add-to-watching-list/';
