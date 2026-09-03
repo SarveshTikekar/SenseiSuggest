@@ -7,9 +7,15 @@ def process_data(ratings_df, anime_df, users_df, locations_df, genres_df, season
     print(f"\n\n{users_df.columns}")
     """ First we do the datatype conversion to true datatypes for columns """
 
-    anime_df['genres'] = anime_df['genres'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-    users_df['watchedAnime'] = users_df['watchedAnime'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
-    users_df['watchingAnime'] = users_df['watchingAnime'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
+    anime_df['genres'] = anime_df['genres'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else (x if isinstance(x, list) else []))
+    if 'watchedAnime' in users_df.columns:
+        users_df['watchedAnime'] = users_df['watchedAnime'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else (x if isinstance(x, list) else []))
+    else:
+        users_df['watchedAnime'] = [[] for _ in range(len(users_df))]
+    if 'watchingAnime' in users_df.columns:
+        users_df['watchingAnime'] = users_df['watchingAnime'].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else (x if isinstance(x, list) else []))
+    else:
+        users_df['watchingAnime'] = [[] for _ in range(len(users_df))]
 
     """Then we perform some date conversions"""
     
@@ -59,7 +65,11 @@ def process_data(ratings_df, anime_df, users_df, locations_df, genres_df, season
 
 
     """Converting Genre Dataframe to Dictionary """
-    genres_map = genres_df.set_index('genreId')['name'].to_dict()
+    # Build genre map safely — genres table may be empty
+    if not genres_df.empty and 'genreId' in genres_df.columns:
+        genres_map = genres_df.set_index('genreId')['name'].to_dict()
+    else:
+        genres_map = {}
 
     merged_df['genre_names'] = merged_df['genres'].apply(
 

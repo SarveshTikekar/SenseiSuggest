@@ -63,6 +63,15 @@ def root():
         "message": "Welcome to Anime Recommendation system by Sarvesh. Pls login or sign up if ur a new user"
     }
 
+# For testing purposes
+@app.get("/test", status_code=status.HTTP_200_OK)
+async def test(supabase: AsyncClient = Depends(get_supabase)):
+
+    releaseYear = {(datetime.strptime(result.get("releaseDate"), "%Y-%m-%d").year) for result in (await supabase.table("anime").select("releaseDate").execute()).data}
+
+    studios = {result.get("studio").title() for result in (await supabase.table("anime").select("studio").execute()).data}
+
+    return {"relYear": releaseYear, "studios": studios}
 
 """ Anime APIs are declared here """
 
@@ -147,9 +156,21 @@ async def get_all_anime(supabase: AsyncClient = Depends(get_supabase)):
                 animeName=result["animeName"],
                 image_url_base_anime=result.get("image_url_base_anime"),
                 animeId=result["animeId"],
+                releaseDate=result.get("releaseDate"),
+                studio=result.get("studio"),
             )
         )
-    return list_of_animes
+
+    # Get filters as well once and cache it on client side
+    
+    """ Release Year filter """
+    releaseYear = {(datetime.strptime(result.get("releaseDate"), "%Y-%m-%d").year) for result in (await supabase.table("anime").select("releaseDate").execute()).data}
+
+    """ Studio filter"""
+    studios = {result.get("studio").title() for result in (await supabase.table("anime").select("studio").execute()).data}
+
+    
+    return {"AnimeList": list_of_animes, "Filters": {"ReleaseYear": sorted(list(releaseYear), reverse=True), "Studios": sorted(list(studios))}}
 
 
 # Get specific anime Info
@@ -331,10 +352,21 @@ async def recommendations(user_id: int, supabase: AsyncClient = Depends(get_supa
         id_map = {a["animeId"]: a for a in resp.data}
         return [id_map[aid] for aid in ids if aid in id_map]
 
+    # Fetch 3 newest anime by releaseDate — no popularity/rating condition
+    newest_resp = (
+        await supabase.table("anime")
+        .select("*")
+        .order("releaseDate", desc=True)
+        .limit(3)
+        .execute()
+    )
+    newest_anime = newest_resp.data if newest_resp.data else []
+
     categorized_results = {
         "primary": await get_detailed_anime(recom_dict.get("primary", [])),
         "contextual": await get_detailed_anime(recom_dict.get("contextual", [])),
         "discovery": await get_detailed_anime(recom_dict.get("discovery", [])),
+        "newest": newest_anime,
     }
 
     # For backward compatibility and analytics
@@ -433,6 +465,7 @@ async def recommendations(user_id: int, supabase: AsyncClient = Depends(get_supa
         else "AI Personalized Picks",
         "contextual": "New & Hot Releases" if is_cold_start else "Because you watched",
         "discovery": "Global Hall of Fame" if is_cold_start else "Discovery Zone",
+        "newest": "Just Dropped",
     }
 
     return {

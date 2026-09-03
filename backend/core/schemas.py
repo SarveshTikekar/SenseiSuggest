@@ -202,6 +202,8 @@ class browseAnime(BaseModel):
     animeId: int
     animeName: str
     image_url_base_anime: Optional[str]
+    releaseDate: Optional[datetime] = None
+    studio: Optional[str] = None
     model_config = ConfigDict(from_attributes=True)
 
 

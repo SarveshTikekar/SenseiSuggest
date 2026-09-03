@@ -7,7 +7,7 @@ This method addresses the Cold-Start problem for new users by providing:
 
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def popularity_fallback_recommender(user_id, merged_df, anime_df, users_df, number_of_recommendations=10):
     print(f"Generating Regional & Popularity-based recommendations for User {user_id}")
@@ -36,7 +36,7 @@ def popularity_fallback_recommender(user_id, merged_df, anime_df, users_df, numb
     recommendations = []
     
     # Threshold for reporting regional trends (Privacy & Significance)
-    MIN_USERS_FOR_REGION = 10
+    MIN_USERS_FOR_REGION = 3
 
     # --- PART A: REGIONAL TRENDS (State -> Country) ---
     regional_candidates = []
@@ -61,18 +61,14 @@ def popularity_fallback_recommender(user_id, merged_df, anime_df, users_df, numb
 
     recommendations.extend(regional_candidates)
 
-    # --- PART B: NEW & HOT (Recency + Rating) ---
-    six_months_ago = datetime.now() - timedelta(days=180)
+    # --- PART B: NEWEST RELEASES (Pure recency, no date window) ---
     anime_df['releaseDate'] = pd.to_datetime(anime_df['releaseDate'], errors='coerce')
-    
-    recent_anime = anime_df[(anime_df['releaseDate'] >= six_months_ago)]
-    if not recent_anime.empty:
-        # Sort by release date and take IDs not watched
-        recent_top = recent_anime[~recent_anime['animeId'].isin(user_watched)].sort_values(by='releaseDate', ascending=False)
+    recent_top = anime_df[~anime_df['animeId'].isin(user_watched)].sort_values(by='releaseDate', ascending=False)
+    if not recent_top.empty:
         recommendations.extend(recent_top.head(3)['animeId'].tolist())
 
     # --- PART C: GLOBAL ALL-TIME FAVORITES (Bayesian Weighting) ---
-    m = 5 # min ratings
+    m = 2 # min ratings
     C = merged_df['score'].mean() if not merged_df.empty else 7.0
     
     if not merged_df.empty:

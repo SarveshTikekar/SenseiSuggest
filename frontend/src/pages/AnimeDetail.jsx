@@ -105,6 +105,8 @@ function AnimeDetailPage() {
   const [imgError, setImgError]     = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [hasExistingRating, setHasExistingRating] = useState(false);
+  const boundedRating = Math.min(10, Math.max(0, Number.isFinite(rating) ? rating : 0));
+  const roundedRating = Math.round(boundedRating);
 
   // Scrapbook State
   const [scrapbookPhotos, setScrapbookPhotos] = useState([]);
@@ -297,9 +299,6 @@ function AnimeDetailPage() {
 
   return (
     <div className="min-h-screen">
-      {/* ══════════════════════════════════════════════════
-          CINEMATIC HERO — blurred poster backdrop
-          ══════════════════════════════════════════════════ */}
       <div className="relative">
         {/* Blurred backdrop */}
         <div className="absolute inset-0 overflow-hidden" style={{ height: '440px' }}>
@@ -633,11 +632,10 @@ function AnimeDetailPage() {
 
             {/* Review Chronicle Module */}
             <section
-              className="rounded-xl overflow-hidden border border-[#AAAAAA]/10"
-              style={{ background: 'rgba(186,175,184,0.03)' }}
+              className="rounded-xl overflow-hidden border border-[#AAAAAA]/20 bg-[#111111]/80 shadow-[0_18px_45px_rgba(0,0,0,0.35)]"
             >
-              <div className="p-5 border-b border-[#AAAAAA]/10">
-                <h3 className="text-[#F5EBE0] text-xs font-display flex items-center gap-2">
+              <div className="p-5 border-b border-[#AAAAAA]/15">
+                <h3 className="text-[#F5EBE0] text-sm font-display flex items-center gap-2">
                   <span className="w-0.5 h-3 bg-[#DD0426]" />
                   Rating & Review
                 </h3>
@@ -645,40 +643,43 @@ function AnimeDetailPage() {
               
               <div className="p-5 space-y-8 relative">
                 {/* Background Accent */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#DD0426]/5 blur-[60px] pointer-events-none" />
+                <div className="absolute top-0 right-0 w-28 h-28 bg-[#DD0426]/8 blur-[56px] pointer-events-none" />
 
                 {userId ? (
                   <form onSubmit={handleRate} className="space-y-8 relative z-10">
                     {/* Direct Drag Caliper Section */}
                     <div className="space-y-6">
                       <div className="flex items-center justify-between">
-                        <p className="text-[#AAAAAA] text-[9px] font-accent uppercase tracking-widest">Score</p>
-                        <div className="flex items-baseline gap-0.5">
-                          <span className="text-[#DD0426] font-display text-3xl leading-none">
-                            {rating ? Math.round(rating) : 0}
+                        <div>
+                          <p className="text-[#F5EBE0] text-[11px] font-accent uppercase tracking-widest">Your Score</p>
+                          <p className="text-[#AAAAAA] text-[11px] font-accent mt-1">Choose a rating from 0 to 10</p>
+                        </div>
+                        <div className="flex items-baseline gap-1 px-3 py-1.5">
+                          <span className="text-[#F5EBE0] font-display text-3xl leading-none">
+                            {roundedRating}
                           </span>
-                          <span className="text-[#AAAAAA]/30 text-[9px] font-accent tracking-tighter">/ 10</span>
+                          <span className="text-[#DD0426] text-[10px] font-accent tracking-widest">/ 10</span>
                         </div>
                       </div>
                       
                       {/* Caliper Track */}
-                      <div className="relative h-14 bg-white/[0.02] rounded-xl border border-white/[0.05] overflow-visible">
+                      <div className="relative h-16 bg-[#0D0D0D] rounded-xl border border-[#AAAAAA]/20 overflow-visible shadow-inner">
 
                         {/* Number Line — centered vertically */}
                         <div className="absolute inset-0 flex items-center px-4">
                           {/* Scale baseline */}
-                          <div className="absolute left-4 right-4 h-[1px] bg-white/10" />
+                          <div className="absolute left-4 right-4 h-[2px] rounded-full bg-[#AAAAAA]/20" />
 
                           {/* Numbers + ticks */}
                           <div className="relative w-full flex justify-between items-center">
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => {
-                              const isSelected = Math.round(rating) === num;
+                            {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => {
+                              const isSelected = roundedRating === num;
                               return (
                                 <div
                                   key={num}
                                   onClick={() => setRating(num)}
                                   className="flex flex-col items-center gap-1 cursor-pointer"
-                                  style={{ width: '10%' }}
+                                  style={{ width: `${100 / 11}%` }}
                                 >
                                   <Motion.span
                                     animate={{
@@ -687,11 +688,11 @@ function AnimeDetailPage() {
                                       color: isSelected ? '#DD0426' : '#F5EBE0'
                                     }}
                                     transition={{ type: 'spring', damping: 20, stiffness: 1000 }}
-                                    className="font-display text-[11px] leading-none"
+                                    className="font-accent text-[12px] font-bold leading-none"
                                   >
                                     {num}
                                   </Motion.span>
-                                  <div className={`w-px ${num % 5 === 0 ? 'h-2.5 bg-[#DD0426]/50' : 'h-1.5 bg-white/20'}`} />
+                                  <div className={`w-px ${num % 5 === 0 ? 'h-3 bg-[#DD0426]/70' : 'h-2 bg-[#AAAAAA]/35'}`} />
                                 </div>
                               );
                             })}
@@ -701,12 +702,12 @@ function AnimeDetailPage() {
                         {/* Lens — anchored to exact same left/right as numbers */}
                         <div className="absolute left-4 right-4 top-0 bottom-0 pointer-events-none">
                           <Motion.div
-                            className="absolute top-1/2 -translate-y-1/2 border-2 border-[#DD0426] rounded-lg bg-[#DD0426]/5"
+                            className="absolute top-1/2 -translate-y-1/2 border-2 border-[#DD0426] rounded-lg bg-[#DD0426]/15"
                             animate={{
-                              left: rating === 0 ? `calc(5% - 1.25rem)` : `calc(5% + (90% * ${(rating - 1) / 9}) - 1.25rem)`,
+                              left: `clamp(0rem, calc(${roundedRating * 10}% - 1.25rem), calc(100% - 2.5rem))`,
                               // always visible
                               opacity: 1,
-                              boxShadow: '0 0 18px rgba(221,4,38,0.25)'
+                              boxShadow: '0 0 22px rgba(221,4,38,0.35)'
                             }}
                             transition={{ type: 'spring', damping: 80, stiffness: 5000 }}
                             style={{ width: '2.5rem', height: '2.75rem' }}
@@ -719,11 +720,15 @@ function AnimeDetailPage() {
                         {/* Invisible drag input */}
                         <input
                           type="range" min="0" max="10" step="0.01"
-                          value={rating}
-                          onChange={(e) => setRating(parseFloat(e.target.value))}
-                          onMouseUp={() => setRating(Math.round(rating))}
-                          onTouchEnd={() => setRating(Math.round(rating))}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30"
+                          aria-label="Rating score"
+                          value={boundedRating}
+                          onChange={(e) => {
+                            const value = parseFloat(e.target.value);
+                            setRating(Math.min(10, Math.max(0, Number.isFinite(value) ? value : 0)));
+                          }}
+                          onMouseUp={() => setRating(roundedRating)}
+                          onTouchEnd={() => setRating(roundedRating)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30 focus-visible:opacity-100 focus-visible:[accent-color:#DD0426]"
                         />
                       </div>
                     </div>

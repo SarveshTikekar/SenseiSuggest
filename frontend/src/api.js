@@ -37,7 +37,33 @@ export const getRecommendations = async (userId) => {
 
 
 export const getAllAnime = async () => {
-  return fetchData(`${API_BASE_URL}/anime/all`);
+  const response = await fetchData(`${API_BASE_URL}/anime/all`);
+  if (Array.isArray(response)) return response;
+  return response?.AnimeList || [];
+};
+
+const allAnimeBundleCache = new Map();
+
+export const getAllAnimeBundle = async ({ releaseYears = [], studios = [] } = {}) => {
+  const params = new URLSearchParams();
+  releaseYears.forEach((year) => params.append('release_year', year));
+  studios.forEach((studio) => params.append('studio', studio));
+
+  const cacheKey = params.toString() || '__default__';
+  if (allAnimeBundleCache.has(cacheKey)) {
+    return allAnimeBundleCache.get(cacheKey);
+  }
+
+  const response = await fetchData(`${API_BASE_URL}/anime/all${params.toString() ? `?${params.toString()}` : ''}`);
+  const normalized = Array.isArray(response)
+    ? { AnimeList: response, Filters: { ReleaseYear: [], Studios: [] } }
+    : {
+        AnimeList: response?.AnimeList || [],
+        Filters: response?.Filters || { ReleaseYear: [], Studios: [] },
+      };
+
+  allAnimeBundleCache.set(cacheKey, normalized);
+  return normalized;
 };
 
 

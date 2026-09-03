@@ -1,20 +1,21 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { getSortedAnime } from '../api';
+import { getAllAnimeBundle } from '../api';
 import { Link }       from 'react-router-dom';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   SortAscending, SortDescending,
-  FilmSlate, CalendarBlank, Star, Funnel,
+  CalendarDots, FilmSlate, Funnel, MonitorPlay, Factory,
   CaretLeft, CaretRight, Info
 } from '@phosphor-icons/react';
+import AnimeFilterBar from '../components/AnimeFilterBar';
 
 /* ─── Skeleton card ─── */
 const SkeletonCard = () => (
   <div className="ss-anime-card">
     <div className="ss-anime-card__img-container ss-skeleton" />
-    <div className="ss-anime-card__body py-4 px-5">
-      <div className="ss-skeleton rounded mb-2" style={{ height: '14px', width: '90%' }} />
-      <div className="ss-skeleton rounded" style={{ height: '11px', width: '50%' }} />
+    <div className="ss-anime-card__body py-3 px-4">
+      <div className="ss-skeleton rounded mb-2" style={{ height: '12px', width: '90%' }} />
+      <div className="ss-skeleton rounded" style={{ height: '10px', width: '50%' }} />
     </div>
   </div>
 );
@@ -42,33 +43,34 @@ const AnimeCard = ({ anime, index }) => {
             onError={e => { e.target.onerror = null; e.target.src = 'https://placehold.co/400x225/131316/3A3A4A?text=Image+Missing'; }}
           />
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-             <div className="flex items-center gap-1.5 text-[12px] font-accent text-[#FF1F44] font-bold uppercase tracking-widest bg-black/80 backdrop-blur-md px-4 py-2 rounded-lg border border-[#FF1F44]/40 shadow-lg">
-                <Info size={13} weight="bold" /> View Details
+             <div className="flex items-center gap-1.5 text-[10px] font-accent text-[#FF1F44] font-bold uppercase tracking-widest bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#FF1F44]/40 shadow-lg">
+                <Info size={12} weight="bold" /> View Details
              </div>
           </div>
         </div>
         
-        <div className="ss-anime-card__body p-3.5 space-y-2 text-center">
+        <div className="ss-anime-card__body p-3 space-y-1.5 text-center">
           <div className="flex items-center justify-center gap-2">
-            <p className="font-accent text-[12px] text-[#F5EBE0] line-clamp-1 group-hover:text-[#FF1F44] transition-colors tracking-wide uppercase font-bold w-full text-center">
+            <p className="font-accent text-[11px] text-[#F5EBE0] line-clamp-1 group-hover:text-[#FF1F44] transition-colors tracking-wide uppercase font-bold w-full text-center">
               {anime.animeName}
             </p>
           </div>
-          <div className="flex items-center justify-center gap-2 pt-1 border-t border-white/5 flex-wrap">
+          <div className="flex items-center justify-center gap-x-2 gap-y-1 pt-1 border-t border-white/5 flex-wrap">
             {year && (
-              <span className="text-[12px] font-accent text-white font-bold tracking-wider">{year}</span>
+              <span className="inline-flex items-center gap-1 text-[10px] font-accent text-white font-bold tracking-wider">
+                <CalendarDots size={11} weight="bold" className="text-[#AAAAAA]" />
+                {year}
+              </span>
             )}
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FF1F44]" />
-            <p className="text-[12px] text-white font-accent uppercase tracking-tighter font-bold">
+            <span className="inline-flex items-center gap-1 text-[10px] text-white font-accent uppercase tracking-tighter font-bold">
+              <MonitorPlay size={11} weight="bold" className="text-[#AAAAAA]" />
               Sub | Dub
-            </p>
+            </span>
             {anime.studio && (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FF1F44]" />
-                <p className="text-[11px] font-accent text-[#FF1F44] uppercase tracking-[0.15em] font-black truncate">
-                  {anime.studio}
-                </p>
-              </>
+              <span className="inline-flex min-w-0 max-w-full items-center gap-1 text-[10px] font-accent text-[#FF1F44] uppercase tracking-[0.15em] font-black">
+                <Factory size={11} weight="bold" className="shrink-0 text-[#AAAAAA]" />
+                <span className="truncate">{anime.studio}</span>
+              </span>
             )}
           </div>
         </div>
@@ -80,6 +82,10 @@ const AnimeCard = ({ anime, index }) => {
 /* ─── Main page ─── */
 function BrowseAnimePage() {
   const [animeList, setAnimeList] = useState([]);
+  const [releaseYears, setReleaseYears] = useState([]);
+  const [studios, setStudios] = useState([]);
+  const [selectedYears, setSelectedYears] = useState([]);
+  const [selectedStudios, setSelectedStudios] = useState([]);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -89,16 +95,47 @@ function BrowseAnimePage() {
 
   useEffect(() => {
     setLoading(true);
-    getSortedAnime(sortBy, sortOrder)
-      .then(d => setAnimeList(d))
+    getAllAnimeBundle({ releaseYears: selectedYears, studios: selectedStudios })
+      .then(bundle => {
+        const allAnime = bundle?.AnimeList || [];
+        const filters = bundle?.Filters || {};
+        setAnimeList(allAnime);
+        setReleaseYears((filters.ReleaseYear || []).map(String));
+        setStudios((filters.Studios || []).map(String));
+      })
       .catch(e => setError(e.message || 'Failed to load.'))
       .finally(() => setLoading(false));
-  }, [sortBy, sortOrder]);
+  }, [selectedYears, selectedStudios]);
 
-  useEffect(() => { setCurrentPage(1); }, [sortBy, sortOrder]);
+  useEffect(() => { setCurrentPage(1); }, [sortBy, sortOrder, selectedYears, selectedStudios]);
 
-  const total  = Math.ceil(animeList.length / ITEMS);
-  const paged  = useMemo(() => animeList.slice((currentPage - 1) * ITEMS, currentPage * ITEMS), [animeList, currentPage]);
+  const filteredAnimeList = useMemo(() => {
+    return animeList.filter((anime) => {
+      const animeYear = anime.releaseDate ? new Date(anime.releaseDate).getFullYear().toString() : '';
+      const matchesYear = selectedYears.length === 0 || selectedYears.includes(animeYear);
+      const studioName = (anime.studio || '').toLowerCase();
+      const matchesStudio = selectedStudios.length === 0 || selectedStudios.some((name) => name.toLowerCase() === studioName);
+      return matchesYear && matchesStudio;
+    });
+  }, [animeList, selectedYears, selectedStudios]);
+
+  const sortedAnimeList = useMemo(() => {
+    return [...filteredAnimeList].sort((a, b) => {
+      const left = sortBy === 'releaseDate'
+        ? (a.releaseDate || '')
+        : (a.animeName || '').toLowerCase();
+      const right = sortBy === 'releaseDate'
+        ? (b.releaseDate || '')
+        : (b.animeName || '').toLowerCase();
+
+      if (left < right) return sortOrder === 'asc' ? -1 : 1;
+      if (left > right) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [filteredAnimeList, sortBy, sortOrder]);
+
+  const total  = Math.ceil(sortedAnimeList.length / ITEMS);
+  const paged  = useMemo(() => sortedAnimeList.slice((currentPage - 1) * ITEMS, currentPage * ITEMS), [sortedAnimeList, currentPage]);
 
   const pages = () => {
     if (total <= 7) return [...Array(total)].map((_, i) => i + 1);
@@ -108,10 +145,10 @@ function BrowseAnimePage() {
   };
 
   if (loading) return (
-    <div className="max-w-[1880px] mx-auto py-12 px-8">
-      <div className="ss-skeleton rounded h-12 w-48 mb-4" />
-      <div className="ss-skeleton rounded h-4 w-64 mb-12" />
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+    <div className="max-w-[1700px] mx-auto py-10 px-5 sm:px-6 lg:px-8">
+      <div className="ss-skeleton rounded h-10 w-40 mb-4" />
+      <div className="ss-skeleton rounded h-3 w-56 mb-10" />
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 lg:gap-6">
         {[...Array(10)].map((_, i) => <SkeletonCard key={i} />)}
       </div>
     </div>
@@ -125,28 +162,42 @@ function BrowseAnimePage() {
   );
 
   return (
-    <div className="max-w-[1880px] mx-auto py-12 px-4 sm:px-8 lg:px-12 min-h-screen flex flex-col">
+    <div className="max-w-[1700px] mx-auto py-10 px-4 sm:px-6 lg:px-8 min-h-screen flex flex-col">
 
       {/* Header — compact, premium */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 relative">
-        <div className="absolute -top-12 -left-12 w-64 h-64 bg-[#FF1F44]/5 blur-3xl rounded-full pointer-events-none" />
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 relative">
+        <div className="absolute -top-10 -left-10 w-48 h-48 bg-[#FF1F44]/5 blur-3xl rounded-full pointer-events-none" />
         
         <div className="relative z-10">
-          <h1 className="font-display text-[#F5EBE0] text-5xl lg:text-7xl uppercase tracking-tighter">
+          <h1 className="font-display text-[#F5EBE0] text-4xl lg:text-6xl uppercase tracking-tighter">
             Library
           </h1>
         </div>
 
-        {/* Sort controls — premium feel */}
-        <div className="flex flex-wrap items-center gap-3 relative z-10">
-          <div className="flex items-center bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
-            <div className="px-3 border-r border-white/5 h-full flex items-center">
-               <Funnel size={14} weight="bold" className="text-[#AAAAAA]" />
+        {/* Sort and filter controls */}
+        <div className="flex w-full flex-col gap-3 relative z-10 md:w-auto lg:flex-row lg:items-center lg:justify-end">
+          <AnimeFilterBar
+            selectedYears={selectedYears}
+            setSelectedYears={setSelectedYears}
+            selectedStudios={selectedStudios}
+            setSelectedStudios={setSelectedStudios}
+            releaseYears={releaseYears}
+            studios={studios}
+            onClear={() => {
+              setSelectedYears([]);
+              setSelectedStudios([]);
+            }}
+          />
+
+          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex h-9 items-center bg-[#111] border border-white/10 rounded-xl overflow-hidden shadow-xl">
+            <div className="px-2.5 border-r border-white/5 h-full flex items-center">
+               <Funnel size={13} weight="bold" className="text-[#AAAAAA]" />
             </div>
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}
-              className="bg-transparent border-none py-2.5 pr-8 pl-3 text-[10px] font-accent text-[#F5EBE0] uppercase tracking-widest focus:ring-0 cursor-pointer"
+              className="h-9 bg-transparent border-none py-0 pr-8 pl-2.5 text-[10px] font-accent text-[#F5EBE0] uppercase tracking-widest focus:ring-0 cursor-pointer"
             >
               <option value="animeName">By Name</option>
               <option value="releaseDate">By Timeline</option>
@@ -155,9 +206,9 @@ function BrowseAnimePage() {
 
           <button
             onClick={() => setSortOrder(p => p === 'asc' ? 'desc' : 'asc')}
-            className={`flex items-center gap-2 py-2.5 px-4 rounded-xl font-accent text-[10px] uppercase tracking-widest transition-all border ${
+            className={`h-9 flex items-center gap-2 px-3 rounded-xl font-accent text-[10px] uppercase tracking-widest transition-all border ${
               sortOrder === 'asc' 
-              ? 'bg-[#FF1F44]/10 border-[#FF1F44]/30 text-[#FF1F44] shadow-[0_0_20px_rgba(255,31,68,0.1)]' 
+              ? 'bg-[#FF1F44]/10 border-[#FF1F44]/30 text-[#FF1F44] shadow-[0_0_14px_rgba(255,31,68,0.08)]' 
               : 'bg-white/5 border-white/10 text-[#AAAAAA] hover:bg-white/10'
             }`}
           >
@@ -170,64 +221,56 @@ function BrowseAnimePage() {
                 transition={{ duration: 0.2 }}
                 className="flex items-center gap-2"
               >
-                {sortOrder === 'asc' ? <SortAscending size={16} weight="bold" /> : <SortDescending size={16} weight="bold" />}
+                {sortOrder === 'asc' ? <SortAscending size={14} weight="bold" /> : <SortDescending size={14} weight="bold" />}
                 {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
               </Motion.div>
             </AnimatePresence>
           </button>
+          </div>
         </div>
       </div>
 
       {/* Grid — fixed 6 per row */}
-      {animeList.length === 0 ? (
-        <div className="flex-grow flex flex-col items-center justify-center py-32 text-center">
-           <div className="w-16 h-16 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center mb-6">
-              <FilmSlate size={32} className="text-[#333]" />
+      {sortedAnimeList.length === 0 ? (
+        <div className="flex-grow flex flex-col items-center justify-center py-24 text-center">
+           <div className="w-14 h-14 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center mb-5">
+              <FilmSlate size={28} className="text-[#333]" />
            </div>
-           <p className="text-[#AAAAAA] font-accent text-[12px] uppercase tracking-[0.4em] opacity-40">Zero matches found in data banks</p>
+           <p className="text-[#AAAAAA] font-accent text-[11px] uppercase tracking-[0.35em] opacity-40">Zero matches found in data banks</p>
         </div>
       ) : (
         <div className="flex-grow">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 lg:gap-6">
             {paged.map((anime, i) => <AnimeCard key={anime.animeId} anime={anime} index={i} />)}
           </div>
 
-          {/* Pagination — Modern Premium UI */}
+          {/* Pagination */}
           {total > 1 && (
-            <div className="mt-24 mb-12 flex flex-col items-center gap-6">
-              <div className="h-px w-24 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-              <div className="flex items-center gap-2 p-1.5 bg-[#111] border border-white/10 rounded-2xl shadow-2xl">
+            <div className="mt-12 mb-6 flex justify-center">
+              <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-[#111] p-1">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                   disabled={currentPage === 1}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-10 hover:bg-white/5 text-[#AAAAAA] hover:text-[#F5EBE0]"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-30 hover:bg-white/5 text-[#AAAAAA] hover:text-[#F5EBE0]"
                 >
-                  <CaretLeft size={18} weight="bold" />
+                  <CaretLeft size={14} weight="bold" />
                 </button>
 
-                <div className="flex items-center gap-1 mx-2">
+                <div className="flex items-center gap-1">
                   {pages().map((p, i) =>
                     p === '…' ? (
-                      <span key={`e${i}`} className="w-8 text-center text-[#333] font-bold">···</span>
+                      <span key={`e${i}`} className="w-6 text-center text-[#AAAAAA]/35 font-accent text-[11px]">...</span>
                     ) : (
                       <button
                         key={p}
                         onClick={() => setCurrentPage(p)}
-                        className={`w-10 h-10 rounded-xl text-[11px] font-accent transition-all relative overflow-hidden group ${
+                        className={`w-8 h-8 rounded-lg text-[10px] font-accent transition-colors ${
                           currentPage === p
-                          ? 'bg-[#FF1F44] text-white shadow-[0_0_25px_rgba(255,31,68,0.4)]'
+                          ? 'bg-[#FF1F44]/15 text-[#F5EBE0] border border-[#FF1F44]/30'
                           : 'text-[#AAAAAA] hover:bg-white/5 hover:text-[#F5EBE0]'
                         }`}
                       >
                         {p}
-                        {currentPage === p && (
-                          <Motion.div 
-                            layoutId="active-page"
-                            className="absolute inset-0 bg-white/10"
-                            initial={false}
-                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                          />
-                        )}
                       </button>
                     )
                   )}
@@ -236,14 +279,11 @@ function BrowseAnimePage() {
                 <button
                   onClick={() => setCurrentPage(p => Math.min(p + 1, total))}
                   disabled={currentPage === total}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-10 hover:bg-white/5 text-[#AAAAAA] hover:text-[#F5EBE0]"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors disabled:opacity-30 hover:bg-white/5 text-[#AAAAAA] hover:text-[#F5EBE0]"
                 >
-                  <CaretRight size={18} weight="bold" />
+                  <CaretRight size={14} weight="bold" />
                 </button>
               </div>
-              <p className="text-[9px] font-accent text-[#AAAAAA] uppercase tracking-[0.5em] opacity-30">
-              Page {currentPage} of {total}
-              </p>
             </div>
           )}
         </div>
